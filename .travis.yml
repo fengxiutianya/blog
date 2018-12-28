@@ -1,0 +1,37 @@
+# 使用语言
+language: node_js
+## node版本
+node_js: stable
+# 设置监听哪个分支
+branches:
+  only:
+    - dev
+# 缓存，可以节省集成的时间，这里我用了yarn，如果不用可以删除
+cache:
+  directories:
+    - node_modules
+# tarvis生命周期执行顺序详见官网文档
+before_install:
+  - npm install -g hexo-cli
+install:
+  # 不用yarn的话这里改成 npm i 即可
+  - npm install
+script:
+  - hexo clean
+  - hexo generate
+
+after_success:
+  - cd ./public
+  - git init
+  - git config user.name "398757724@qq.com"
+  - git config user.email "iloveyou617"
+  - git add --all
+  - git commit -m "version 1"
+  - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master
+
+notifications:
+  email: false
+
+env:
+  global:
+    - GH_REF=github.com/fengxiutianya/blog.git
