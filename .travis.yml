@@ -5,7 +5,7 @@ node_js: stable
 # 设置监听哪个分支
 branches:
   only:
-    - dev
+    - master
 # 缓存，可以节省集成的时间，这里我用了yarn，如果不用可以删除
 cache:
   directories:
@@ -27,7 +27,7 @@ after_success:
   - git config user.email "iloveyou617"
   - git add --all
   - git commit -m "version 1"
-  - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:master
+  - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages
 
 notifications:
   email: false
