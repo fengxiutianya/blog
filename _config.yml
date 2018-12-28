@@ -3,17 +3,17 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
+title: 枫秀天涯
 subtitle:
 description:
-keywords:
-author: John Doe
+keywords: 分布式,数据库,java,spring,
+author: 枫秀天涯
 language: zh-Hans
 timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: https://taolove.top
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -79,3 +79,9 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type:
+### 本地搜索
+algolia:
+  applicationID: "AQT4XGM95O"
+  apiKey: "d55e0adb332e8d9ef9023a6b4afd46f1"
+  indexName: "my"
+  chunkSize: 5000

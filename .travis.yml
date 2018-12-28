@@ -19,6 +19,7 @@ install:
 script:
   - hexo clean
   - hexo generate
+  - install.sh
 
 after_success:
   - cd ./public

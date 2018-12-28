@@ -8,7 +8,7 @@ author: 博主
 
 menu:
   home: 首页
-  archives: 归档
+  archives: 时间轴
   categories: 分类
   tags: 标签
   about: 关于
@@ -85,9 +85,9 @@ cheers:
 keep_on: 继续努力。
 
 symbol:
-  comma: '， '
-  period: '。 '
-  colon: '：'
+  comma: "， "
+  period: "。 "
+  colon: "："
 
 reward:
   donate: 打赏
