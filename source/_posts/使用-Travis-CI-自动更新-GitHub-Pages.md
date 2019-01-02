@@ -1,9 +1,11 @@
+---
 title: 使用 Travis CI 自动更新 GitHub Pages
 author: 枫秀天涯
 tags:
   - 博客建站
 categories:
   - 其他
+abbrlink: 32102
 date: 2018-12-28 14:59:00
 ---
 此篇博客主要为记录学习使用

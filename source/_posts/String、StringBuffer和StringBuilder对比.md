@@ -1,3 +1,4 @@
+---
 title: String、StringBuffer和StringBuilder对比
 tags:
   - java
@@ -6,6 +7,7 @@ tags:
 categories:
   - java
 author: zhangke
+abbrlink: 10143
 date: 2019-01-02 13:24:00
 ---
 ---
