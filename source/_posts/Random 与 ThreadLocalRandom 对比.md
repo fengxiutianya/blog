@@ -1,4 +1,3 @@
----
 title: Random 与 ThreadLocalRandom 对比
 tags:
   - JUC
@@ -8,7 +7,6 @@ author: zhangke
 abbrlink: 26181
 date: 2018-12-12 15:42:00
 ---
-
 ---
 # Random 与 ThreadLocalRandom 对比
 
@@ -21,6 +19,7 @@ date: 2018-12-12 15:42:00
 首先，如果你看到这篇文章相信对这俩个类有一定的了解，所以我就不再这里介绍具体的用法。简单的介绍一下这个类，Random，ThreadLocalRandom是Java中的随机数生成器，Random是我们比较常用的随机数生成器，他是线程安全的。ThreadLocalRandom是jdk7才出现的，是Random的增强版。在并发访问的环境下，使用ThreadLocalRandom来代替Random可以减少多线程竞争，同时也能保证线程安全和提高性能。
 
 由于本人能力有限，如果你的英文比较好，可以看看StackOverFlow上的这个讨论[https://stackoverflow.com/questions/23396033/random-over-threadlocalrandom](https://stackoverflow.com/questions/23396033/random-over-threadlocalrandom)
+<!--  more -->
 
 ### 2. 测试结果与分析
 
@@ -130,4 +129,3 @@ Random的实现也比较简单，初始化的时候用当前的事件来初始�
 1. [https://xindoo.me/article/1400](https://xindoo.me/article/1400)
 2. [C 位操作 左移32位 错误](https://blog.csdn.net/huqinweI987/article/details/70941199) 这个是我在进行源码研究时，发先自己int类型的说移动32位还是原数子，从这篇文章找到了答案
 3. [Java并发计数器探秘](https://www.cnkirito.moe/java-random/)
-
