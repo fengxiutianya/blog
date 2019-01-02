@@ -85,3 +85,5 @@ algolia:
   apiKey: "d55e0adb332e8d9ef9023a6b4afd46f1"
   indexName: "my"
   chunkSize: 5000
+admin:
+  deployCommand: "./upload.sh"
