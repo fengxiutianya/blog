@@ -126,6 +126,6 @@ Random的实现也比较简单，初始化的时候用当前的事件来初始�
 
 ### 参考
 
-1. [https://xindoo.me/article/1400](https://xindoo.me/article/1400)
+1. [java.util.Random和concurrent.ThreadLocalRandom对比](https://xindoo.me/article/1400)
 2. [C 位操作 左移32位 错误](https://blog.csdn.net/huqinweI987/article/details/70941199) 这个是我在进行源码研究时，发先自己int类型的说移动32位还是原数子，从这篇文章找到了答案
-3. [Java并发计数器探秘](https://www.cnkirito.moe/java-random/)
+3. [Java随机数探秘](https://www.cnkirito.moe/java-random/)

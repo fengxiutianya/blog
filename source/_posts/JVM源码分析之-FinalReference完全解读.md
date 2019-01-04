@@ -1,15 +1,16 @@
-abbrlink: 1
-title: JVM源码分析之FinalReference完全解读
+title: JVM源码分析之 FinalReference 完全解读
+author: 枫秀天涯
+abbrlink: 13502
 tags:
   - java
   - java引用
-  - 源码解析
+  - ''
+  - JVM
 categories:
   - java
-author: zhangke
-date: 2018-09-12 15:01:00
+date: 2019-01-04 10:24:00
 ---
-# JVM源码分析之FinalReference完全解读
+# JVM源码分析之 FinalReference完全解读
 
 ## 概述
 
@@ -24,6 +25,7 @@ Java对象引用体系除了强引用之外，出于对性能、可扩展性等�
 
 那`FinalReference`到底存在的意义是什么，以怎样的形式和我们的代码相关联呢？这是本文要理清的问题。
 <!-- more -->
+
 ## JDK中的FinalReference
 
 首先我们看看`FinalReference`在JDK里的实现：
@@ -97,7 +99,7 @@ final class Finalizer extends FinalReference { /* Package-private; must be in
 
 类的修饰有很多，比如final，abstract，public等，如果某个类用final修饰，我们就说这个类是final类，上面列的都是语法层面我们可以显式指定的，在JVM里其实还会给类标记一些其他符号，比如`finalizer`，表示这个类是一个`finalizer`类（为了和`java.lang.ref.Fianlizer`类区分，下文在提到的`finalizer`类时会简称为f类），GC在处理这种类的对象时要做一些特殊的处理，如在这个对象被回收之前会调用它的`finalize`方法。
 
-### 如何判断一个类是不是一个f类
+#### 如何判断一个类是不是一个final类
 
 在讲这个问题之前，我们先来看下`java.lang.Object`里的一个方法
 
@@ -254,3 +256,6 @@ protected void finalize() throws IOException {
 - CPU资源比较稀缺的情况下`FinalizerThread`线程有可能因为优先级比较低而延迟执行f对象的`finalize`方法；
 - 因为f对象的`finalize`方法迟迟没有执行，有可能会导致大部分f对象进入到old分代，此时容易引发old分代的GC，甚至Full GC，GC暂停时间明显变长；
 - f对象的`finalize`方法被调用后，这个对象其实还并没有被回收，虽然可能在不久的将来会被回收。
+
+## 参考
+1. [JVM 源码分析之 FinalReference 完全解读](https://www.infoq.cn/articles/jvm-source-code-analysis-finalreference)

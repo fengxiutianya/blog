@@ -1,11 +1,17 @@
-abbrlink: 2
 title: Java Reference详解
-tags: []
+author: 枫秀天涯
+abbrlink: 28002
+tags:
+  - java
+  - java引用
 categories:
   - java
-author: zhangke
-date: 2018-09-12 14:43:00
+date: 2019-01-04 10:25:00
+
 ---
+
+# Java Reference详解
+
 ### 概述
 
 Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。
@@ -44,7 +50,7 @@ jvm gc时，判断一个对象是否存在引用时，都是从根结合引用(R
 
 简单用下面代码来说明
 
-``` java
+```java
 Object object = new Object();
 ReferenceQueue  queue = new ReferenceQueue();
 SoftReference<Objecct> soft = new SoftReference<>(object,queue);
@@ -331,4 +337,4 @@ PhantomReference使用时一定要传一个referenceQueue,当然也可以传null
 
 [Reference、ReferenceQueue 详解](http://www.importnew.com/26250.html)
 
-[用弱引用堵住内存泄漏](https://www.ibm.com/developerworks/cn/java/j-jtp11225/)
+[用弱引用堵住内存泄漏](
