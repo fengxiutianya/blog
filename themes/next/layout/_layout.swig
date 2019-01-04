@@ -10,6 +10,7 @@
   {% include '_partials/head.swig' %}
   <title>{% block title %}{% endblock %}</title>
   {% include '_third-party/analytics/index.swig' %}
+
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="{{ page.lang || page.language || config.language }}">
@@ -88,5 +89,30 @@
   {% include '_third-party/mathjax.swig' %}
   {% include '_third-party/scroll-cookie.swig' %}
   {% include '_third-party/exturl.swig' %}
+  {#
+  暂时不启用prettify
+  <script src="/plugins/prettify/prettify.js"></script>
+  <script type="text/javascript">
+    $(window).load(function(){
+      $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto;');
+      prettyPrint();
+    })    
+  </script>
+  #}
+  {# 引入highlightjs #}
+  {# github 样式#}
+  {#<link rel="stylesheet"
+      href="//cdn.bootcss.com/highlight.js/9.2.0/styles/github.min.css">
+      #}
+
+<link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.12.0/styles/atom-one-dark.min.css">
+<script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js">
+</script>
+<script>
+    $(function() {
+    hljs.initHighlighting();
+
+  });
+</script>
 </body>
 </html>

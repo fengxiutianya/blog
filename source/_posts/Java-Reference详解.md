@@ -7,9 +7,7 @@ tags:
 categories:
   - java
 date: 2019-01-04 10:25:00
-
 ---
-
 # Java Reference详解
 
 ### 概述
@@ -170,7 +168,7 @@ true
 
  PhantomReference 不同于WeakReference、SoftReference，它存在的意义不是为了获取referent,因为你也永远获取不到，因为它的get如下
 
-```
+```java
  public T get() {
         return null;
  }
@@ -180,10 +178,7 @@ PhantomReference主要作为其指向的referent被回收时的一种通知机�
 
 下面举个例子，用PhantomReference来自动关闭文件流。
 
-```
-/**
- * Created by robin.yzb.
- */
+```java
 public class ResourcePhantomReference<T> extends PhantomReference<T> {
 
     private List<Closeable> closeables;
@@ -208,10 +203,7 @@ public class ResourcePhantomReference<T> extends PhantomReference<T> {
 }
 ```
 
-```
-/**
- * Created by robin.yzb .
- */
+```java
 public class ResourceCloseDeamon extends Thread {
 
     private static ReferenceQueue QUEUE = new ReferenceQueue();
@@ -240,10 +232,7 @@ public class ResourceCloseDeamon extends Thread {
 }
 ```
 
-```
-/**
- * Created by robin.yzb.
- */
+```java
 public class FileOperation {
 
     private FileOutputStream outputStream;
@@ -269,10 +258,7 @@ public class FileOperation {
 
 测试代码：
 
-```
-/**
- * Created by robin.yzb .
- */
+```java
 public class PhantomTest {
 
     public static void main(String[] args) throws Exception {

@@ -43,13 +43,13 @@ class FinalReference&lt;T&gt; extends Reference&lt;T&gt; {
 大家应该注意到了类访问权限是package的，这也就意味着我们不能直接去对其进行扩展，但是JDK里对此类进行了扩展实现`java.lang.ref.Finalizer`，这个类在概述里提到的过，而此类的访问权限也是package的，并且是final的，意味着它不能再被扩展了，接下来的重点我们围绕`java.lang.ref.Finalizer`展开。(PS：后续讲的`Finalizer`其实也是在说`FinalReference`。)
 
 ```
-final class Finalizer extends FinalReference { /* Package-private; must be in
-                                                  same package as the Reference
-                                                  class */
-
-    /* A native method that invokes an arbitrary object's finalize method is
-       required since the finalize method is protected
-     */
+final class Finalizer extends FinalReference { 
+   /* Package-private; must be in same package as the 
+   Referenceclass */
+   
+   /* A native method that invokes an arbitrary object's  
+   finalize method is  required since the finalize method is 
+   protected*/
     static native void invokeFinalizeMethod(Object o) throws Throwable;
 
     private static ReferenceQueue queue = new ReferenceQueue();

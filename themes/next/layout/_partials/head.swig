@@ -156,3 +156,4 @@
 {% endif %}
 
 {% include 'head/custom-head.swig' %}
+{# 暂时不启用pretty  <link href="/plugins/prettify/prettify.css" rel="stylesheet"> #}
