@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 
+{# NexT version #}
+{% set version = next_env('version') %}
+
+{# Language & Config #}
+{% set title = __('title') !== 'title' && __('title') || config.title %}
+{% set subtitle = __('subtitle') !== 'subtitle' && __('subtitle') || config.subtitle %}
+{% set author = __('author') !== 'author' && __('author') || config.author %}
+{% set description = __('description') !== 'description' && __('description') || config.description %}
+
 {% set html_class = 'theme-next ' + theme.scheme %}
 {% if theme.motion.enable %}
   {% set html_class = html_class + ' use-motion' %}
@@ -7,10 +16,11 @@
 
 <html class="{{ html_class | lower }}" lang="{{ config.language }}">
 <head>
-  {% include '_partials/head.swig' %}
+  {{ partial('_partials/head/head.swig', {}, {cache: theme.cache.enable}) }}
+  {% include '_partials/head/head-unique.swig' %}
   <title>{% block title %}{% endblock %}</title>
   {% include '_third-party/analytics/index.swig' %}
-
+  {{ partial('_scripts/noscript.swig', {}, {cache: theme.cache.enable}) }}
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="{{ page.lang || page.language || config.language }}">
@@ -24,16 +34,20 @@
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
-      <div class="header-inner"> {%- include '_partials/header.swig' %} </div>
+      <div class="header-inner">{% include '_partials/header/index.swig' %}</div>
     </header>
+
+    {{ partial('_partials/github-banner.swig', {}, {cache: theme.cache.enable}) }}
 
     <main id="main" class="main">
       <div class="main-inner">
         <div class="content-wrap">
+          {% if theme.scheme === 'Pisces' || theme.scheme === 'Gemini' %}
+            {% include '_partials/header/sub-menu.swig' %}
+          {% endif %}
           <div id="content" class="content">
             {% block content %}{% endblock %}
           </div>
-          {% include '_third-party/duoshuo-hot-articles.swig' %}
           {% include '_partials/comments.swig' %}
         </div>
         {% if theme.sidebar.display !== 'remove' %}
@@ -44,7 +58,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        {% include '_partials/footer.swig' %}
+        {{ partial('_partials/footer.swig', {}, {cache: theme.cache.enable}) }}
         {% include '_third-party/analytics/analytics-with-widget.swig' %}
         {% block footer %}{% endblock %}
       </div>
@@ -67,6 +81,17 @@
       </div>
     {% endif %}
 
+    {% if theme.baidushare and theme.baidushare.type === "slide" %}
+      <div>
+        {% include '_partials/share/baidushare.swig' %}
+      </div>
+    {% endif %}
+
+    {% if theme.add_this_id %}
+      <div>
+        {% include '_partials/share/add-this.swig' %}
+      </div>
+    {% endif %}
   </div>
 
   {% include '_scripts/vendors.swig' %}
@@ -84,27 +109,18 @@
   {% include '_third-party/analytics/lean-analytics.swig' %}
   {% include '_third-party/analytics/firestore.swig' %}
   {% include '_third-party/seo/baidu-push.swig' %}
+  {% include '_third-party/schedule.swig' %}
+  {% include '_third-party/math/index.swig' %}
   {% include '_third-party/needsharebutton.swig' %}
   {% include '_third-party/rating.swig' %}
-  {% include '_third-party/mathjax.swig' %}
+  {% include '_third-party/pangu.swig' %}
   {% include '_third-party/scroll-cookie.swig' %}
   {% include '_third-party/exturl.swig' %}
-  {#
-  暂时不启用prettify
-  <script src="/plugins/prettify/prettify.js"></script>
-  <script type="text/javascript">
-    $(window).load(function(){
-      $('pre').addClass('prettyprint linenums').attr('style', 'overflow:auto;');
-      prettyPrint();
-    })    
-  </script>
-  #}
-  {# 引入highlightjs #}
-  {# github 样式#}
-  {#<link rel="stylesheet"
-      href="//cdn.bootcss.com/highlight.js/9.2.0/styles/github.min.css">
-      #}
+  {% include '_third-party/bookmark.swig' %}
+  {% include '_third-party/copy-code.swig' %}
+  {% include '_third-party/pdf.swig' %}
 
+{# 加入 highlight代码高亮#}
 <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.12.0/styles/atom-one-dark.min.css">
 <script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js">
 </script>
