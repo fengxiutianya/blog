@@ -1,0 +1,13 @@
+version: "3"
+services:
+  webapp:
+    container_name: hexo
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /root/hexo
+    command: "npm run start"
+    volumes:
+      - "./:/root/hexo"
+    ports:
+      - "4000:4000"

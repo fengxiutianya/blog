@@ -5,7 +5,9 @@
   "hexo": {
     "version": "3.8.0"
   },
-  "scripts": {},
+  "scripts": {
+    "start": "npm install -g hexo-cli && npm install && hexo s"
+  },
   "dependencies": {
     "hexo": "^3.7.0",
     "hexo-abbrlink": "^2.0.5",
