@@ -9,5 +9,6 @@ services:
     command: "npm run start"
     volumes:
       - "./:/root/hexo"
+      - "./.ssh:/root/.ssh"
     ports:
       - "4000:4000"
