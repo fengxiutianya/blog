@@ -1,5 +1,5 @@
 abbrlink: 23
-title: spring 源码解析之 04加载bean
+title: spring 源码解析之 04（上）加载bean
 tags:
   - spring源码解析
 categories:
@@ -7,7 +7,7 @@ categories:
 author: fengxiutianya
 date: 2019-01-14 04:46:00
 ---
-# spring 源码解析之 04加载bean
+# spring 源码解析之 04（上）加载bean
 
 ### 概述
 
