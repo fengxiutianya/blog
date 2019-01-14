@@ -2,6 +2,7 @@ abbrlink: 19
 title: java 打包技术之jar文件
 tags:
   - java
+  - jar
 categories:
   - java
 author: zhangke
@@ -258,6 +259,7 @@ demo2/tem.log
 ```
 java -jar jar-filename
 ```
+**总结：**其实jar文件就是按照某个特定格式打包的文件，和普通的zip打包的文件没什么区别，这点你可以用解压软件来测试。只不过这个打包的文件里面需要按照java官方规定放置一些特定的文件来方便jar运行或者引用时使用。
 
 ### Manifest文件
 
