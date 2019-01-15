@@ -1,11 +1,14 @@
+
+
 abbrlink: 45
 title: spring源码解析之 24循环依赖处理
 tags:
+
   - spring源码解析
 categories:
   - spring
 author: fengxiutianya
-date: 2019-01-15 03:37:00
+date: 2019-01-15 03:38:00
 ---
 # spring源码解析之 24 循环依赖处理
 
@@ -82,10 +85,10 @@ Object sharedInstance = getSingleton(beanName);
 
 他们就是 Spring 解决 singleton bean 的关键因素所在，我称他们为三级缓存，第一级为 singletonObjects，第二级为 earlySingletonObjects，第三级为 singletonFactories。这里我们可以通过 `getSingleton()` 看到他们是如何配合的，这分析该方法之前，提下其中的 `isSingletonCurrentlyInCreation()` 和 `allowEarlyReference`。
 
-- `isSingletonCurrentlyInCreation()`：判断当前 singleton bean 是否处于创建中。bean 处于创建中也就是说 bean 在初始化但是没有完成初始化，有一个这样的过程其实和 Spring 解决 bean 循环依赖的理念相辅相成，因为 Spring 解决 singleton bean 的核心就在于提前曝光 bean。
+- `isSingletonCurrentlyInCreation()`：判断当前 singleton bean 是否处于创建中。bean 处于创建中也就是说 bean 在初始化但是没有完成初始化，前面我们在从缓存从获取单例对象也提到过这个方法。这样的过程其实和 Spring 解决 bean 循环依赖的理念相辅相成，因为 Spring 解决 singleton bean 的核心就在于提前曝光 bean。
 - allowEarlyReference：从字面意思上面理解就是允许提前拿到引用。其实真正的意思是是否允许从 singletonFactories 缓存中通过 `getObject()` 拿到对象，为什么会有这样一个字段呢？原因就在于 singletonFactories 才是 Spring 解决 singleton bean 的诀窍所在，这个我们后续分析。
 
-`getSingleton()` 整个过程如下：首先从一级缓存 singletonObjects 获取，如果没有且当前指定的 beanName 正在创建，就再从二级缓存中 earlySingletonObjects 获取，如果还是没有获取到且运行 singletonFactories 通过 `getObject()` 获取，则从三级缓存 singletonFactories 获取，如果获取到则，通过其 `getObject()` 获取对象，并将其加入到二级缓存 earlySingletonObjects 中 从三级缓存 singletonFactories 删除，如下：
+`getSingleton()` 整个过程如下：首先从一级缓存 singletonObjects 获取，如果没有且当前指定的 beanName 正在创建，就再从二级缓存中 earlySingletonObjects 获取，如果还是没有获取到且运行 singletonFactories 通过 `getObject()` 获取，则从三级缓存 singletonFactories 获取，如果获取到则通过其 `getObject()` 获取对象，并将其加入到二级缓存 earlySingletonObjects 中 从三级缓存 singletonFactories 删除，如下：
 
 ```java
 singletonObject = singletonFactory.getObject();
@@ -116,6 +119,14 @@ if (earlySingletonExposure) {
 - 运行提前暴露 bean
 - 当前 bean 正在创建中
 
+经过上面分析，我们了解添加addSingletonFactory满足什么条件才能调用，但是调用addSingletonFactory起到什么作用呢，我们还是以最简单AB循环依赖为例，类A中含有属性类B，类B中又含有属性A，那么初始化BeanA的过程入下图
+
+![upload successful](/images/pasted-23.png)
+
+![upload successful](/images/pasted-24.png)
+
+cong
+
 `addSingletonFactory()` 代码如下：
 
 ```java
@@ -133,6 +144,27 @@ if (earlySingletonExposure) {
 ```
 
 从这段代码我们可以看出 singletonFactories 这个三级缓存才是解决 Spring Bean 循环依赖的诀窍所在。同时这段代码发生在 `createBeanInstance()` 方法之后，也就是说这个 bean 其实已经被创建出来了，但是它还不是很完美（没有进行属性填充和初始化），但是对于其他依赖它的对象而言已经足够了（可以根据对象引用定位到堆中对象），能够被认出来了，所以 Spring 在这个时候选择将该对象提前曝光出来让大家认识认识。
+
+**getEarlyBeanReference**如下
+
+```java
+	protected Object getEarlyBeanReference(String beanName,
+    	RootBeanDefinition mbd, Object bean) {
+		Object exposedObject = bean;
+		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+			for (BeanPostProcessor bp : getBeanPostProcessors()) {
+				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+					SmartInstantiationAwareBeanPostProcessor ibp = 
+					(SmartInstantiationAwareBeanPostProcessor) bp;
+					exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
+				}
+			}
+		}
+		return exposedObject;
+	}
+```
+
+![upload successful](/images/pasted-25.png)
 
 介绍到这里我们发现三级缓存 singletonFactories 和 二级缓存 earlySingletonObjects 中的值都有出处了，那一级缓存在哪里设置的呢？在类 DefaultSingletonBeanRegistry 中可以发现这个 `addSingleton()` 方法，源码如下：
 

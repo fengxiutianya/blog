@@ -1,8 +1,11 @@
 abbrlink: 40
 title: spring源码解析之 21 实例化bean
-tags: []
-categories: []
-date: 2019-01-15 03:33:00
+tags:
+  - spring源码解析
+categories:
+  - spring
+author: zhangke
+date: 2019-01-15 03:35:00
 ---
 # spring源码解析之 21实例化bean
 
