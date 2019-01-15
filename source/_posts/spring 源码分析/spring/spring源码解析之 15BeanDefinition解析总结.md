@@ -7,12 +7,12 @@ categories:
 author: fengxitianya
 date: 2019-01-14 06:19:00
 ---
-
 # spring源码解析之 15BeanDefinition解析总结
 
 前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。
 
 在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition 的载入和解析，BeanDefinition 注册。
+<!-- more-->
 
 ![upload successful](/images/pasted-11.png)
 
@@ -402,4 +402,3 @@ Resource 资源的定位需要 Resource 和 ResourceLoader 两个接口互相配
 更多阅读：
 
 - [spring源码解析](https://taolove.top/tags/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/)
-

@@ -13,6 +13,7 @@ date: 2019-01-14 04:46:00
 
 1. spring 容器整体介绍
 2. 源码分析：loadBeanDefinitions具体实现
+<!-- more-->
 
 ### spring容器整体介绍
 

@@ -17,6 +17,7 @@ date: 2019-01-14 05:12:00
 ### BeanDefinition简介
 
 BeanDefinition 是一个接口，它描述了一个 Bean 实例，包括属性值、构造方法值和继承自它的类的更多信息。Spring通过BeanDefinition将配置文件中的\< bean >配置文件转换为容器的内部表示，并将这些BeanDefinition注册到BeanDefinitionRegistry中。Spring容器的BeanDefinitionRegistry就像是spring配置信息的内存数据库，主要以map的形式保存，后续操作直接从BeanDefinitionRegistry中直接获取配置信息。
+<!-- more-->
 
 它继承 AttributeAccessor 和 BeanMetadataElement 接口。两个接口定义如下：
 

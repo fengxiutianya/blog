@@ -15,7 +15,7 @@ date: 2019-01-14 05:11:00
 1. parseDefaultElement
 2. processBeanDefinition (bean标签的解析即注册)
 3. 解析BeanDefinition
-
+<!-- more-->
 ### parseDefaultElement
 
 Spring 中有两种解析 Bean 的方式。如果根节点或者子节点采用默认命名空间的话，则调用 `parseDefaultElement()` 进行默认标签解析，否则调用 `delegate.parseCustomElement()` 方法进行自定义解析。所以以下博客就这两个方法进行详细分析说明，先从默认标签解析过程开始，源码如下：

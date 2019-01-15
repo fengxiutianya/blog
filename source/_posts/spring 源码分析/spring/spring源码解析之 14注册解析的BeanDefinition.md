@@ -11,6 +11,7 @@ date: 2019-01-14 05:39:00
 # spring 源码解析之 14注册解析的BeanDefinition
 
 `DefaultBeanDefinitionDocumentReader.processBeanDefinition()` 完成 Bean 标签解析的核心工作，如下：
+<!-- more-->
 
 ```java
     protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {

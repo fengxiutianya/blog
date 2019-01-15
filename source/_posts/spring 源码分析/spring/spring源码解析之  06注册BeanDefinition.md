@@ -13,6 +13,7 @@ date: 2019-01-14 04:58:00
 #### registerBeanDefinitions
 
 获取 Document 对象后，会根据该对象和 Resource 资源对象调用 `registerBeanDefinitions()` 方法，开始注册 BeanDefinitions 之旅。如下：
+<!-- more-->
 
 ```java
     public int registerBeanDefinitions(Document doc, Resource resource) 

@@ -11,6 +11,7 @@ date: 2019-01-14 05:25:00
 # spring源码解析之 11bean标签：解析自定义标签
 
 bean标签解析设计太多的知识点，这里我们先看看最开始解析bean的那段代码，回顾一下
+<!-- more-->
 
 ```java
     protected void processBeanDefinition(Element ele,
