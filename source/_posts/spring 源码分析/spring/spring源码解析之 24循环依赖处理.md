@@ -1,9 +1,6 @@
-
-
 abbrlink: 45
 title: spring源码解析之 24循环依赖处理
 tags:
-
   - spring源码解析
 categories:
   - spring
@@ -13,6 +10,7 @@ date: 2019-01-15 03:38:00
 # spring源码解析之 24 循环依赖处理
 
 这篇分析 `doCreateBean()` 第三个过程：循环依赖处理。其实循环依赖并不仅仅只是在 `doCreateBean()` 中处理，其实在整个加载 bean 的过程中都有涉及，所以下篇内容并不仅仅只局限于 `doCreateBean()`，而是从整个 Bean 的加载过程进行分析。
+<!-- more -->
 
 ## 什么是循环依赖
 

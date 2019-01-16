@@ -11,7 +11,7 @@ date: 2019-01-15 03:57:00
 # spring源码解析之 25bean的初始化
 
 前面我们已经分析了bean的创建，属性的注入，依赖处理，其实这时bean基本上已经可以用了，不知道你还记不记得我们在xml中还可以配置init-method属性，这个到现在为止还没有处理，这就是最后一步初始化，也就是 `initializeBean()`，所以这篇文章我们分析 `doCreateBean()` 中最后一步：初始化 bean。
-
+<!-- more -->
 ```java
     protected Object initializeBean(final String beanName, final Object bean, 
                                     @Nullable RootBeanDefinition mbd) {

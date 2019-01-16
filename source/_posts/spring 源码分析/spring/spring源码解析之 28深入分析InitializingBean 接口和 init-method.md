@@ -14,6 +14,7 @@ date: 2019-01-15 06:40:00
 ## InitializingBean
 
 Spring 的 InitializingBean 接口为 bean 提供了定义初始化方法的方式，它仅包含了一个方法：`afterPropertiesSet()`。
+<!-- more -->
 
 ```JAVA
 public interface InitializingBean {

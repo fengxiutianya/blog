@@ -18,6 +18,7 @@ protected abstract Object createBean(String beanName, RootBeanDefinition mbd,
 ```
 
 该方法定义在 AbstractBeanFactory 中。其含义是根据给定的 BeanDefinition 和 args实例化一个 bean 对象，如果该 BeanDefinition 存在父类，则该 BeanDefinition 已经合并了父类的属性。所有 Bean 实例的创建都会委托给该方法实现。
+<!-- more -->
 
 方法接受三个参数：
 

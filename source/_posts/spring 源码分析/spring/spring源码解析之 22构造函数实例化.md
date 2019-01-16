@@ -12,6 +12,7 @@ date: 2019-01-15 03:36:00
 ## autowireConstructor()
 
 这个初始化方法我们可以简单理解为是带有参数的初始化 bean 。代码段如下：
+<!-- more -->
 
 ```java
   	public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,

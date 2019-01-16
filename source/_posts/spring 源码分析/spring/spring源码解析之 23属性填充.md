@@ -18,6 +18,7 @@ date: 2019-01-15 03:37:00
 - `initializeBean()` 初始化 bean
 
 第一个过程实例化 bean 已经在前面两篇博客分析完毕了，这篇博客开始分析属性填充，也就是 `populateBean()`，该函数的作用是将 BeanDefinition 中的属性值赋值给 BeanWrapper 实例对象(对于 BeanWrapper 我们后续专门写文分析)。
+<!-- more -->
 
 ```java
     protected void populateBean(String beanName, RootBeanDefinition mbd,

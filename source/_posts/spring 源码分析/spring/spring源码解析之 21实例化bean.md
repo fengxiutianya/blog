@@ -10,6 +10,7 @@ date: 2019-01-15 03:35:00
 # spring源码解析之 21实例化bean
 
 这篇我们关注创建 bean 过程中的第一个步骤：实例化 bean，对应的方法为：`createBeanInstance()`，如下：
+<!-- more -->
 
 ```java
    protected BeanWrapper createBeanInstance(String beanName, RootBeanDefinition mbd, 

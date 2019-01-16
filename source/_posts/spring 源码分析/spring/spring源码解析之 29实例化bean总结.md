@@ -7,11 +7,10 @@ categories:
   - spring
 date: 2019-01-15 06:54:00
 ---
-
 在 Spring bean 解析篇深入分析了一个配置文件经历了哪些过程转变成了 BeanDefinition，但是这个 BeanDefinition 并不是我们真正想要的想要的 bean，因为它还仅仅只是承载了我们需要的目标 bean 的信息，从 BeanDefinition 到我们需要的目标还需要一个漫长的 bean 的初始化阶段，在Spring bean 实例化阶段已经详细分析了初始化 bean 的过程，所以这里做一个概括性的总结。
 
 bean 的初始化节点由第一次调用 `getBean()`(显式或者隐式)开启，所以我们从这个方法开始。
-
+<!-- more -->
 ```java
     public Object getBean(String name) throws BeansException {
         return doGetBean(name, null, null, false);
@@ -721,5 +720,3 @@ End!!!
 11.  [spring源码解析之 26深入分析Aware接口](https://taolove.top/posts/49/)
 12.  [spring源码解析之 27深入分析BeanPostProcessor接口](https://taolove.top/posts/48/)
 13.  [spring源码解析之 28深入分析InitializingBean 接口和 init-method](https://taolove.top/posts/47/)
-
-
