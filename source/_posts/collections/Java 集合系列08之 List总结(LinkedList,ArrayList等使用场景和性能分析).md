@@ -1,5 +1,9 @@
----
-abbrlink: 10
+title: 'Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)'
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 17:39:00
 ---
 
 ## 概述

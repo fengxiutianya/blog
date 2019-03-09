@@ -1,10 +1,11 @@
 title: 并发队列-有界阻塞队列ArrayBlockingQueue原理探究
 tags:
-  - java
-categories:
   - juc
   - 并发队列
-date: 2019-03-07 03:05:00
+  - ''
+categories:
+  - java
+date: 2019-03-06 19:05:00
 ---
 ---
 # 并发队列-有界阻塞队列ArrayBlockingQueue原理探究

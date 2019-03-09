@@ -1,8 +1,10 @@
 title: CopyOnWriteArrayList
 tags:
-  - java
+  - juc
+  - ''
 categories:
-  - ju'c
+  - java
+  - ''
 author: fengxiutianya
 date: 2019-03-07 03:07:00
 ---

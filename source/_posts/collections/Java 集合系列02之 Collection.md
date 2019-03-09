@@ -1,8 +1,20 @@
-abbrlink: 1
-title: java集合系列 02 Collection
-date: 2019-03-04 08:19:27
+title: Java 集合系列02之 Collection
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 09:13:00
 ---
-# java集合系列 02 Collection
+
+---
+title: java集合系列 02 Collection
+
+tags:
+
+- 集合
+  categories:
+- java
+  date: 2019-03-04 12:09:00
 
 ## 概要
 

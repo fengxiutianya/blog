@@ -1,5 +1,10 @@
----
 abbrlink: 15
+title: Java 集合系列01之 总体框架
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 09:08:00
 ---
 # java 集合系列 01 之 总体框架
 

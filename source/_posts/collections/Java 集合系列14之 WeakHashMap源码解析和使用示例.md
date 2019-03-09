@@ -1,7 +1,12 @@
----
 abbrlink: 12
+title: Java集合系列14 之WeakHashMap源码解析和使用示例
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 23:58:00
 ---
-# Java集合系列14 zhiWeakHashMap源码解析和使用示例
+
 
 ### 概要
 
@@ -153,4 +158,3 @@ abbrlink: 12
 >```
 >
 >注意一点的是：其中GC过之后，打印的Map值可能不同。因为gc回收需要一段时间，这是你需要去调整等待GC的时间。就可以看到弱引用被回收
-

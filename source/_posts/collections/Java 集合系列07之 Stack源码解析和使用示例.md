@@ -1,8 +1,13 @@
-abbrlink: 5
-title: stack
-date: 2019-03-04 08:18:12
+title: Java 集合系列07之 Stack源码解析和使用示例
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 15:41:00
 ---
-### 概要 
+
+---
+### 概要
 
 本篇博客将主要学习Stack。Stack很简单，就是一些简单的栈操作，他继承Vector。
 

@@ -1,10 +1,10 @@
 title: 并发队列-无界阻塞队列PriorityBlockingQueue原理研究
 tags:
-  - java
-categories:
-  - juc
   - 并发队列
-date: 2019-03-07 03:05:00
+  - juc
+categories:
+  - java
+date: 2019-03-06 19:05:00
 ---
 ---
 # 并发队列-无界阻塞队列PriorityBlockingQueue原理研究

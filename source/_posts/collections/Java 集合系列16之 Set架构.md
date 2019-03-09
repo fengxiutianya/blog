@@ -1,8 +1,11 @@
----
 abbrlink: 14
+title: Java 集合系列16之 Set架构
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-05 07:58:00
 ---
-# Java 集合系列16之 Set架构
-
 >接下来主要学习Set。由于Set的很多实现都是就与Map来实现的，前面通过对Map的了解之后，相对来说比较好学习
 >
 >下图是Set架构
@@ -18,4 +21,3 @@ abbrlink: 14
 >​	LinkedHashSet是继承于HashSet，主要是保证元素按照插入的顺序存储
 >
 >
-

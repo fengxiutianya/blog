@@ -1,10 +1,9 @@
 abbrlink: 22
 title: java 注解 01：基本介绍以及用法
 tags:
-  - java
+  - 注解
 categories:
   - java
-  - 注解
 author: fengxiutianya
 date: 2019-03-04 07:20:00
 ---

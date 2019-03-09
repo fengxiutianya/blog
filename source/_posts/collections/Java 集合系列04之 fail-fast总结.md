@@ -1,7 +1,16 @@
+title: Java 集合系列04之 fail-fast总结
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 10:12:00
+---
+
+---
 abbrlink: 2
 title: Fail-fast
-date: 2019-03-04 08:18:21
----
+date: 2019-03-04 13:18:21
+
 ### 概要
 
 前面已经讲解了Arraylist，但是留下了一个知识点没有说明，Iterator的fail-fast机制。本篇博客主要讲解一下这个机制。

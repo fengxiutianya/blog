@@ -1,5 +1,10 @@
----
 abbrlink: 4
+title: Java 集合系列03之ArrayList源码解析和使用示例
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 12:09:00
 ---
 ### 概要
 

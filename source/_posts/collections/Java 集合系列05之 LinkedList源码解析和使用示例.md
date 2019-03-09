@@ -1,5 +1,10 @@
----
 abbrlink: 7
+title: Java 集合系列05之 LinkedList源码解析和使用示例
+tags:
+  - 集合
+categories:
+  - java
+date: 2019-03-04 14:20:00
 ---
 ## 概要
 
