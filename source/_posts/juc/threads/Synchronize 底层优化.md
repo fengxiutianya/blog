@@ -1,13 +1,14 @@
 abbrlink: 21
 title: Synchronize 底层优化
 tags:
-  - java
-categories:
+  - jvm
   - Synchronize
-  - java 并发
+  - 并发
+categories:
+  - java
   - ''
 author: fengxiutianya
-date: 2019-03-01 01:55:00
+date: 2019-02-28 09:55:00
 ---
 # Synchronize 底层优化
 

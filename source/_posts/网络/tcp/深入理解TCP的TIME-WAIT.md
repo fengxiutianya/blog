@@ -5,7 +5,6 @@ categories:
   - 网络
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # 深入理解TCP的TIME-WAIT
 
@@ -14,6 +13,7 @@ date: 2019-03-10 08:23:00
 `time wait` 是 tcp connection 的状态之一，进入这个状态的原因只有一种：主动关闭 connection （active close）。
 
 与其相对的是 `close wait` 状态，进入该状态是由于被动关闭 connection（passive close），也就是说接收到了对方的 `FIN` 信号（并且发出了自己的 `ACK` 信号）。
+<!-- more -->
 
 ## 为什么Time Wait 要等待2MSL
 

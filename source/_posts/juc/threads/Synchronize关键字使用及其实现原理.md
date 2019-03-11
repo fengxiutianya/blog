@@ -1,12 +1,13 @@
 abbrlink: 20
 title: Synchronize关键字使用及其实现原理
 tags:
-  - java
-categories:
+  - 并发
   - Synchronize
+  - jvm
+categories:
   - java
 author: fengxiutianya
-date: 2019-03-01 01:55:00
+date: 2019-02-28 17:55:00
 ---
 # Synchronize关键字使用及其实现原理
 

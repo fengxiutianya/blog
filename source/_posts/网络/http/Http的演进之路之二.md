@@ -5,7 +5,6 @@ categories:
 title: Http的演进之路之二
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # Http的演进之路之二
 
@@ -21,6 +20,7 @@ date: 2019-03-10 08:23:00
 - Chunked编码传输
 - 更全面的Cache机制
 - 引入OPTIONS, PUT, DELETE, TRACE和CONNECT方法
+<!-- more -->
 
 ## keep-alive
 

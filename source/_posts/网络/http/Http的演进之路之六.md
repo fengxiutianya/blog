@@ -5,7 +5,6 @@ categories:
   - 网络
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # Http的演进之路之六
 
@@ -16,6 +15,7 @@ date: 2019-03-10 08:23:00
 鉴于SPDY的成功，HTTP/2的开发计划也呼之欲出并且众望所归的采用了SPDY作为整个方案的蓝图进行开发。由[IETF](http://link.zhihu.com/?target=https%3A//www.ietf.org/)推动，Google等公司重点参与并于2015年3月公布了[草案](http://link.zhihu.com/?target=http%3A//http2.github.io/http2-spec/)。其最终RFC可以参考[这里](http://link.zhihu.com/?target=https%3A//tools.ietf.org/html/rfc7540)。
 
 ![upload successful](/images/pasted-266.png)
+<!-- more -->
 
 ## 与SPDY的差异
 
