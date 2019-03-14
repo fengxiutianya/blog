@@ -5,14 +5,13 @@ categories:
 title: 一致性hash
 date: 2019-03-11 02:40:00
 ---
-
 ---
 # 一致性hash
 
 首先我们通过一个例子看看普通的hash算法在应用中有哪些不足，最后来讲解本文重点要讲解的问题，一致性hash。
 
 我们在使用Redis的时候，为了保证Redis的高可用，提高Redis的读写性能，最简单的方式我们会做主从复制，组成Master-Master或者Master-Slave的形式，或者搭建Redis集群，进行数据的读写分离，类似于数据库的主从复制和读写分离。如下所示：
-
+<!-- more -->
 ![upload successful](/images/pasted-271.png)
 
 同样类似于数据库，当单表数据大于500W的时候需要对其进行分库分表，当数据量很大的时候（标准可能不一样，要看Redis服务器容量）我们同样可以对Redis进行类似的操作，就是分库分表。
@@ -101,4 +100,3 @@ date: 2019-03-11 02:40:00
 1. [面试必备：什么是一致性Hash算法？](https://zhuanlan.zhihu.com/p/34985026)
 2.  [一致性哈希算法原理](https://www.cnblogs.com/lpfuture/p/5796398.html)
 3. [每天进步一点点——五分钟理解一致性哈希算法(consistent hashing)](https://blog.csdn.net/cywosp/article/details/23397179)
-
