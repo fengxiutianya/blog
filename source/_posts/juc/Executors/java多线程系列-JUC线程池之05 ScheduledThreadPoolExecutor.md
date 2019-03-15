@@ -6,9 +6,9 @@ tags:
 categories:
   - java
   - ''
+abbrlink: 3f86c9f8
 date: 2019-03-08 07:23:00
 ---
-
 ---
 # java多线程系列-JUC线程池之05 ScheduledThreadPoolExecutor
 
@@ -20,7 +20,7 @@ date: 2019-03-08 07:23:00
 - 如果在执行任务期间某个TimerTask耗时较久，那么就会影响其它任务的调度；
 - Timer的任务调度是基于绝对时间的，对系统时间敏感；
 - Timer不会捕获执行TimerTask时所抛出的异常，由于Timer是单线程，所以一旦出现异常，则线程就会终止，其他任务也得不到执行。
-
+<!-- more -->
 ScheduledThreadPoolExecutor继承ThreadPoolExecutor来重用线程池的功能，它的实现方式如下：
 
 - 将任务封装成ScheduledFutureTask对象，ScheduledFutureTask基于相对时间，不受系统时间的改变所影响；

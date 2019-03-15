@@ -18,7 +18,7 @@ date: 2018-07-13 16:50:00
 ### ThreadLocal 介绍
 
 >ThreadLocal提供了线程本地变量，它可以保证访问到的变量属于当前线程，每个线程都保存有一个变量副本，每个线程的变量都不同，而同一个线程在任何时候访问这个本地变量的结果都是一致的。当此线程结束生命周期时，所有的线程本地实例都会被GC。ThreadLocal相当于提供了一种线程隔离，将变量与线程相绑定。ThreadLocal通常定义为`private static`类型。
-
+<!-- more -->
 ### 2. 基本用法
 
 >```
@@ -139,8 +139,3 @@ date: 2018-07-13 16:50:00
 [ThreadLocal 内存泄露的实例分析](http://www.importnew.com/22046.html)
 
 [ThreadLocal内存泄露](http://www.importnew.com/22480.html)
-
-
-
-
-

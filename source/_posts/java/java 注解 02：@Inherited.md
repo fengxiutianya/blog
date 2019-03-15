@@ -24,6 +24,8 @@ public @interface BatchExec {
 }
 ```
 
+<!-- more -->
+
 2、被注解的父类
 
 ```java

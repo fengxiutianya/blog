@@ -1,8 +1,10 @@
+---
 title: Spring Boot 实现一个简单的自动配置模块
 tags:
   - springboot
 categories:
   - spring
+abbrlink: 62b625fe
 date: 2019-03-11 06:46:00
 ---
 

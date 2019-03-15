@@ -18,6 +18,8 @@ date: 2019-03-04 07:20:00
 3. Annotation 基本语法和java自带注解介绍
 4. Annotation 的作用
 
+<!-- more -->
+
 ###  **Annotation架构**
 
 下面是Annotation整体的架构图，如果你对这个图感到迷惑，可以跳过这一节直接看Annotation的基本语法，然后回来再看。

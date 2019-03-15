@@ -20,6 +20,8 @@ date: 2019-03-04 14:20:00
 6. LinkedList遍历方式
 7. LinkedList使用示例
 
+<!-- more -->
+
 ## 1. LinkedList介绍
 
 >LinkedList的类图如下

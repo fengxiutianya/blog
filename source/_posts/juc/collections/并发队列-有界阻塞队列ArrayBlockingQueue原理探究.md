@@ -1,3 +1,4 @@
+---
 title: 并发队列-有界阻塞队列ArrayBlockingQueue原理探究
 tags:
   - juc
@@ -5,6 +6,7 @@ tags:
   - ''
 categories:
   - java
+abbrlink: 5fda9009
 date: 2019-03-06 19:05:00
 ---
 ---

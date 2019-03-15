@@ -1,8 +1,10 @@
+---
 tags:
   - hash
 categories:
   - 分布式
 title: 一致性hash
+abbrlink: 5cd14851
 date: 2019-03-11 02:40:00
 ---
 ---

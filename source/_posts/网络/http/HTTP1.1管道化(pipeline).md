@@ -4,6 +4,7 @@ tags:
 categories:
   - 网络
   - http
+abbrlink: 6fbc205f
 date: 2019-03-10 14:46:00
 ---
 ---
@@ -15,7 +16,7 @@ pipeline机制是在**一条connection**上多个http request不需要等待resp
 
 采用管道和不采用管道的请求如下图
 
-![](https://taolove.top/images/pasted-219.png)
+![](/images/pasted-219.png)
 
 从上图中可以看出，在使用pipeline机制后，客户端无需等待上一个资源返回后就可以在同一条连接上申请下一个资源。由此可见pipeline技术可以提高每条connection的使用效率，在理想情况下，所有资源的获取仅仅需要一个RTT时长（Round Trip Time），而非pipeline的情况下，所有资源获取需要N个RTT时长（N表示资源个数）。
 

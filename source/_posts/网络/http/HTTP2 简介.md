@@ -1,3 +1,4 @@
+---
 title: HTTP/2 简介
 tags:
   - http
@@ -5,6 +6,7 @@ categories:
   - 网络
   - http
   - http2
+abbrlink: '9568466'
 date: 2019-03-10 00:35:00
 ---
 ---

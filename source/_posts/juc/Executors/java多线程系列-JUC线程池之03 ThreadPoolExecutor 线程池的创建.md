@@ -29,7 +29,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 
 ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler)
 ```
-
+<!-- more -->
 虽然其提供了四个构造函数，但是前三个都是在调用最后一个来创建。下面来解释一下上面每个参数的意思
 
 1. corePoolSize:核心线程池的大小
@@ -156,4 +156,3 @@ public static ExecutorService newSingleThreadExecutor() {
 >2. **CallerRunsPolicy** ：当任务添加到线程池中被拒绝时，会在调用execute方法的Thread线程中处理被拒绝的任务，也就是当前运行在cpu上的线程中执行，会阻塞当前正在运行的线程。
 >3. **DiscardOldestPolicy** ： 当任务添加到线程池中被拒绝时，线程池会放弃等待队列中最旧的未处理任务，然后将被拒绝的任务添加到等待队列中。
 >4. **DiscardPolicy**   ：当任务添加到线程池中被拒绝时，线程池将丢弃被拒绝的任务。
-

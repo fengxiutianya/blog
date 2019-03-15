@@ -1,11 +1,12 @@
+---
 tags:
   - http
 categories:
   - 网络
 title: Http的演进之路之一
+abbrlink: e3e09015
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # Http的演进之路之一
 
@@ -21,6 +22,7 @@ date: 2019-03-10 08:23:00
 
 HTTP(HyperText Transfer Protocol)是万维网（World Wide Web）的基础协议，她制定了浏览器与服务器之间的通讯规则，她由Berners-Lee和他的团队在1989-1991年期间开发完成，至今共经历了3个版本的演化。
 
+<!-- more -->
 ## **HTTP/0.9**
 
 HTTP问世之初并没有作为标准建立，被正式制定为标准是在1996年公布的HTTP/1.0协议。因此，在这之前的协议被称为HTTP/0.9
@@ -129,22 +131,3 @@ Connection: keep-alive
 ```
 
 同样，服务器端也会答复一个相同的信息表示连接仍然有效。这样，后面的请求就可以复用该条连接了，只可惜该条信息此时没有加入到标准中，而是一种自定义行为。HTTP/1.0的[RFC1945](http://link.zhihu.com/?target=https%3A//tools.ietf.org/html/rfc1945)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

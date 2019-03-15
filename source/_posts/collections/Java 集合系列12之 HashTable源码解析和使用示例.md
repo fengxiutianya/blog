@@ -16,6 +16,8 @@ date: 2019-03-04 21:58:00
 >3. HashTable遍历方式
 >4. HashTable示例
 
+<!-- more -->
+
 ### 1. HashTable介绍
 
 >HashTable是一个散列表，和HashMap类似。他存储的内容是键值对(key-value)映射。

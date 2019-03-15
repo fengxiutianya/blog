@@ -15,6 +15,8 @@ date: 2019-03-04 20:58:00
 >3. LinkedHashMap遍历方式
 >4. LinkedHashMap 使用示例
 
+<!-- more -->
+
 ### 1. LinkedHashMap 介绍
 
 >LinkedHashMap 是一个散列表，存储的内容是键值对(key-value)映射。

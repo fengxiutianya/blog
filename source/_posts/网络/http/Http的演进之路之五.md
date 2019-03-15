@@ -3,9 +3,9 @@ tags:
   - http
 categories:
   - 网络
+abbrlink: cb0c26ea
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # Http的演进之路之五
 
@@ -14,6 +14,7 @@ date: 2019-03-10 08:23:00
 ## **SPDY**
 
 在上面的章节中我们介绍了HTTP协议的一些特点，包括长连接、pipeline、并行连接等。2012年Google推出了SPDY（speedy，翻译为“快速的”）协议，旨在根本上解决HTTP协议中存在的一些问题、提升HTTP的传输效率。而随后诞生的HTTP/2也继承了SPDY的很多特性。因此，在介绍HTTP/2之前，有必要先简单了解一下SPDY的基本特征。首先，我们看一下SPDY的协议栈。由下图可见，SPDY位于HTTP和SSL之间，它属于应用层协议，当发现对端不支持SPDY的情况下，仍然可以延用HTTP/HTTPS协议，因此它可以最大程度的兼容HTTP协议。
+<!-- more -->
 
 ![upload successful](/images/pasted-254.png)
 

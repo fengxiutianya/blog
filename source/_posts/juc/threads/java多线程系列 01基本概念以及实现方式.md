@@ -21,6 +21,8 @@ date: 2018-07-11 16:12:00
 
 ![](https://images0.cnblogs.com/blog/497634/201312/18152411-a974ea82ebc04e72bd874c3921f8bfec.jpg)
 
+<!-- more -->
+
 **说明**：
 线程共包括以下5种状态。
 

@@ -1,3 +1,4 @@
+---
 title: spring源码分析之 05获取Document对象
 tags:
   - spring源码解析
@@ -5,6 +6,7 @@ tags:
 categories:
   - spring
 author: fengxiutianya
+abbrlink: dd7af934
 date: 2019-01-14 04:52:00
 ---
 # spring源码解析之 05获取Document对象

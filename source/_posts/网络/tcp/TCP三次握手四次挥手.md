@@ -4,9 +4,9 @@ tags:
 categories:
   - 网络
   - ''
+abbrlink: f8c819ed
 date: 2019-03-09 04:33:00
 ---
-
 ---
 # TCP之三次握手四次挥手
 
@@ -25,6 +25,7 @@ TCP提供一种面向连接的，可靠的字节流服务。
 TCP首部的数据格式如下。（如果不计任选字段，通常是20个字节）
 
 ![upload successful](/images/pasted-177.png)
+<!-- more -->
 
 ### 字段分析
 

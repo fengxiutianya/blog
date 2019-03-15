@@ -1,8 +1,10 @@
+---
 title: Http的演进之路之六
 tags:
   - http
 categories:
   - 网络
+abbrlink: cd15eee9
 date: 2019-03-10 08:23:00
 ---
 ---

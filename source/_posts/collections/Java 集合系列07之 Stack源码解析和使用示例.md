@@ -1,8 +1,10 @@
+---
 title: Java 集合系列07之 Stack源码解析和使用示例
 tags:
   - 集合
 categories:
   - java
+abbrlink: ab3cc2a5
 date: 2019-03-04 15:41:00
 ---
 
@@ -15,6 +17,8 @@ date: 2019-03-04 15:41:00
 
 1. Stack 介绍
 2. Stack 源码解析
+
+<!-- more -->
 
 ### 1. Stack介绍
 

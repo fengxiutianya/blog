@@ -1,8 +1,10 @@
+---
 title: 'Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)'
 tags:
   - 集合
 categories:
   - java
+abbrlink: e23e1ac6
 date: 2019-03-04 17:39:00
 ---
 
@@ -12,6 +14,8 @@ date: 2019-03-04 17:39:00
 2. list使用场景
 3. ArrayList和LinkedList性能分析
 4. vector和ArrayList对比
+
+<!-- more -->
 
 ## 1. List概括
 

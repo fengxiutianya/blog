@@ -1,8 +1,10 @@
+---
 tags:
   - http
 categories:
   - 网络
 title: Http的演进之路之二
+abbrlink: d860bebc
 date: 2019-03-10 08:23:00
 ---
 ---

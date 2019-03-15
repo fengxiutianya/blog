@@ -1,3 +1,4 @@
+---
 title: 并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究
 tags:
   - 并发队列
@@ -5,6 +6,7 @@ tags:
 categories:
   - java
 author: fengxiutianya
+abbrlink: a75f3158
 date: 2019-03-06 19:07:00
 ---
 ---

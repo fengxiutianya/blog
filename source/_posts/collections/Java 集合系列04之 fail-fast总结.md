@@ -1,8 +1,10 @@
+---
 title: Java 集合系列04之 fail-fast总结
 tags:
   - 集合
 categories:
   - java
+abbrlink: 6ad3883
 date: 2019-03-04 10:12:00
 ---
 

@@ -1,8 +1,10 @@
+---
 title: 深入理解TCP的TIME-WAIT
 tags:
   - tcp
 categories:
   - 网络
+abbrlink: dcf09bf2
 date: 2019-03-10 08:23:00
 ---
 ---

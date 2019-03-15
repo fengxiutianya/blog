@@ -19,6 +19,8 @@ date: 2018-07-13 11:08:00
 >6. sleep()介绍与使用
 >7. sleep() 与 wait()的比较
 
+<!-- more -->
+
 ### 1. wait(), notify(), notifyAll()等方法介绍
 
 >在Object类中，定义了wait(), notify()和notifyAll()等接口。

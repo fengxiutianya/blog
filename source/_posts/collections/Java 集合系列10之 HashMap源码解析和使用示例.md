@@ -16,6 +16,8 @@ date: 2019-03-04 19:50:00
 3. HashMap遍历方式
 4. HashMap使用示例
 
+<!-- more -->
+
 ### 1. HashMap介绍
 
 >HashMap简介

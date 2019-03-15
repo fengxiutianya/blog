@@ -1,8 +1,10 @@
+---
 title: Java 集合系列09之 Map架构
 tags:
   - 集合
 categories:
   - java
+abbrlink: 719892b8
 date: 2019-03-04 17:40:00
 ---
 
@@ -21,6 +23,8 @@ date: 2019-03-04 18:18:02
 ![upload successful](/images/pasted-161.png)
 
 如上图：
+
+<!-- more -->
 
 1. Map 是**映射 接口**，Map中存储的内容是**键值对(key-value)**。
 2.  AbstractMap 是**继承于Map的抽象类，它实现了Map中的大部分API**。其它Map的实现类可以通过继承AbstractMap来减少重复编码。

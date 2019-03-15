@@ -15,10 +15,12 @@ timezone: Asia/Shanghai
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
 url: https://taolove.top
 root: /
-permalink: :year/:month/:day/:title/
-# permalink: posts/:abbrlink/
+# permalink: :year/:month/:day/:title/
+permalink: posts/:abbrlink/
 permalink_defaults:
-
+abbrlink:
+  alg: crc32 #support crc16(default) and crc32
+  rep: hex #support dec(default) and hex
 # Directory
 source_dir: source
 public_dir: public

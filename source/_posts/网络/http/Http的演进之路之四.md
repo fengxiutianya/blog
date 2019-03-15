@@ -3,9 +3,9 @@ tags:
 categories:
   - 网络
 title: Http的演进之路之四
+abbrlink: d6ee44af
 date: 2019-03-10 08:23:00
 ---
-
 ---
 # Http的演进之路之四
 
@@ -16,6 +16,7 @@ date: 2019-03-10 08:23:00
 ## 同源策略与跨域访问
 
 同源策略（Same-Origin Policy）是浏览器访问网页过程中最基础的安全策略。它仍然是由大名鼎鼎的网景公司提出的（网景公司对HTTP、SSL等协议的制定做出了巨大贡献，只是在随后的浏览器大战中输给了以垄断见长的微软IE）。所谓“同源”是指浏览器访问目标url的域名（domain）、协议（protocol）、端口（port）这三个要素是相同的。所谓“同源策略”是指A页面里的脚本通过[XHR](http://link.zhihu.com/?target=https%3A//developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)和[Fetch](http://link.zhihu.com/?target=https%3A//developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)等方式加载B页面资源时，如果发现B页面与A页面不是“同源”的，则会禁止访问（准确的说是对跨域请求的返回结果进行屏蔽）。下图显示了一个由script发出的非同源请求，数据最终会在browser端被屏蔽。
+<!-- more -->
 
 ![upload successful](/images/pasted-241.png)
 

@@ -14,6 +14,8 @@ date: 2019-03-04 22:58:00
 >3. TreeMap遍历方式
 >4. TreeMap示例
 
+<!-- more -->
+
 ### 1. TreeMap介绍
 
 >TreeMap 是一个**有序的key-value集合**，它是通过红黑树实现的。

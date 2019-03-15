@@ -15,6 +15,8 @@ date: 2017-12-23 19:31:00
 
 这里就不仔细说迭代器这种设计模式，因为我们主要的目的是探索 java 中 Iterator 和 Iterable 之间的区别
 
+<!-- more -->
+
 ### 用法
 
 首先来说一下他们各自是怎么使用，不会用谈什么都是瞎搞。
@@ -157,11 +159,11 @@ java.util.Iterator
 
    这并不是没有道理的。
 
-   ​ 因为 Iterator 接口的核心方法 next()或者 hasNext() 是依赖于迭代器的当前迭代位置的。
+    因为 Iterator 接口的核心方法 next()或者 hasNext() 是依赖于迭代器的当前迭代位置的。
 
    如果 Collection 直接实现 Iterator 接口，势必导致集合对象中包含当前迭代位置的数据(指针)。
 
-   ​ 当集合在不同方法间被传递时，由于当前迭代位置不可预置，那么 next()方法的结果会变成不可预知。 除非再为 Iterator 接口添加一个 reset()方法，用来重置当前迭代位置。 但即时这样，Collection 也只能同时存在一个当前迭代位置。
+    当集合在不同方法间被传递时，由于当前迭代位置不可预置，那么 next()方法的结果会变成不可预知。 除非再为 Iterator 接口添加一个 reset()方法，用来重置当前迭代位置。 但即时这样，Collection 也只能同时存在一个当前迭代位置。
 
    而 Iterable 则不然，每次调用都会返回一个从头开始计数的迭代器。
 
@@ -240,15 +242,15 @@ java.util.Iterator
    }
 ```
 
-​ 对于上述的代码不难看懂，有点疑惑的是 int expectedModCount = modCount;这句代码
+ 对于上述的代码不难看懂，有点疑惑的是 int expectedModCount = modCount;这句代码
 
-​其实这是集合迭代中的一种**快速失败**机制，这种机制提供迭代过程中集合的安全性。阅读源码​ 就可以知道 ArrayList 中存在 modCount 对象，增删操作都会使 modCount++，通过两者的对比​ 迭代器可以快速的知道迭代过程中是否存在 list.add()类似的操作，存在的话快速失败!
+其实这是集合迭代中的一种**快速失败**机制，这种机制提供迭代过程中集合的安全性。阅读源码​ 就可以知道 ArrayList 中存在 modCount 对象，增删操作都会使 modCount++，通过两者的对比​ 迭代器可以快速的知道迭代过程中是否存在 list.add()类似的操作，存在的话快速失败!
 
 ## Fail-Fast(快速失败)机制
 
 仔细观察上述的各个方法，我们在源码中就会发现一个特别的属性 modCount，API 解释如下：
 
-​ The number of times this list has been structurally modified. Structural modifications are those​ that change the size of the list, or otherwise perturb it in such a fashion that iterations in progress​ may yield incorrect results.
+ The number of times this list has been structurally modified. Structural modifications are those​ that change the size of the list, or otherwise perturb it in such a fashion that iterations in progress​ may yield incorrect results.
 
 记录修改此列表的次数：包括改变列表的结构，改变列表的大小，打乱列表的顺序等使正在进行 迭代产生 错误的结果。
 
@@ -260,12 +262,12 @@ Tips:仅仅设置元素的值并不是结构的修改
 
 ## 迭代器的好处
 
-​ 通过上述我们明白了迭代是到底是个什么，迭代器的使用也十分的简单。现在简要的总结下使用迭代器的好处吧。
+ 通过上述我们明白了迭代是到底是个什么，迭代器的使用也十分的简单。现在简要的总结下使用迭代器的好处吧。
 
-​ **1、迭代器可以提供统一的迭代方式。**
+ **1、迭代器可以提供统一的迭代方式。**
 
 **​ 2、 迭代器也可以在对客户端透明的情况下，提供各种不同的迭代方式。**
 
-​ **3、迭代器提供一种快速失败机制，防止多线程下迭代的不安全操作。**
+ **3、迭代器提供一种快速失败机制，防止多线程下迭代的不安全操作。**
 
-​ 不过对于第三点尚需注意的是：就像上述事例代码一样，我们不能保证迭代过程中出现**快速失败**的都是因为同步造成的，因此为了保证迭代操作的正确性而去依赖此类异常是错误的！
+ 不过对于第三点尚需注意的是：就像上述事例代码一样，我们不能保证迭代过程中出现**快速失败**的都是因为同步造成的，因此为了保证迭代操作的正确性而去依赖此类异常是错误的！

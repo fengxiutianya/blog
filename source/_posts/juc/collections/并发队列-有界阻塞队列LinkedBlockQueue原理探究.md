@@ -4,9 +4,9 @@ tags:
   - 并发队列
 categories:
   - java
+abbrlink: ff534434
 date: 2019-03-06 11:05:00
 ---
-
 ---
 # 并发队列-有界阻塞队列LinkedBlockingQueue原理探究
 
@@ -16,6 +16,7 @@ LinkedBlockingQueue是一个单向链表实现的阻塞队列。该队列按 FIF
 
 1. LinkedBlockingQueue简介
 2. LinkedBlockingQueue源码分析
+<!-- more -->
 
 ## 1. LinkedBlockingQueue简介
 
