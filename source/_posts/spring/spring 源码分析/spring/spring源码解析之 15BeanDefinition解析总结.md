@@ -11,14 +11,14 @@ date: 2019-01-14 06:19:00
 
 前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。
 
-在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition 的载入和解析，BeanDefinition 注册。
+在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition的解析，BeanDefinition 注册。
 <!-- more-->
 
 ![upload successful](/images/pasted-11.png)
 
 - **Resource 定位**。我们一般用外部资源来描述 Bean 对象，所以在初始化 IOC 容器的第一步就是需要定位这个外部资源。
-- **BeanDefinition 的载入和解析**。装载就是 BeanDefinition 的载入。BeanDefinitionReader 读取、解析 Resource 资源，也就是将用户定义的 Bean 表示成 IOC 容器的内部数据结构：BeanDefinition。在 IOC 容器内部维护着一个 BeanDefinition Map 的数据结构，在配置文件中每一个都对应着一个BeanDefinition对象。
-- **BeanDefinition 注册**。向IOC容器注册在第二步解析好的 BeanDefinition，这个过程是通过 BeanDefinitionRegistery 接口来实现的。在 IOC 容器内部其实是将第二个过程解析得到的 BeanDefinition 注入到一个 HashMap 容器中，IOC 容器就是通过这个 HashMap 来维护这些 BeanDefinition 的。在这里需要注意的一点是这个过程并没有完成依赖注入，依赖注册是发生在应用第一次调用 `getBean()` 向容器索要 Bean 时。当然我们可以通过设置预处理，即对某个 Bean 设置 lazyinit 属性，那么这个 Bean 的依赖注入就会在容器初始化的时候完成。
+- **BeanDefinition 解析:**。装载就是 BeanDefinition 的载入。BeanDefinitionReader 读取、解析 Resource 资源，也就是将用户定义的 Bean 表示成 IOC 容器的内部数据结构：BeanDefinition。在 IOC 容器内部维护着一个 BeanDefinition Map 的数据结构，在配置文件中每一个都对应着一个BeanDefinition对象。
+- **BeanDefinition 注册:**向IOC容器注册在第二步解析好的 BeanDefinition，这个过程是通过 BeanDefinitionRegistery 接口来实现的。在 IOC 容器内部其实是将第二个过程解析得到的 BeanDefinition 注入到一个 HashMap 容器中，IOC 容器就是通过这个 HashMap 来维护这些 BeanDefinition 的。在这里需要注意的一点是这个过程并没有完成依赖注入，依赖注册是发生在应用第一次调用 `getBean()` 向容器索要 Bean 时。当然我们可以通过设置预处理，即对某个 Bean 设置 lazyinit 属性，那么这个 Bean 的依赖注入就会在容器初始化的时候完成。
 
 还记得在博客[spring 源码解析之 04加载bean](https://taolove.top/posts/23/) 中提供的一段代码吗？这里我们同样也以这段代码作为我们研究 IOC 初始化过程的开端，如下：
 
@@ -51,26 +51,26 @@ Resource 资源的定位需要 Resource 和 ResourceLoader 两个接口互相配
 直接调用父类 AbstractBeanDefinitionReader ：
 
 ```java
-    protected AbstractBeanDefinitionReader(BeanDefinitionRegistry registry) {
-        Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
-        this.registry = registry;
+protected AbstractBeanDefinitionReader(BeanDefinitionRegistry registry) {
+    Assert.notNull(registry, "BeanDefinitionRegistry must not be null");
+    this.registry = registry;
 
-        // Determine ResourceLoader to use.
-        if (this.registry instanceof ResourceLoader) {
-            this.resourceLoader = (ResourceLoader) this.registry;
-        }
-        else {
-            this.resourceLoader = new PathMatchingResourcePatternResolver();
-        }
-
-        // Inherit Environment if possible
-        if (this.registry instanceof EnvironmentCapable) {
-            this.environment = ((EnvironmentCapable) this.registry).getEnvironment();
-        }
-        else {
-            this.environment = new StandardEnvironment();
-        }
+    // Determine ResourceLoader to use.
+    if (this.registry instanceof ResourceLoader) {
+        this.resourceLoader = (ResourceLoader) this.registry;
     }
+    else {
+        this.resourceLoader = new PathMatchingResourcePatternResolver();
+    }
+
+    // Inherit Environment if possible
+    if (this.registry instanceof EnvironmentCapable) {
+        this.environment = ((EnvironmentCapable) this.registry).getEnvironment();
+    }
+    else {
+        this.environment = new StandardEnvironment();
+    }
+}
 ```
 
 核心在于设置 resourceLoader 这段，如果设置了 ResourceLoader 则用设置的，否则使用 PathMatchingResourcePatternResolver ，该类是一个集大成者的 ResourceLoader。
@@ -80,36 +80,37 @@ Resource 资源的定位需要 Resource 和 ResourceLoader 两个接口互相配
 `reader.loadBeanDefinitions(resource);` 开启 BeanDefinition 的解析过程。如下：
 
 ```java
-    public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
-        return loadBeanDefinitions(new EncodedResource(resource));
-    }
+public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+    return loadBeanDefinitions(new EncodedResource(resource));
+}
 ```
 
 在这个方法会将资源 resource 包装成一个 EncodedResource 实例对象，然后调用 `loadBeanDefinitions()` 方法，而将 Resource 封装成 EncodedResource 主要是为了对 Resource 进行编码，保证内容读取的正确性。
 
 ```java
-   public int loadBeanDefinitions(EncodedResource encodedResource) throws BeanDefinitionStoreException {
-        // 省略一些代码
+public int loadBeanDefinitions(EncodedResource encodedResource) 
+    throws BeanDefinitionStoreException {
+    // 省略一些代码
+    try {
+        // 将资源文件转为 InputStream 的 IO 流
+        InputStream inputStream = encodedResource.getResource().getInputStream();
         try {
-            // 将资源文件转为 InputStream 的 IO 流
-            InputStream inputStream = encodedResource.getResource().getInputStream();
-            try {
-                // 从 InputStream 中得到 XML 的解析源
-                InputSource inputSource = new InputSource(inputStream);
-                if (encodedResource.getEncoding() != null) {
-                    inputSource.setEncoding(encodedResource.getEncoding());
-                }
+            // 从 InputStream 中得到 XML 的解析源
+            InputSource inputSource = new InputSource(inputStream);
+            if (encodedResource.getEncoding() != null) {
+                inputSource.setEncoding(encodedResource.getEncoding());
+            }
 
-                // 具体的读取过程
-                return doLoadBeanDefinitions(inputSource, 
-                                             encodedResource.getResource());
-            }
-            finally {
-                inputStream.close();
-            }
+            // 具体的读取过程
+            return doLoadBeanDefinitions(inputSource, 
+                                         encodedResource.getResource());
         }
-        // 省略一些代码
+        finally {
+            inputStream.close();
+        }
     }
+    // 省略一些代码
+}
 ```
 
 从 encodedResource 源中获取 xml 的解析源，调用 `doLoadBeanDefinitions()` 执行具体的解析过程。
@@ -352,47 +353,47 @@ Resource 资源的定位需要 Resource 和 ResourceLoader 两个接口互相配
 调用 `BeanDefinitionReaderUtils.registerBeanDefinition()` 注册，其实这里面也是调用 BeanDefinitionRegistry 的 `registerBeanDefinition()`来注册 BeanDefinition ，不过最终的实现是在 DefaultListableBeanFactory 中实现，如下：
 
 ```java
-    @Override
-    public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
-            throws BeanDefinitionStoreException {
+@Override
+public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+    throws BeanDefinitionStoreException {
 
-      // 省略一堆校验
+    // 省略一堆校验
 
-        BeanDefinition oldBeanDefinition;
+    BeanDefinition oldBeanDefinition;
 
-        oldBeanDefinition = this.beanDefinitionMap.get(beanName);
-          // 省略一堆 if
+    oldBeanDefinition = this.beanDefinitionMap.get(beanName);
+    // 省略一堆 if
+    this.beanDefinitionMap.put(beanName, beanDefinition);
+}
+else {
+    if (hasBeanCreationStarted()) {
+        // Cannot modify startup-time collection elements anymore (for stable iteration)
+        synchronized (this.beanDefinitionMap) {
             this.beanDefinitionMap.put(beanName, beanDefinition);
-        }
-        else {
-            if (hasBeanCreationStarted()) {
-                // Cannot modify startup-time collection elements anymore (for stable iteration)
-                synchronized (this.beanDefinitionMap) {
-                    this.beanDefinitionMap.put(beanName, beanDefinition);
-                    List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
-                    updatedDefinitions.addAll(this.beanDefinitionNames);
-                    updatedDefinitions.add(beanName);
-                    this.beanDefinitionNames = updatedDefinitions;
-                    if (this.manualSingletonNames.contains(beanName)) {
-                        Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
-                        updatedSingletons.remove(beanName);
-                        this.manualSingletonNames = updatedSingletons;
-                    }
-                }
+            List<String> updatedDefinitions = new ArrayList<>(this.beanDefinitionNames.size() + 1);
+            updatedDefinitions.addAll(this.beanDefinitionNames);
+            updatedDefinitions.add(beanName);
+            this.beanDefinitionNames = updatedDefinitions;
+            if (this.manualSingletonNames.contains(beanName)) {
+                Set<String> updatedSingletons = new LinkedHashSet<>(this.manualSingletonNames);
+                updatedSingletons.remove(beanName);
+                this.manualSingletonNames = updatedSingletons;
             }
-            else {
-                // Still in startup registration phase
-                this.beanDefinitionMap.put(beanName, beanDefinition);
-                this.beanDefinitionNames.add(beanName);
-                this.manualSingletonNames.remove(beanName);
-            }
-            this.frozenBeanDefinitionNames = null;
-        }
-
-        if (oldBeanDefinition != null || containsSingleton(beanName)) {
-            resetBeanDefinition(beanName);
         }
     }
+    else {
+        // Still in startup registration phase
+        this.beanDefinitionMap.put(beanName, beanDefinition);
+        this.beanDefinitionNames.add(beanName);
+        this.manualSingletonNames.remove(beanName);
+    }
+    this.frozenBeanDefinitionNames = null;
+}
+
+if (oldBeanDefinition != null || containsSingleton(beanName)) {
+    resetBeanDefinition(beanName);
+}
+}
 ```
 
 这段代码最核心的部分是这句 `this.beanDefinitionMap.put(beanName, beanDefinition)` ，所以注册过程也不是那么的高大上，就是利用一个 Map 的集合对象来存放，key 是 beanName，value 是 BeanDefinition。

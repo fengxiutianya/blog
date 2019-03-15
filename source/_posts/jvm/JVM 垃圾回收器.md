@@ -1,13 +1,3 @@
-abbrlink: 23
-title: JVM 垃圾回收器
-tags:
-  - 垃圾回收
-  - ''
-    categories:
-  - JVM
-    author: fengxiutianya
-    date: 2019-03-02 23:20:00
----
 # JVM 垃圾回收器
 
 ## 概述

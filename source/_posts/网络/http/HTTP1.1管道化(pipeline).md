@@ -6,7 +6,6 @@ categories:
   - http
 date: 2019-03-10 14:46:00
 ---
-
 ---
 # HTTP/1.1管道化(pipeline)
 
@@ -23,6 +22,7 @@ pipeline机制是在**一条connection**上多个http request不需要等待resp
 在理想情况下，所有资源的获取仅仅需要一个RTT时长，这看上去是非常大的优化和诱惑，但为何主流浏览器上默认下该功能都是关闭状态呢？答案只有一个：[队头阻塞](http://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Head-of-line_blocking)。我们上面仅看到了client端可以不必等待上一个response返回即可发送下一个request，但在server端必须根据收到的request的顺序来返回response，这个是因为HTTP是一个无状态的协议，每条request无法知道哪条response是返回给他的。
 
 管道化的表现可以大大提高页面加载的速度，尤其是在高延迟连接中。 管道化同样也可以减少tcp/ip的数据包。通常MSS的大小是在536-1460字节，所以将许多个http请求放在一个tcp/ip包 里也是有可能的。减少加载一个网页所需数据包的数量可以在整体上对网络有益处，因为数据包越少，路由器和网络带来的负担就越少。 HTTP/1.1需要服务器也支持管道化。
+<!-- more -->
 
 ## 什么时候我们应该管道化请求
 
@@ -36,4 +36,3 @@ pipeline机制是在**一条connection**上多个http request不需要等待resp
 
 1. [HTTP2学习(三)—关于HTTP/1.1管道化的问答(翻译)](https://imjiaolong.cn/post/http-pipelining.html)
 2. [HTTP Pipeline简单例子](http://910216.com/archives/http_pipeline_note1.html)
-

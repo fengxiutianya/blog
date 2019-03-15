@@ -10,7 +10,7 @@ date: 2019-01-14 05:25:00
 ---
 # spring源码解析之 11bean标签：解析自定义标签
 
-bean标签解析设计太多的知识点，这里我们先看看最开始解析bean的那段代码，回顾一下
+bean标签解析涉及很多的知识点，这里我们先看看最开始解析bean的那段代码，回顾一下
 <!-- more-->
 
 ```java
@@ -47,10 +47,10 @@ bean标签解析设计太多的知识点，这里我们先看看最开始解析b
 当spring中的bean使用的是默认的标签配置，但是其中的子元素却是用了自定义的配置，这句代码便会起作用。
 
 ```java
-    public BeanDefinitionHolder decorateBeanDefinitionIfRequired(Element ele, 
-                                        BeanDefinitionHolder definitionHolder) {
-        return decorateBeanDefinitionIfRequired(ele, definitionHolder, null);
-    }
+public BeanDefinitionHolder decorateBeanDefinitionIfRequired(Element ele, 
+                   BeanDefinitionHolder definitionHolder) {
+    return decorateBeanDefinitionIfRequired(ele, definitionHolder, null);
+}
 ```
 
 调用 `decorateBeanDefinitionIfRequired()` ：
@@ -95,7 +95,8 @@ bean标签解析设计太多的知识点，这里我们先看看最开始解析b
         // 过滤掉默认命名标签
         if (namespaceUri != null && !isDefaultNamespace(namespaceUri)) {
             // 获取相应的处理器
-            NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
+            NamespaceHandler handler = 
+                this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
             if (handler != null) {
                 // 进行装饰处理
                 BeanDefinitionHolder decorated =

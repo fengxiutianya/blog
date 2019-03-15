@@ -7,8 +7,6 @@ categories:
 author: fengxiutianya
 date: 2019-01-14 05:32:00
 ---
-# spring源码解析之 12alias，import标签的解析
-
 ### 概述
 
 1. alias标签解析
@@ -197,28 +195,25 @@ absoluteLocation = ResourcePatternUtils.isUrl(location) || ResourceUtils.toURI(l
     public int loadBeanDefinitions(String location, @Nullable Set<Resource> actualResources) throws BeanDefinitionStoreException {
         ResourceLoader resourceLoader = getResourceLoader();
         if (resourceLoader == null) {
-            throw new BeanDefinitionStoreException(
-                    "Cannot import bean definitions from location [" + location + "]: no ResourceLoader available");
+            。。。。异常
         }
 
         if (resourceLoader instanceof ResourcePatternResolver) {
             // Resource pattern matching available.
             try {
-                Resource[] resources = ((ResourcePatternResolver) resourceLoader).getResources(location);
+                Resource[] resources = 
+                    ((ResourcePatternResolver) resourceLoader).getResources(location);
                 int loadCount = loadBeanDefinitions(resources);
                 if (actualResources != null) {
                     for (Resource resource : resources) {
                         actualResources.add(resource);
                     }
                 }
-                if (logger.isDebugEnabled()) {
-                    logger.debug("Loaded " + loadCount + " bean definitions from location pattern [" + location + "]");
-                }
+              
                 return loadCount;
             }
             catch (IOException ex) {
-                throw new BeanDefinitionStoreException(
-                        "Could not resolve bean definition resource pattern [" + location + "]", ex);
+               。。。省略异常
             }
         }
         else {
@@ -228,8 +223,6 @@ absoluteLocation = ResourcePatternUtils.isUrl(location) || ResourceUtils.toURI(l
             if (actualResources != null) {
                 actualResources.add(resource);
             }
-            if (logger.isDebugEnabled()) {
-                logger.debug("Loaded " + loadCount + " bean definitions from location [" + location + "]");
             }
             return loadCount;
         }

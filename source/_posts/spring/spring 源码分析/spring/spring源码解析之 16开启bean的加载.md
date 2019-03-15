@@ -41,7 +41,7 @@ Spring 在实现上述功能中，将整个流程分为两个阶段：容器初�
 - name：要获取 bean 的名字
 - requiredType：要获取 bean 的类型
 - args：创建 bean 时传递的参数。这个参数仅限于创建 bean 时使用
-- typeCheckOnly：是否为类型检查
+- typeCheckOnly：是否为类型检查,如果为类型检查，可以不创建bean
 
 下面我们对doGetBean进行分析
 
@@ -51,34 +51,31 @@ Spring 在实现上述功能中，将整个流程分为两个阶段：容器初�
 
 ```java
 protected <T> T doGetBean(final String name, @Nullable final Class<T> requiredType,
-                    @Nullable final Object[] args, boolean typeCheckOnly) throws BeansException {
-   // 转换beanName，前面我们已经说过，bean可以有别名，这里就是讲别名转换为beanName
+                    @Nullable final Object[] args, boolean typeCheckOnly) 
+     throws BeansException {
+   // 转换beanName，前面我们已经说过，bean可以有别名，这里就是将别名转换为beanName
    final String beanName = transformedBeanName(name);
+    
    Object bean;
    /**
     * 检查缓存中或者实例工厂中是否有对应的实例
     * 为什么首先会使用这段代码呢 ？
     * 因为在创建单例bean的时候会存在依赖注入的情况，而在创建依赖的时候为了避免循环依赖
-    * spring创建bean的原则是不等bean创建完成就会创建bean的ObjectFactor提早曝光，
+    * spring创建bean的原则是不等bean创建完成就会创建bean的ObjectFactory提早曝光，
     * （ObjectFactory用于产生对象，相当于一个创建特定对象的工厂） 也就是将ObjectFactory
     * 加入到缓存中，一旦下个bean创建时候需要依赖上个bean则直接使用
     * ObjectFactory：返回对应的object，也就是bean
     *
     */
-   // 直接尝试从缓存获取或者singletonFactories中的ObjectFactory中获取
-   // Eagerly check singleton cache for manually registered singletons.
+   // 直接尝试从单例缓存获取或者singletonFactories中的ObjectFactory中获取
    Object sharedInstance = getSingleton(beanName);
 
    if (sharedInstance != null && args == null) {
       if (logger.isTraceEnabled()) {
          if (isSingletonCurrentlyInCreation(beanName)) {
-            logger.trace("Returning eagerly cached instance of singleton bean '" 
-                         + beanName +
-                  "' that is not fully initialized yet - 
-                         a consequence of a circular reference");
+           。。。省略日志
          } else {
-            logger.trace("Returning cached instance of singleton bean '" 
-                         + beanName + "'");
+       		。。。 省略日志 
          }
       }
       // 返回对应的实例，有时候存在诸如FactoryBean的情况并不是直接返回实例本身
@@ -285,19 +282,18 @@ final String beanName = transformedBeanName(name);
 对应代码段如下：
 
 ```java
-        Object sharedInstance = getSingleton(beanName);
-        if (sharedInstance != null && args == null) {
-            if (logger.isDebugEnabled()) {
-                if (isSingletonCurrentlyInCreation(beanName)) {
-                    logger.debug("Returning eagerly cached instance of singleton bean '" + beanName +
-                            "' that is not fully initialized yet - a consequence of a circular reference");
-                }
-                else {
-                    logger.debug("Returning cached instance of singleton bean '" + beanName + "'");
-                }
-            }
-            bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+Object sharedInstance = getSingleton(beanName);
+if (sharedInstance != null && args == null) {
+    if (logger.isDebugEnabled()) {
+        if (isSingletonCurrentlyInCreation(beanName)) {
+            ...省略日志文件
         }
+        else {
+            。。。 省略日志文件
+        }
+    }
+    bean = getObjectForBeanInstance(sharedInstance, name, beanName, null);
+}
 ```
 
 我们知道单例模式的 bean 在整个过程中只会被创建一次，第一次创建后会将该 bean 加载到缓存中，后面在获取 bean 就会直接从单例缓存中获取。如果从缓存中得到了 bean，则需要调用 `getObjectForBeanInstance()` 对 bean 进行实例化处理，因为缓存中记录的是最原始的 bean 状态，我们得到的不一定是我们最终想要的 bean。

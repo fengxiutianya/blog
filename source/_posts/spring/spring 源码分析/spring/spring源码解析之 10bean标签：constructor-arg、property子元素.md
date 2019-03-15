@@ -48,16 +48,16 @@ public class StudentService {
 StudentService 定义一个构造函数，配置文件中使用 constructor-arg 元素对其配置，该元素可以实现对 StudentService 自动寻找对应的构造函数，并在初始化的时候将值当做参数进行设置。`parseConstructorArgElements()` 方法完成 constructor-arg 子元素的解析。
 
 ```java
-    public void parseConstructorArgElements(Element beanEle, BeanDefinition bd) {
-        NodeList nl = beanEle.getChildNodes();
-        for (int i = 0; i < nl.getLength(); i++) {
-            Node node = nl.item(i);
-            if (isCandidateElement(node) &&
-                	nodeNameEquals(node, CONSTRUCTOR_ARG_ELEMENT)) {
-                parseConstructorArgElement((Element) node, bd);
-            }
+public void parseConstructorArgElements(Element beanEle, BeanDefinition bd) {
+    NodeList nl = beanEle.getChildNodes();
+    for (int i = 0; i < nl.getLength(); i++) {
+        Node node = nl.item(i);
+        if (isCandidateElement(node) &&
+            nodeNameEquals(node, CONSTRUCTOR_ARG_ELEMENT)) {
+            parseConstructorArgElement((Element) node, bd);
         }
     }
+}
 ```
 
 遍历所有子元素，如果为 constructor-arg 则调用 `parseConstructorArgElement()` 进行解析。
@@ -154,10 +154,12 @@ StudentService 定义一个构造函数，配置文件中使用 constructor-arg 
 `parsePropertyValue()` 对子元素进一步解析。
 
 ```java
-    public Object parsePropertyValue(Element ele, BeanDefinition bd, @Nullable String propertyName) {
+    public Object parsePropertyValue(Element ele, BeanDefinition bd, 
+                                     @Nullable String propertyName) {
         String elementName = (propertyName != null) ?
                 "<property> element for property '" + propertyName + "'" :
                 "<constructor-arg> element";
+        
 		// 一个属性只能对应一种类型:ref value list等
         NodeList nl = ele.getChildNodes();
         Element subElement = null;
@@ -188,7 +190,8 @@ StudentService 定义一个构造函数，配置文件中使用 constructor-arg 
         if ((hasRefAttribute && hasValueAttribute) ||
                 ((hasRefAttribute || hasValueAttribute) && subElement != null)) {
             error(elementName +
-                    " is only allowed to contain either 'ref' attribute OR 'value' attribute OR sub-element", ele);
+                    " is only allowed to contain either 'ref' attribute OR 'value' 
+                     attribute OR sub-element", ele);
         }
 
         if (hasRefAttribute) {
@@ -204,7 +207,8 @@ StudentService 定义一个构造函数，配置文件中使用 constructor-arg 
         }
         else if (hasValueAttribute) {
             // 解析 value 属性值，构造 TypedStringValue 实例对象
-            TypedStringValue valueHolder = new TypedStringValue(ele.getAttribute(VALUE_ATTRIBUTE));
+            TypedStringValue valueHolder = 
+                new TypedStringValue(ele.getAttribute(VALUE_ATTRIBUTE));
             valueHolder.setSource(extractSource(ele));
             return valueHolder;
         }
@@ -256,86 +260,86 @@ StudentService 定义一个构造函数，配置文件中使用 constructor-arg 
            return parsePropertySubElement(ele, bd, null);
     }
    
-       public Object parsePropertySubElement(Element ele,
-                                             @Nullable BeanDefinition bd,
-                                             @Nullable String defaultValueType) {
-           // 如果不是默认命名空间，则调用自定义解析
-           if (!isDefaultNamespace(ele)) {
-               return parseNestedCustomElement(ele, bd);
+   public Object parsePropertySubElement(Element ele,
+                                         @Nullable BeanDefinition bd,
+                                         @Nullable String defaultValueType) {
+       // 如果不是默认命名空间，则调用自定义解析
+       if (!isDefaultNamespace(ele)) {
+           return parseNestedCustomElement(ele, bd);
+       }
+       // 解析内置bean
+       else if (nodeNameEquals(ele, BEAN_ELEMENT)) {
+           BeanDefinitionHolder nestedBd = parseBeanDefinitionElement(ele, bd);
+           if (nestedBd != null) {
+               nestedBd = decorateBeanDefinitionIfRequired(ele, nestedBd, bd);
            }
-           // 解析内置bean
-           else if (nodeNameEquals(ele, BEAN_ELEMENT)) {
-               BeanDefinitionHolder nestedBd = parseBeanDefinitionElement(ele, bd);
-               if (nestedBd != null) {
-                   nestedBd = decorateBeanDefinitionIfRequired(ele, nestedBd, bd);
-               }
-               return nestedBd;
-           }
-           // 解析ref属性
-           else if (nodeNameEquals(ele, REF_ELEMENT)) {
-               // A generic reference to any name of any bean.
-               String refName = ele.getAttribute(BEAN_REF_ATTRIBUTE);
-               boolean toParent = false;
+           return nestedBd;
+       }
+       // 解析ref属性
+       else if (nodeNameEquals(ele, REF_ELEMENT)) {
+           // A generic reference to any name of any bean.
+           String refName = ele.getAttribute(BEAN_REF_ATTRIBUTE);
+           boolean toParent = false;
+           if (!StringUtils.hasLength(refName)) {
+               // A reference to the id of another bean in a parent context.
+               refName = ele.getAttribute(PARENT_REF_ATTRIBUTE);
+               toParent = true;
                if (!StringUtils.hasLength(refName)) {
-                   // A reference to the id of another bean in a parent context.
-                   refName = ele.getAttribute(PARENT_REF_ATTRIBUTE);
-                   toParent = true;
-                   if (!StringUtils.hasLength(refName)) {
-                       error("'bean' or 'parent' is required for <ref> element", ele);
-                       return null;
-                   }
-               }
-               if (!StringUtils.hasText(refName)) {
-                   error("<ref> element contains empty target attribute", ele);
+                   error("'bean' or 'parent' is required for <ref> element", ele);
                    return null;
                }
-               RuntimeBeanReference ref = new RuntimeBeanReference(refName, toParent);
-               ref.setSource(extractSource(ele));
-               return ref;
            }
-           // 解析idref
-           else if (nodeNameEquals(ele, IDREF_ELEMENT)) {
-               return parseIdRefElement(ele);
-           }
-           // 解析value子元素
-           else if (nodeNameEquals(ele, VALUE_ELEMENT)) {
-               return parseValueElement(ele, defaultValueType);
-           }
-           // 解析null子元素的解析
-           else if (nodeNameEquals(ele, NULL_ELEMENT)) {
-               // It's a distinguished null value. Let's wrap it in a TypedStringValue
-               // object in order to preserve the source location.
-               TypedStringValue nullHolder = new TypedStringValue(null);
-               nullHolder.setSource(extractSource(ele));
-               return nullHolder;
-           }
-           // 解析数组
-           else if (nodeNameEquals(ele, ARRAY_ELEMENT)) {
-               return parseArrayElement(ele, bd);
-           }
-           // 解析list
-           else if (nodeNameEquals(ele, LIST_ELEMENT)) {
-               return parseListElement(ele, bd);
-           }
-           // 解析set
-           else if (nodeNameEquals(ele, SET_ELEMENT)) {
-               return parseSetElement(ele, bd);
-           }
-           // 解析map
-           else if (nodeNameEquals(ele, MAP_ELEMENT)) {
-               return parseMapElement(ele, bd);
-           }
-           // 解析props子元素
-           else if (nodeNameEquals(ele, PROPS_ELEMENT)) {
-               return parsePropsElement(ele);
-           }
-           // 如果都不是，则返回错误
-           else {
-               error("Unknown property sub-element: [" + 
-                     ele.getNodeName() + "]", ele);
+           if (!StringUtils.hasText(refName)) {
+               error("<ref> element contains empty target attribute", ele);
                return null;
            }
+           RuntimeBeanReference ref = new RuntimeBeanReference(refName, toParent);
+           ref.setSource(extractSource(ele));
+           return ref;
        }
+       // 解析idref
+       else if (nodeNameEquals(ele, IDREF_ELEMENT)) {
+           return parseIdRefElement(ele);
+       }
+       // 解析value子元素
+       else if (nodeNameEquals(ele, VALUE_ELEMENT)) {
+           return parseValueElement(ele, defaultValueType);
+       }
+       // 解析null子元素的解析
+       else if (nodeNameEquals(ele, NULL_ELEMENT)) {
+           // It's a distinguished null value. Let's wrap it in a TypedStringValue
+           // object in order to preserve the source location.
+           TypedStringValue nullHolder = new TypedStringValue(null);
+           nullHolder.setSource(extractSource(ele));
+           return nullHolder;
+       }
+       // 解析数组
+       else if (nodeNameEquals(ele, ARRAY_ELEMENT)) {
+           return parseArrayElement(ele, bd);
+       }
+       // 解析list
+       else if (nodeNameEquals(ele, LIST_ELEMENT)) {
+           return parseListElement(ele, bd);
+       }
+       // 解析set
+       else if (nodeNameEquals(ele, SET_ELEMENT)) {
+           return parseSetElement(ele, bd);
+       }
+       // 解析map
+       else if (nodeNameEquals(ele, MAP_ELEMENT)) {
+           return parseMapElement(ele, bd);
+       }
+       // 解析props子元素
+       else if (nodeNameEquals(ele, PROPS_ELEMENT)) {
+           return parsePropsElement(ele);
+       }
+       // 如果都不是，则返回错误
+       else {
+           error("Unknown property sub-element: [" + 
+                 ele.getNodeName() + "]", ele);
+           return null;
+       }
+   }
    ```
 
 上面我们已经大体上了解construct的解析过程，对各个子类进行分类处理，详细情况如果各位有兴趣可以移步源码进行深一步的探究。
@@ -354,49 +358,49 @@ StudentService 定义一个构造函数，配置文件中使用 constructor-arg 
    对于 property 子元素的解析，Spring 调用 `parsePropertyElements()`。如下：
 
    ```java
-       public void parsePropertyElements(Element beanEle, BeanDefinition bd) {
-           NodeList nl = beanEle.getChildNodes();
-           for (int i = 0; i < nl.getLength(); i++) {
-               Node node = nl.item(i);
-               if (isCandidateElement(node) && nodeNameEquals(node, PROPERTY_ELEMENT)) {
-                   parsePropertyElement((Element) node, bd);
-               }
-           }
-       }
+public void parsePropertyElements(Element beanEle, BeanDefinition bd) {
+    NodeList nl = beanEle.getChildNodes();
+    for (int i = 0; i < nl.getLength(); i++) {
+        Node node = nl.item(i);
+        if (isCandidateElement(node) && nodeNameEquals(node, PROPERTY_ELEMENT)) {
+            parsePropertyElement((Element) node, bd);
+        }
+    }
+}
    ```
 
-   和 constructor-arg 子元素差不多，同样是提取所有的 property 的子元素，然后调用 `parsePropertyElement()` 进行分析。
+ constructor-arg 子元素差不多，同样是提取所有的 property 的子元素，然后调用 `parsePropertyElement()` 进行分析。
 
    ```java
-       public void parsePropertyElement(Element ele, BeanDefinition bd) {
-           // 获取 name 属性
-           String propertyName = ele.getAttribute(NAME_ATTRIBUTE);
-           if (!StringUtils.hasLength(propertyName)) {
-               error("Tag 'property' must have a 'name' attribute", ele);
-               return;
-           }
-           this.parseState.push(new PropertyEntry(propertyName));
-           try {
-               // 如果存在相同的 name
-               if (bd.getPropertyValues().contains(propertyName)) {
-                   error("Multiple 'property' definitions for property '" + 
-                         propertyName + "'", ele);
-                   return;
-               }
-   
-               // 解析属性值
-               Object val = parsePropertyValue(ele, bd, propertyName);
-               // 根据解析的属性值构造 PropertyValue 实例对象
-               PropertyValue pv = new PropertyValue(propertyName, val);
-               parseMetaElements(ele, pv);
-               pv.setSource(extractSource(ele));
-               // 添加到 MutablePropertyValues 中
-               bd.getPropertyValues().addPropertyValue(pv);
-           }
-           finally {
-               this.parseState.pop();
-           }
-       }
+public void parsePropertyElement(Element ele, BeanDefinition bd) {
+    // 获取 name 属性
+    String propertyName = ele.getAttribute(NAME_ATTRIBUTE);
+    if (!StringUtils.hasLength(propertyName)) {
+        error("Tag 'property' must have a 'name' attribute", ele);
+        return;
+    }
+    this.parseState.push(new PropertyEntry(propertyName));
+    try {
+        // 如果存在相同的 name
+        if (bd.getPropertyValues().contains(propertyName)) {
+            error("Multiple 'property' definitions for property '" + 
+                  propertyName + "'", ele);
+            return;
+        }
+
+        // 解析属性值
+        Object val = parsePropertyValue(ele, bd, propertyName);
+        // 根据解析的属性值构造 PropertyValue 实例对象
+        PropertyValue pv = new PropertyValue(propertyName, val);
+        parseMetaElements(ele, pv);
+        pv.setSource(extractSource(ele));
+        // 添加到 MutablePropertyValues 中
+        bd.getPropertyValues().addPropertyValue(pv);
+    }
+    finally {
+        this.parseState.pop();
+    }
+}
    ```
 
 与解析 constructor-arg 子元素步骤差不多。调用 `parsePropertyValue()` 解析子元素属性值，然后根据该值构造 PropertyValue 实例对象并将其添加到 BeanDefinition 中的 MutablePropertyValues 中。
