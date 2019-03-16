@@ -1,7 +1,12 @@
----
 title: Java NIO之浅谈内存映射文件原理与DirectMemory
 abbrlink: e3ecb02e
-date: 2019-01-14 08:40:08
+tags:
+  - NIO
+  - 直接内存
+categories:
+  - java
+  - NIO
+date: 2019-01-13 16:40:00
 ---
 # Java NIO之浅谈内存映射文件原理与DirectMemory
 
