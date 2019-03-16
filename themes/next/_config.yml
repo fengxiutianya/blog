@@ -508,8 +508,8 @@ pangu: false
 
 # Disqus
 disqus:
-  enable: false
-  shortname:
+  enable: true
+  shortname: fengxiutianya
   count: true
   lazyload: false
 
