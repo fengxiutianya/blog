@@ -6,10 +6,10 @@ tags:
   - String
 categories:
   - java
+  - java基础
 author: zhangke
-abbrlink: 10143
+abbrlink: 190054bc
 date: 2019-01-02 13:24:00
----
 ---
 # String、StringBuffer和StringBuilder对比
 

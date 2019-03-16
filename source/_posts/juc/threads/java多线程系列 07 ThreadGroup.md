@@ -1,10 +1,12 @@
-abbrlink: 7
+---
 title: java多线程系列 07 ThreadGroup
 tags:
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: d232e74d
 date: 2018-07-13 15:27:00
 ---
 # java多线程系列之07 ThreadGroup

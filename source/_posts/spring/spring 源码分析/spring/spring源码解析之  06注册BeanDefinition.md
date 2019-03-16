@@ -2,9 +2,9 @@
 title: spring 源码分析之 06注册BeanDefinition
 tags:
   - spring源码解析
-  - ''
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
 abbrlink: e5ebb89c
 date: 2019-01-14 04:58:00

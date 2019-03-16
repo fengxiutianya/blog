@@ -1,11 +1,12 @@
-abbrlink: 27
-title: ' Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析'
+---
+title: 'Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析'
 tags:
-
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 48fb5eaf
 date: 2019-01-14 05:12:00
 ---
 # Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析

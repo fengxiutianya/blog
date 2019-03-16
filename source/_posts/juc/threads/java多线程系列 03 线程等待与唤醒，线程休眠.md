@@ -1,10 +1,12 @@
-abbrlink: 5
+---
 title: ' java多线程系列 03 线程等待与唤醒，线程休眠'
 tags:
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: 876c7808
 date: 2018-07-13 11:08:00
 ---
 # java多线程系列 03 线程等待与唤醒，线程休眠

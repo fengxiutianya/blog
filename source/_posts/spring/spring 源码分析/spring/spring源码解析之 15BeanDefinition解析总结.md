@@ -1,10 +1,12 @@
-abbrlink: 34
+---
 title: spring源码解析之 15BeanDefinition解析总结
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxitianya
+abbrlink: 573290f9
 date: 2019-01-14 06:19:00
 ---
 # spring源码解析之 15BeanDefinition解析总结

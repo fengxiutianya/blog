@@ -1,11 +1,13 @@
-abbrlink: 9
+---
 title: java多线程系列-JUC线程池之 01 线程池架构
 tags:
   - JUC
   - 线程池
 categories:
   - java
+  - 线程池
 author: zhangke
+abbrlink: 984191f2
 date: 2018-07-23 14:07:00
 ---
 # java多线程系列-JUC线程池之 01 线程池架构

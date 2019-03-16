@@ -1,10 +1,12 @@
-abbrlink: 45
+---
 title: spring源码解析之 24循环依赖处理
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: c98abb11
 date: 2019-01-15 03:38:00
 ---
 # spring源码解析之 24 循环依赖处理

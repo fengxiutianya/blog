@@ -7,15 +7,6 @@ categories:
 abbrlink: 719892b8
 date: 2019-03-04 17:40:00
 ---
-
----
-abbrlink: 6
-title: Java集合系列09 之 Map架构
-
-date: 2019-03-04 18:18:02
-
-# Java集合系列09 之 Map架构
-
 我们先学习Map，然后再学习Set；因为**Set的实现类都是基于Map来实现的**(如，HashSet是通过HashMap实现的，TreeSet是通过TreeMap实现的)。
 
 首先，我们看看Map架构。

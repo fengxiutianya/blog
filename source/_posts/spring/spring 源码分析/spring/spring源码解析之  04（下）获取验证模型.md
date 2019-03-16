@@ -1,10 +1,12 @@
-abbrlink: 35
+---
 title: spring源码解析之 04（下）获取验证模型
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: e84d4767
 date: 2019-01-14 04:47:00
 ---
 # spring源码解析之 04(下)获取验证模型

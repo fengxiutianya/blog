@@ -1,9 +1,10 @@
-abbrlink: 13
+---
 title: Java 集合系列11之 LinkedHashMap源码解析和使用示例
 tags:
   - 集合
 categories:
   - java
+abbrlink: 272a8849
 date: 2019-03-04 20:58:00
 ---
 # 概要

@@ -1,11 +1,12 @@
-abbrlink: 30
+---
 title: spring源码解析之 11bean标签：解析自定义标签
 tags:
   - spring源码解析
-  - ''
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 20cd1d0c
 date: 2019-01-14 05:25:00
 ---
 # spring源码解析之 11bean标签：解析自定义标签

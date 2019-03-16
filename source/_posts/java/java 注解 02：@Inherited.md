@@ -1,9 +1,10 @@
-abbrlink: 25
+---
 title: 'java 注解 02：@Inherited '
 tags:
   - java
 categories: []
 author: fengxiutianya
+abbrlink: ca158b7a
 date: 2019-03-04 07:22:00
 ---
 # java 注解 02：`@Inherited `

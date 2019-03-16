@@ -1,13 +1,11 @@
+---
 title: JVM源码分析之 FinalReference 完全解读
-author: 枫秀天涯
-abbrlink: 13502
 tags:
   - java
-  - java引用
-  - ''
-  - JVM
 categories:
   - java
+  - 引用
+abbrlink: 53c15109
 date: 2019-01-04 10:24:00
 ---
 # JVM源码分析之 FinalReference完全解读

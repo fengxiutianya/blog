@@ -3,10 +3,10 @@ tags:
   - http
 categories:
   - 网络
+  - http
 title: Http的演进之路之一
 abbrlink: e3e09015
 date: 2019-03-10 08:23:00
----
 ---
 # Http的演进之路之一
 

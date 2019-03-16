@@ -1,10 +1,12 @@
-abbrlink: 28
+---
 title: spring源码解析之 09bean 标签：meta、lookup-method、replace-method
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 2b388fc7
 date: 2019-01-14 05:19:00
 ---
 # spring源码解析之 09bean 标签：meta、lookup-method、replace-method

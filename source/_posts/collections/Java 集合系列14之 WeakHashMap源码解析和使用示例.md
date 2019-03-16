@@ -1,9 +1,10 @@
-abbrlink: 12
+---
 title: Java集合系列14 之WeakHashMap源码解析和使用示例
 tags:
   - 集合
 categories:
   - java
+abbrlink: 8ab0f653
 date: 2019-03-04 23:58:00
 ---
 ### 概要

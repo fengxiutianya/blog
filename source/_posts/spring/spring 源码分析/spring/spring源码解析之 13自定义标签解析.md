@@ -1,10 +1,12 @@
-abbrlink: 32
+---
 title: spring源码解析之 13自定义标签解析
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: e498bc58
 date: 2019-01-14 05:37:00
 ---
 # spring源码解析之 13自定义标签解析

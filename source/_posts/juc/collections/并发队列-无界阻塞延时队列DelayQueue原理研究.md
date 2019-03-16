@@ -1,13 +1,12 @@
 ---
 tags:
   - 并发队列
-  - ''
 categories:
   - java
+  - juc
 title: 并发队列-无界阻塞延时队列DelayQueue原理研究
 abbrlink: b9225de
 date: 2019-03-06 19:05:00
----
 ---
 # 并发队列-无界阻塞延时队列DelayQueue原理研究
 

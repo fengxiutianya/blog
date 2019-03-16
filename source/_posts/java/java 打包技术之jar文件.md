@@ -1,4 +1,4 @@
-abbrlink: 19
+---
 title: java 打包技术之jar文件
 tags:
   - java
@@ -6,6 +6,7 @@ tags:
 categories:
   - java
 author: zhangke
+abbrlink: 2f7bd7dc
 date: 2019-01-08 08:55:00
 ---
 # java 打包技术之jar文件
@@ -48,13 +49,13 @@ jar cf jar-file input-file(s)
 
 下面这些参数都是可选的，可以和上面一起使用
 
-|  可选项   |                             意义                             |
-| :-------: | :----------------------------------------------------------: |
-|     v     |                当创建jar文件时，打印创建过程                 |
-| 0（zero） |                          不压缩文件                          |
-|     M     |                   不创建默认的manifest文件                   |
-|     m     | 用来包含指定manifest信息从指定文件中<br />使用格式如下<br />`jar cmf jar-file existing-manifest input-file(s)` |
-|    -C     |               用于修改打包过程中文件的具体位置               |
+|   可选项   |                                             意义                                             |
+|:-------:|:------------------------------------------------------------------------------------------:|
+|    v    |                                      当创建jar文件时，打印创建过程                                      |
+| 0（zero） |                                            不压缩文件                                           |
+|    M    |                                      不创建默认的manifest文件                                      |
+|    m    | 用来包含指定manifest信息从指定文件中<br />使用格式如下<br />`jar cmf jar-file existing-manifest input-file(s)` |
+|    -C   |                                      用于修改打包过程中文件的具体位置                                      |
 
 具体例子:
 

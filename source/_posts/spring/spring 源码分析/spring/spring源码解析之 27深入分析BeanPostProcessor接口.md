@@ -1,10 +1,12 @@
-abbrlink: 48
+---
 title: spring源码解析之 27深入分析BeanPostProcessor接口
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 5e58b2ba
 date: 2019-01-15 06:39:00
 ---
 # spring源码解析之 27深入分析BeanPostProcessor接口

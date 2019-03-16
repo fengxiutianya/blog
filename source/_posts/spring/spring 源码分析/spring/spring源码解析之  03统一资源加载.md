@@ -1,10 +1,12 @@
-abbrlink: 22
+---
 title: spring源码解析之 03统一资源加载
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fenxiutianya
+abbrlink: a158638e
 date: 2019-01-14 03:39:00
 ---
 # spring源码解析之 03统一资源加载
@@ -789,8 +791,8 @@ protected Resource[] findPathMatchingResources(String locationPattern) throws IO
 
 确定根路径如下:
 
-| 原路径                             | 确定根路径            |
-| ---------------------------------- | --------------------- |
+| 原路径                                | 确定根路径                 |
+|------------------------------------|-----------------------|
 | `classpath*:test/cc*/spring-*.xml` | `classpath*:test/`    |
 | `classpath*:test/aa/spring-*.xml`  | `classpath*:test/aa/` |
 

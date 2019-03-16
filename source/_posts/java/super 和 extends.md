@@ -1,11 +1,13 @@
-abbrlink: 17
+---
 title: 泛型中 < ? extends T > 和 < ? extends T > 的区别
 tags:
   - java
   - 泛型
 categories:
   - java
+  - java基础
 author: zhangke
+abbrlink: eb0962ed
 date: 2018-01-11 13:55:00
 ---
 # 泛型中 < ? extends T > 和 < ? extends T > 的区别

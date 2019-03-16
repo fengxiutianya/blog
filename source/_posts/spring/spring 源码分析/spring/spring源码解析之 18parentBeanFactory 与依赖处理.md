@@ -1,10 +1,12 @@
-abbrlink: 37
+---
 title: spring源码解析之 18parentBeanFactory 与依赖处理
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 86d74f07
 date: 2019-01-15 03:32:00
 ---
 # spring源码解析之 18parentBeanFactory 与依赖处理

@@ -1,10 +1,12 @@
-abbrlink: 29
+---
 title: spring 源码解析之 10bean标签：constructor-arg、property子元素
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 1f68182f
 date: 2019-01-14 05:21:00
 ---
 # spring 源码解析之 10bean标签：constructor-arg、property子元素

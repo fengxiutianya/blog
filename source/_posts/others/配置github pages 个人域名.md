@@ -1,3 +1,4 @@
+---
 title: 配置github pages 个人域名
 tags:
   - 建站
@@ -5,7 +6,6 @@ categories:
   - 建站
 abbrlink: 7f3bd1c7
 date: 2019-03-15 08:56:00
----
 ---
 # 配置github pages 个人域名
 

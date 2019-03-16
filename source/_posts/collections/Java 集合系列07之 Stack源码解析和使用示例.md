@@ -7,8 +7,6 @@ categories:
 abbrlink: ab3cc2a5
 date: 2019-03-04 15:41:00
 ---
-
----
 ### 概要
 
 本篇博客将主要学习Stack。Stack很简单，就是一些简单的栈操作，他继承Vector。

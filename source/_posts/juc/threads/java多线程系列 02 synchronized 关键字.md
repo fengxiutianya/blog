@@ -1,10 +1,12 @@
-abbrlink: 2
+---
 title: java多线程系列 02 sychronized关键字
 tags:
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: aa8f827d
 date: 2018-07-12 15:55:00
 ---
 # java多线程系列 02 sychronized关键字

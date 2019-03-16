@@ -1,10 +1,11 @@
+---
 title: spring源码解析之 29实例化bean总结
-author: fengxiutianya
-abbrlink: 40140
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
+abbrlink: a375b501
 date: 2019-01-15 06:54:00
 ---
 在 Spring bean 解析篇深入分析了一个配置文件经历了哪些过程转变成了 BeanDefinition，但是这个 BeanDefinition 并不是我们真正想要的想要的 bean，因为它还仅仅只是承载了我们需要的目标 bean 的信息，从 BeanDefinition 到我们需要的目标还需要一个漫长的 bean 的初始化阶段，在Spring bean 实例化阶段已经详细分析了初始化 bean 的过程，所以这里做一个概括性的总结。

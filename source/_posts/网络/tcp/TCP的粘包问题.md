@@ -1,11 +1,12 @@
+---
 title: TCP的粘包问题
 tags:
   - tcp
 categories:
   - 网络
+  - tcp
 abbrlink: 8207bbe3
 date: 2019-03-10 02:09:00
----
 ---
 # TCP的粘包问题
 

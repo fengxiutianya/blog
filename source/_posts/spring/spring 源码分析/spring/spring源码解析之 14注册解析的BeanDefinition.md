@@ -1,11 +1,13 @@
-abbrlink: 33
+---
 title: ' spring 源码解析之 14注册解析的BeanDefinition'
 tags:
   - spring
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: 9207285a
 date: 2019-01-14 05:39:00
 ---
 # spring 源码解析之 14注册解析的BeanDefinition

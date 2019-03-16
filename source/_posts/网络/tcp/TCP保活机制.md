@@ -4,9 +4,9 @@ tags:
   - tcp
 categories:
   - 网络
+  - tcp
 abbrlink: b56667c1
 date: 2019-03-10 08:23:00
----
 ---
 # TCP保活机制
 

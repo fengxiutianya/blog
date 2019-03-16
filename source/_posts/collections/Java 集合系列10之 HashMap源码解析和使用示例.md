@@ -1,13 +1,13 @@
-abbrlink: 8
+---
 title: Java 集合系列10 之HashMap详细介绍和使用示例
 tags:
   - 集合
 categories:
   - java
   - ''
+abbrlink: c4403926
 date: 2019-03-04 19:50:00
 ---
-# Java 集合系列10 之HashMap详细介绍和使用示例
 
 ### 概要
 

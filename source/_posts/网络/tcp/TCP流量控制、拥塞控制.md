@@ -1,11 +1,12 @@
+---
 title: TCP流量控制、拥塞控制
 tags:
   - tcp
 categories:
   - 网络
+  - tcp
 abbrlink: 20ef80bb
 date: 2019-03-10 02:09:00
----
 ---
 # TCP流量控制、拥塞控制
 

@@ -1,10 +1,12 @@
-abbrlink: 6
-title: ' Java多线程系列 05 interrupt()和线程终止方式'
+---
+title: 'Java多线程系列 05 interrupt()和线程终止方式'
 tags:
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: ccfb60df
 date: 2018-07-13 11:11:00
 ---
 # Java多线程系列 05 interrupt()和线程终止方式

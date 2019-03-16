@@ -1,11 +1,12 @@
-abbrlink: 3
+---
 title: java多线程系列 06  线程优先级和守护线程
 tags:
-
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: 385b4be6
 date: 2018-07-13 11:16:00
 ---
 # java多线程系列 06  线程优先级和守护线程

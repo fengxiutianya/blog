@@ -1,11 +1,13 @@
-abbrlink: 10
+---
 title: java多线程系列-JUC线程池之04 Future 和Callable
 tags:
   - 线程池
   - JUC
 categories:
   - java
+  - 线程池
 author: zhangke
+abbrlink: d4c4bc29
 date: 2018-07-24 15:12:00
 ---
 # java多线程系列-JUC线程池之04 Future、Callable和FutureTask分析

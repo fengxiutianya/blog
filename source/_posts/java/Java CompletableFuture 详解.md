@@ -1,4 +1,4 @@
-abbrlink: 18
+---
 title: Java CompletableFuture 详解
 tags:
   - JUC
@@ -6,6 +6,7 @@ tags:
 categories:
   - java
 author: zhangke
+abbrlink: 931a340
 date: 2019-01-04 16:49:00
 ---
 # Java CompletableFuture 详解

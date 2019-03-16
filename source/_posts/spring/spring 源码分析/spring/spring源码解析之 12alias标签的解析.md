@@ -1,10 +1,12 @@
-abbrlink: 31
+---
 title: spring源码解析之 12alias、import、beans标签的解析
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: f2ae924b
 date: 2019-01-14 05:32:00
 ---
 ### 概述

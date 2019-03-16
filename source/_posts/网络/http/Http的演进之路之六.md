@@ -4,9 +4,9 @@ tags:
   - http
 categories:
   - 网络
+  - http
 abbrlink: cd15eee9
 date: 2019-03-10 08:23:00
----
 ---
 # Http的演进之路之六
 

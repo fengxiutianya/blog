@@ -1,4 +1,4 @@
-abbrlink: 20
+---
 title: Synchronize关键字使用及其实现原理
 tags:
   - 并发
@@ -6,7 +6,8 @@ tags:
   - jvm
 categories:
   - java
-author: fengxiutianya
+  - lock
+abbrlink: aae77c7e
 date: 2019-02-28 17:55:00
 ---
 # Synchronize关键字使用及其实现原理

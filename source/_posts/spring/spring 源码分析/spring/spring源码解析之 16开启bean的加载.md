@@ -1,10 +1,12 @@
-abbrlink: 39
+---
 title: spring源码解析之 16 开启bean的加载
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: e7edce6c
 date: 2019-01-15 03:30:00
 ---
 # spring源码解析之 16 开启bean的加载

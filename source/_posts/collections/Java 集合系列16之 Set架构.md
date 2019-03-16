@@ -1,9 +1,10 @@
-abbrlink: 14
+---
 title: Java 集合系列16之 Set架构
 tags:
   - 集合
 categories:
   - java
+abbrlink: 8af04eac
 date: 2019-03-05 07:58:00
 ---
 >接下来主要学习Set。由于Set的很多实现都是就与Map来实现的，前面通过对Map的了解之后，相对来说比较好学习

@@ -4,10 +4,9 @@ tags:
   - springboot
 categories:
   - spring
+  - springboot
 abbrlink: 62b625fe
 date: 2019-03-11 06:46:00
----
-
 ---
 # Spring Boot 实现一个简单的自动配置模块
 

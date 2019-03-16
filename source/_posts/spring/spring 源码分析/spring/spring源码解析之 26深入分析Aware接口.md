@@ -1,10 +1,12 @@
-abbrlink: 49
+---
 title: spring源码解析之 26深入分析Aware接口
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: fa9db44e
 date: 2019-01-15 06:38:00
 ---
 # spring源码解析之 26深入分析Aware接口

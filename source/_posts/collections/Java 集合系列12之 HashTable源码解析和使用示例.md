@@ -1,9 +1,10 @@
-abbrlink: 9
+---
 title: Java集合系列 12之 HashTable详细介绍和使用示例
 tags:
   - 集合
 categories:
   - java
+abbrlink: a1f8bf2d
 date: 2019-03-04 21:58:00
 ---
 

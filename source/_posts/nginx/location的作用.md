@@ -1,3 +1,4 @@
+---
 title: location的作用
 tags:
   - nginx
@@ -5,7 +6,6 @@ categories:
   - nginx
 abbrlink: 764b901a
 date: 2019-03-09 12:33:00
----
 ---
 ## location的作用
 

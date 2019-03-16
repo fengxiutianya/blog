@@ -1,10 +1,11 @@
-abbrlink: 13
+---
 title: Iterator 和 Iterable 区别
 tags:
   - java
 categories:
   - java
 author: zhangke
+abbrlink: 80c76146
 date: 2017-12-23 19:31:00
 ---
 # Iterator 和 Iterable 区别

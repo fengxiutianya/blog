@@ -2,14 +2,13 @@
 title: CopyOnWriteArrayList
 tags:
   - juc
-  - ''
+  - 集合
 categories:
   - java
-  - ''
+  - juc
 author: fengxiutianya
 abbrlink: 843bee8d
 date: 2019-03-07 03:07:00
----
 ---
 # CopyOnWriteArrayList
 

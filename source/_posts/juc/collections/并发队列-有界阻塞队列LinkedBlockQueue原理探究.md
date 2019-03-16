@@ -1,12 +1,13 @@
+---
 title: 并发队列-有界阻塞队列LinkedBlockingQueue原理探究
 tags:
   - juc
   - 并发队列
 categories:
   - java
+  - juc
 abbrlink: ff534434
 date: 2019-03-06 11:05:00
----
 ---
 # 并发队列-有界阻塞队列LinkedBlockingQueue原理探究
 

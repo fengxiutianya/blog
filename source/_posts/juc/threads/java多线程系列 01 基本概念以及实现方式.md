@@ -1,10 +1,12 @@
-abbrlink: 1
+---
 title: java多线程系列 01 基本概念以及实现方式
 tags:
   - 多线程
 categories:
   - java
+  - 线程
 author: zhangke
+abbrlink: 51baaf1d
 date: 2018-07-11 16:12:00
 ---
 # java 多线程的基本概念以及实现方式

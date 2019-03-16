@@ -1,4 +1,4 @@
-abbrlink: 21
+---
 title: Synchronize 底层优化
 tags:
   - jvm
@@ -6,8 +6,9 @@ tags:
   - 并发
 categories:
   - java
-  - ''
+  - lock
 author: fengxiutianya
+abbrlink: '339349e1'
 date: 2019-02-28 09:55:00
 ---
 # Synchronize 底层优化

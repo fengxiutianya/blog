@@ -1,12 +1,13 @@
+---
 title: LockSupport
 tags:
   - JUC
 categories:
   - java
+  - JUC
 author: zhangke
-abbrlink: 34693
+abbrlink: ad8369f2
 date: 2018-12-13 15:21:00
----
 ---
 # LockSupport
 

@@ -1,10 +1,12 @@
-abbrlink: 42
+---
 title: spring源码解析之 17缓存中获取单例bean
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: cce70190
 date: 2019-01-15 03:31:00
 ---
 #  spring源码解析之 17缓存中获取单例bean

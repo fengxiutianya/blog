@@ -7,17 +7,6 @@ categories:
 abbrlink: 9646a357
 date: 2019-03-04 09:13:00
 ---
-
----
-title: java集合系列 02 Collection
-
-tags:
-
-- 集合
-  categories:
-- java
-  date: 2019-03-04 12:09:00
-
 ## 概要
 
 首先，对Collection进行说明。下面是Collection的继承关系的主要类图，（这里只列举了抽象类和接口，来说明Collection的整体结构）

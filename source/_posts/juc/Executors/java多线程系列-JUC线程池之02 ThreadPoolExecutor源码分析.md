@@ -1,11 +1,13 @@
-abbrlink: 11
+---
 tags:
   - JUC
   - 线程池
 categories:
   - java
+  - 线程池
 author: zhangke
 title: java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析
+abbrlink: ca60f1d2
 date: 2018-07-23 14:35:00
 ---
 # java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析

@@ -9,7 +9,6 @@ categories:
 abbrlink: '9568466'
 date: 2019-03-10 00:35:00
 ---
----
 #  HTTP/2 简介
 
 注：以下内容节选自[《高性能浏览器网络》](http://shop.oreilly.com/product/0636920028048.do)（出版社：O'Reilly，作者：Ilya Grigorik）。 要了解完整版本和相关内容，请访问 [hpbn.co](https://hpbn.co/)。

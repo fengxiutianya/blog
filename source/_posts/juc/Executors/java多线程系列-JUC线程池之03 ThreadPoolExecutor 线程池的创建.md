@@ -1,11 +1,13 @@
-abbrlink: 12
+---
 title: java多线程系列-JUC线程池之03 ThreadPoolExecutor 线程池的创建
 tags:
   - JUC
   - 线程池
 categories:
   - java
+  - 线程池
 author: zhangke
+abbrlink: a1d13062
 date: 2018-07-24 13:58:00
 ---
 #  java多线程系列-JUC线程池之03 ThreadPoolExecutor 线程池的创建

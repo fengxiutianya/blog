@@ -1,9 +1,10 @@
-abbrlink: 3
+---
 title: Java 集合系列06之 Vector源码解析和使用示例
 tags:
   - 集合
 categories:
   - java
+abbrlink: 3ac019a5
 date: 2019-03-04 15:23:00
 ---
 ### **概要**

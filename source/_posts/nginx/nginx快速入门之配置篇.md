@@ -1,3 +1,4 @@
+---
 title: nginx快速入门之配置篇
 tags:
   - nginx
@@ -6,7 +7,7 @@ categories:
 abbrlink: e5c7e91b
 date: 2019-03-09 06:47:00
 ---
----
+
 # nginx快速入门之配置篇
 
 ## nginx.conf 配置结构

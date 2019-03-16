@@ -1,12 +1,13 @@
+---
 title: Random 与 ThreadLocalRandom 对比
 tags:
   - JUC
 categories:
   - java
+  - JUC
 author: zhangke
-abbrlink: 26181
+abbrlink: '54488428'
 date: 2018-12-12 15:42:00
----
 ---
 # Random 与 ThreadLocalRandom 对比
 

@@ -5,9 +5,9 @@ tags:
   - juc
 categories:
   - java
+  - juc
 abbrlink: 3dcf748d
 date: 2019-03-06 19:05:00
----
 ---
 # 并发队列-无界阻塞队列PriorityBlockingQueue原理研究
 

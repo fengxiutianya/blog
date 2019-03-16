@@ -1,3 +1,4 @@
+---
 title: HTTP 管道化(pipeline)
 tags:
   - http
@@ -6,7 +7,6 @@ categories:
   - http
 abbrlink: 6fbc205f
 date: 2019-03-10 14:46:00
----
 ---
 # HTTP/1.1管道化(pipeline)
 

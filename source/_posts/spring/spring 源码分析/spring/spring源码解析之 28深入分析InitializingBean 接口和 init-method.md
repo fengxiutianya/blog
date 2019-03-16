@@ -1,10 +1,12 @@
-abbrlink: 47
+---
 title: spring源码解析之 28深入分析InitializingBean 接口和 init-method
 tags:
   - spring源码解析
 categories:
   - spring
+  - 源码分析
 author: fengxiutianya
+abbrlink: f5ea748a
 date: 2019-01-15 06:40:00
 ---
 # spring源码解析之 28深入分析InitializingBean 接口和 init-method
