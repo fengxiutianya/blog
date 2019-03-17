@@ -9,11 +9,9 @@ author: fengxiutianya
 abbrlink: 5e58b2ba
 date: 2019-01-15 06:39:00
 ---
-# spring源码解析之 27深入分析BeanPostProcessor接口
-
 Spring 作为优秀的开源框架，它为我们提供了丰富的可扩展点，除了前面提到的 Aware 接口，还包括其他部分，其中一个很重要的就是 BeanPostProcessor。这篇文章主要介绍 BeanPostProcessor 的使用以及其实现原理。我们先看 BeanPostProcessor 的定位：
 
-BeanPostProcessor 的作用：在 Bean 完成实例化后，如果我们需要对其进行一些配置、增加一些自己的处理逻辑，那么请使用 BeanPostProcessor。
+BeanPostProcessor 的作用：在Bean完成实例化后，如果我们需要对其进行一些配置、增加一些自己的处理逻辑，那么请使用 BeanPostProcessor。
 <!-- more -->
 
 ## BeanPostProcessor 实例
@@ -21,66 +19,95 @@ BeanPostProcessor 的作用：在 Bean 完成实例化后，如果我们需要�
 首先定义一个类，该类实现 BeanPostProcessor 接口，如下：
 
 ```java
-public class BeanPostProcessorTest implements BeanPostProcessor{
+package com.zhangke.beans.postProcessor;
 
-    @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName)
-        throws BeansException {
-        System.out.println("Bean [" + beanName + "] 开始初始化");
-        // 这里一定要返回 bean，不能返回 null
-        return bean;
-    }
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 
-    @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName)
-        throws BeansException {
-        System.out.println("Bean [" + beanName + "] 完成初始化");
-        return bean;
-    }
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-17 19:49
+ *      email  : 398757724@qq.com
+ *      Desc   : 
+ ***************************************/
+public class MyBeanBeanPostProcessor implements BeanPostProcessor {
+	@Override
+	public Object postProcessBeforeInitialization(Object bean, String beanName)
+			throws BeansException {
+		System.out.println("Bean [" + beanName + "] 开始初始化");
+		// 这里一定要返回 bean，不能返回 null
+		return bean;
+	}
 
-    public void display(){
-        System.out.println("hello BeanPostProcessor!!!");
-    }
+	@Override
+	public Object postProcessAfterInitialization(Object bean, String beanName)
+			throws BeansException {
+		System.out.println("Bean [" + beanName + "] 完成初始化");
+		return bean;
+	}
 }
+```
+
+定义一个简单的Bean
+
+```java
+package com.zhangke.beans.postProcessor;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-17 19:48
+ *      email  : 398757724@qq.com
+ *      Desc   : 
+ ***************************************/
+@Component
+public class Display {
+
+	public void echo(){
+		System.out.println("Hello BeanPostProcessor");
+	}
+}
+```
+
+定义XML文件
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:util="http://www.springframework.org/schema/util" xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+	<bean id="display" class="com.zhangke.beans.postProcessor.Display">
+	</bean>
+	<bean class="com.zhangke.beans.postProcessor.MyBeanBeanPostProcessor"></bean>
+
+</beans>
 ```
 
 测试方法如下：
 
 ```java
-ClassPathResource resource = new ClassPathResource("spring.xml");
+ClassPathResource resource = new ClassPathResource("BeanPocessorTest.xml");
 DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
 XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
 reader.loadBeanDefinitions(resource);
 
-BeanPostProcessorTest test = (BeanPostProcessorTest) factory.getBean("beanPostProcessorTest");
-test.display();
+Display display = (Display) factory.getBean("display");
+display.echo();
 ```
 
-运行结果：
+运行结果如下：
 
-运行结果：
-
-![upload successful](/images/pasted-14.png)
+```
+Hello BeanPostProcessor
+```
 
 运行结果比较奇怪，为什么没有执行 `postProcessBeforeInitialization()` 和 `postProcessAfterInitialization()`呢？
 
-我们 debug 跟踪下代码，这两个方法在 `initializeBean()` 方法处调用下，如下：
-
-![upload successful](/images/pasted-15.png)
-
-debug，在 `postProcessBeforeInitialization()`方法中结果如下：
-
-![upload successful](/images/pasted-16.png)
-
-这段代码是通过迭代 `getBeanPostProcessors()` 返回的结果集来调用 `postProcessBeforeInitialization()`，但是在这里我们看到该方法返回的结果集为空，所以肯定不会执行相应的 `postProcessBeforeInitialization()` 方法咯。怎么办？答案不言而喻：只需要 `getBeanPostProcessors()` 返回的结果集中存在至少一个元素即可，该方法定义如下：
-
-```java
- public List<BeanPostProcessor> getBeanPostProcessors() {
-  return this.beanPostProcessors;
- }
-```
-
-返回的 beanPostProcessors 是一个 private 的 List ，也就是说只要该类中存在 `beanPostProcessors.add()` 的调用我们就找到了入口，在类 AbstractBeanFactory 中找到了如下代码：
+因为我们没有调用addBeanPostProcessor注册改PostProcessor，在类 AbstractBeanFactory 中找到了如下代码：
 
 ```java
  @Override
@@ -97,20 +124,19 @@ debug，在 `postProcessBeforeInitialization()`方法中结果如下：
  }
 ```
 
-该方法是由 AbstractBeanFactory 的父类 ConfigurableBeanFactory 定义，它的核心意思就是将指定 BeanPostProcessor 注册到该 BeanFactory 创建的 bean 中，同时它是按照插入的顺序进行注册的，完全忽略 Ordered 接口所表达任何排序语义（在 BeanPostProcessor 中我们提供一个 Ordered 顺序，这个后面讲解）。
-
-到这里应该就比较熟悉了，其实只需要显示调用 `addBeanPostProcessor()` 就可以了，加入如下代码。
+该方法是由 AbstractBeanFactory 的父 ConfigurableBeanFactory 定义，它的核心意思就是将指定 BeanPostProcessor 注册到该BeanFactory创建的 bean 中，同时它是按照插入的顺序进行注册的，完全忽略 Ordered 接口所表达任何排序语义（在 BeanPostProcessor 中我们提供一个 Ordered 顺序，这个后面讲解）。到这里应该就比较熟悉了，其实只需要显示调用 `addBeanPostProcessor()` 就可以了，加入如下代码。
 
 ```java
-BeanPostProcessorTest beanPostProcessorTest = new BeanPostProcessorTest();
-factory.addBeanPostProcessor(beanPostProcessorTest);
+factory.addBeanPostProcessor(new MyBeanBeanPostProcessor());
 ```
 
 运行结果：
 
-![upload successful](/images/pasted-17.png)
-
-其实还有一种更加简单的方法，这个我们后面再说，先看 BeanPostProcessor 的原理。
+```
+Bean [display] 开始初始化
+Bean [display] 完成初始化
+Hello BeanPostProcessor
+```
 
 ## BeanPostProcessor 基本原理
 
@@ -132,7 +158,7 @@ public interface BeanPostProcessor {
 }
 ```
 
-BeanPostProcessor 可以理解为是 Spring 的一个工厂钩子（其实 Spring 提供一系列的钩子，如 Aware 、InitializingBean、DisposableBean），它是 Spring 提供的对象实例化阶段强有力的扩展点，允许 Spring 在实例化 bean 阶段对其进行定制化修改，比较常见的使用场景是处理标记接口实现类或者为当前对象提供代理实现（例如AOP）。
+BeanPostProcessor 可以理解为是Spring 的一个工厂钩子（其实 Spring 提供一系列的钩子，如 Aware 、InitializingBean、DisposableBean），它是 Spring 提供的对象实例化阶段强有力的扩展点，允许 Spring 在实例化 bean 阶段对其进行定制化修改，比较常见的使用场景是处理标记接口实现类或者为当前对象提供代理实现（例如AOP）。
 
 一般普通的 BeanFactory 是不支持自动注册 BeanPostProcessor 的，需要我们手动调用 `addBeanPostProcessor()` 进行注册，注册后的 BeanPostProcessor 适用于所有该 BeanFactory 创建的 bean，但是 ApplicationContext 可以在其 bean 定义中自动检测所有的 BeanPostProcessor 并自动完成注册，同时将他们应用到随后创建的任何 bean 中。
 
@@ -227,3 +253,4 @@ public class ConnectionAwareBeanPostProcessor implements BeanPostProcessor {
 ```
 
 剩下的即可以按文章开始的时候那样写，生成一个ConnectionAwareBeanPostProcessor对象然后通过addBeanPostProcessor注册到BeanFactory中，这样后面再生成bean的时候就会处理此类型的Aware。如果是ApplicationContext则不用进行注册，因为它会自动帮你注册，后面我会具体讲解这部分功能。
+

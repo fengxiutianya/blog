@@ -9,8 +9,6 @@ author: fengxiutianya
 abbrlink: c98abb11
 date: 2019-01-15 03:38:00
 ---
-# spring源码解析之 24 循环依赖处理
-
 这篇分析 `doCreateBean()` 第三个过程：循环依赖处理。其实循环依赖并不仅仅只是在 `doCreateBean()` 中处理，其实在整个加载 bean 的过程中都有涉及，所以下篇内容并不仅仅只局限于 `doCreateBean()`，而是从整个 Bean 的加载过程进行分析。
 <!-- more -->
 
@@ -44,37 +42,37 @@ Object sharedInstance = getSingleton(beanName);
 调用 `getSingleton()` 方法从单例缓存中获取，如下：
 
 ```java
-    protected Object getSingleton(String beanName, boolean allowEarlyReference) {
-        Object singletonObject = this.singletonObjects.get(beanName);
-        if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
-            synchronized (this.singletonObjects) {
-                singletonObject = this.earlySingletonObjects.get(beanName);
-                if (singletonObject == null && allowEarlyReference) {
-                    ObjectFactory<?> singletonFactory = 
-                        this.singletonFactories.get(beanName);
-                    if (singletonFactory != null) {
-                        singletonObject = singletonFactory.getObject();
-                        this.earlySingletonObjects.put(beanName, singletonObject);
-                        this.singletonFactories.remove(beanName);
-                    }
+protected Object getSingleton(String beanName, boolean allowEarlyReference) {
+    Object singletonObject = this.singletonObjects.get(beanName);
+    if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
+        synchronized (this.singletonObjects) {
+            singletonObject = this.earlySingletonObjects.get(beanName);
+            if (singletonObject == null && allowEarlyReference) {
+                ObjectFactory<?> singletonFactory = 
+                    this.singletonFactories.get(beanName);
+                if (singletonFactory != null) {
+                    singletonObject = singletonFactory.getObject();
+                    this.earlySingletonObjects.put(beanName, singletonObject);
+                    this.singletonFactories.remove(beanName);
                 }
             }
         }
-        return singletonObject;
     }
+    return singletonObject;
+}
 ```
 
 这个方法主要是从三个缓存中获取，分别是：singletonObjects、earlySingletonObjects、singletonFactories，三者定义如下：
 
 ```java
-    /** Cache of singleton objects: bean name --> bean instance */
-    private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
+/** Cache of singleton objects: bean name --> bean instance */
+private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>(256);
 
-    /** Cache of singleton factories: bean name --> ObjectFactory */
-    private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
+/** Cache of singleton factories: bean name --> ObjectFactory */
+private final Map<String, ObjectFactory<?>> singletonFactories = new HashMap<>(16);
 
-    /** Cache of early singleton objects: bean name --> bean instance */
-    private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
+/** Cache of early singleton objects: bean name --> bean instance */
+private final Map<String, Object> earlySingletonObjects = new HashMap<>(16);
 ```
 
 意义如下：
@@ -105,10 +103,6 @@ boolean earlySingletonExposure = (mbd.isSingleton()
                                   && this.allowCircularReferences 
                                   && isSingletonCurrentlyInCreation(beanName));
 if (earlySingletonExposure) {
-    if (logger.isDebugEnabled()) {
-        logger.debug("Eagerly caching bean '" + beanName +
-                        "' to allow for resolving potential circular references");
-    }
     addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 }
 ```
@@ -125,22 +119,20 @@ if (earlySingletonExposure) {
 
 ![upload successful](/images/pasted-24.png)
 
-cong
-
 `addSingletonFactory()` 代码如下：
 
 ```java
-    protected void addSingletonFactory(String beanName,
-                                       ObjectFactory<?> singletonFactory) {
-        Assert.notNull(singletonFactory, "Singleton factory must not be null");
-        synchronized (this.singletonObjects) {
-            if (!this.singletonObjects.containsKey(beanName)) {
-                this.singletonFactories.put(beanName, singletonFactory);
-                this.earlySingletonObjects.remove(beanName);
-                this.registeredSingletons.add(beanName);
-            }
+protected void addSingletonFactory(String beanName,
+                                   ObjectFactory<?> singletonFactory) {
+    Assert.notNull(singletonFactory, "Singleton factory must not be null");
+    synchronized (this.singletonObjects) {
+        if (!this.singletonObjects.containsKey(beanName)) {
+            this.singletonFactories.put(beanName, singletonFactory);
+            this.earlySingletonObjects.remove(beanName);
+            this.registeredSingletons.add(beanName);
         }
     }
+}
 ```
 
 从这段代码我们可以看出 singletonFactories 这个三级缓存才是解决 Spring Bean 循环依赖的诀窍所在。同时这段代码发生在 `createBeanInstance()` 方法之后，也就是说这个 bean 其实已经被创建出来了，但是它还不是很完美（没有进行属性填充和初始化），但是对于其他依赖它的对象而言已经足够了（可以根据对象引用定位到堆中对象），能够被认出来了，所以 Spring 在这个时候选择将该对象提前曝光出来让大家认识认识。
@@ -148,20 +140,20 @@ cong
 **getEarlyBeanReference**如下
 
 ```java
-	protected Object getEarlyBeanReference(String beanName,
-    	RootBeanDefinition mbd, Object bean) {
-		Object exposedObject = bean;
-		if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
-			for (BeanPostProcessor bp : getBeanPostProcessors()) {
-				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
-					SmartInstantiationAwareBeanPostProcessor ibp = 
-					(SmartInstantiationAwareBeanPostProcessor) bp;
-					exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
-				}
-			}
-		}
-		return exposedObject;
-	}
+protected Object getEarlyBeanReference(String beanName,
+                    RootBeanDefinition mbd, Object bean) {
+    Object exposedObject = bean;
+    if (!mbd.isSynthetic() && hasInstantiationAwareBeanPostProcessors()) {
+        for (BeanPostProcessor bp : getBeanPostProcessors()) {
+            if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
+                SmartInstantiationAwareBeanPostProcessor ibp = 
+                    (SmartInstantiationAwareBeanPostProcessor) bp;
+                exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
+            }
+        }
+    }
+    return exposedObject;
+}
 ```
 
 ![upload successful](/images/pasted-25.png)
@@ -169,40 +161,40 @@ cong
 介绍到这里我们发现三级缓存 singletonFactories 和 二级缓存 earlySingletonObjects 中的值都有出处了，那一级缓存在哪里设置的呢？在类 DefaultSingletonBeanRegistry 中可以发现这个 `addSingleton()` 方法，源码如下：
 
 ```java
-    protected void addSingleton(String beanName, Object singletonObject) {
-        synchronized (this.singletonObjects) {
-            this.singletonObjects.put(beanName, singletonObject);
-            this.singletonFactories.remove(beanName);
-            this.earlySingletonObjects.remove(beanName);
-            this.registeredSingletons.add(beanName);
-        }
+protected void addSingleton(String beanName, Object singletonObject) {
+    synchronized (this.singletonObjects) {
+        this.singletonObjects.put(beanName, singletonObject);
+        this.singletonFactories.remove(beanName);
+        this.earlySingletonObjects.remove(beanName);
+        this.registeredSingletons.add(beanName);
     }
+}
 ```
 
 添加至一级缓存，同时从二级、三级缓存中删除。这个方法在我们创建 bean 的链路中有哪个地方引用呢？其实在前面博客已经提到过了，在 `doGetBean()` 处理不同 scope 时，如果是 singleton，则调用 `getSingleton()`，如下：
 
 ```java
-    public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
-        Assert.notNull(beanName, "Bean name must not be null");
-        synchronized (this.singletonObjects) {
-            Object singletonObject = this.singletonObjects.get(beanName);
-            if (singletonObject == null) {
-                //....
-                try {
-                    singletonObject = singletonFactory.getObject();
-                    newSingleton = true;
-                }
-                //.....
-                if (newSingleton) {
-                    addSingleton(beanName, singletonObject);
-                }
+public Object getSingleton(String beanName, ObjectFactory<?> singletonFactory) {
+    Assert.notNull(beanName, "Bean name must not be null");
+    synchronized (this.singletonObjects) {
+        Object singletonObject = this.singletonObjects.get(beanName);
+        if (singletonObject == null) {
+            //....
+            try {
+                singletonObject = singletonFactory.getObject();
+                newSingleton = true;
             }
-            return singletonObject;
+            //.....
+            if (newSingleton) {
+                addSingleton(beanName, singletonObject);
+            }
         }
+        return singletonObject;
     }
+}
 ```
 
-至此，Spring 关于 singleton bean 循环依赖已经分析完毕了。所以我们基本上可以确定 Spring 解决循环依赖的方案了：Spring 在创建 bean 的时候并不是等它完全完成，而是在创建过程中将创建中的 bean 的 ObjectFactory 提前曝光（即加入到 singletonFactories 缓存中），这样一旦下一个 bean 创建的时候需要依赖 bean ，则直接使用 ObjectFactory 的 `getObject()` 获取了，也就是 `getSingleton()` 中的代码片段了。
+至此，Spring 关于 singleton bean 循环依赖已经分析完毕了。所以我们基本上可以确定 Spring 解决循环依赖的方案了：Spring 在创建 bean 的时候并不是等它完全完成，而是在创建过程中将创建中的 bean 的ObjectFactory 提前曝光（即加入到 singletonFactories 缓存中），这样一旦下一个 bean 创建的时候需要依赖 bean ，则直接使用 ObjectFactory 的 `getObject()` 获取了，也就是 `getSingleton()` 中的代码片段了。
 
 到这里，关于 Spring 解决 bean 循环依赖就已经分析完毕了。最后来描述下就上面那个循环依赖 Spring 解决的过程：首先 A 完成初始化第一步并将自己提前曝光出来（通过 ObjectFactory 将自己提前曝光），在初始化的时候，发现自己依赖对象 B，此时就会去尝试 get(B)，这个时候发现 B 还没有被创建出来，然后 B 就走创建流程，在 B 初始化的时候，同样发现自己依赖 C，C 也没有被创建出来，这个时候 C 又开始初始化进程，但是在初始化的过程中发现自己依赖 A，于是尝试 get(A)，这个时候由于 A 已经添加至缓存中（一般都是添加至三级缓存 singletonFactories ），通过 ObjectFactory 提前曝光，所以可以通过 `ObjectFactory.getObject()` 拿到 A 对象，C 拿到 A 对象后顺利完成初始化，然后将自己添加到一级缓存中，回到 B ，B 也可以拿到 C 对象，完成初始化，A 可以顺利拿到 B 完成初始化。到这里整个链路就已经完成了初始化过程了。
 

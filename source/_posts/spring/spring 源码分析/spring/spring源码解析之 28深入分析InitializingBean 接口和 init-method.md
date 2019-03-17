@@ -11,7 +11,7 @@ date: 2019-01-15 06:40:00
 ---
 # spring源码解析之 28深入分析InitializingBean 接口和 init-method
 
- 已经分析了 Aware 接口族 和 BeanPostProcessor 接口，这篇分析 InitializingBean 接口和 init-method 方法。
+ 已经分析 Aware 接口和 BeanPostProcessor 接口，这篇分析 InitializingBean接口和 init-method 方法。
 
 ## InitializingBean
 
@@ -39,7 +39,6 @@ public class InitializingBeanTest implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         System.out.println("InitializingBeanTest initializing...");
-
         this.name = "chenssy 2 号";
     }
 
@@ -64,57 +63,56 @@ System.out.println("name ：" + test.getName());
 
 执行结果：
 
-![upload successful](/images/pasted-22.png)
+```
+InitializingBeanTest initializing...
+name : chenssy 2 号
+```
 
 在这个示例中改变了 InitializingBeanTest 示例的 name 属性，也就是说 在 `afterPropertiesSet()` 中我们是可以改变 bean 的属性的，这相当于 Spring 容器又给我们提供了一种可以改变 bean 实例对象的方法。
 
 上面提到 bean 初始化阶段（`initializeBean()` ） Spring 容器会主动检查当前 bean 是否已经实现了 InitializingBean 接口，如果实现了则会掉用其 `afterPropertiesSet()` ,这个主动检查、调用的动作是由 `invokeInitMethods()` 来完成的。
 
 ```JAVA
-    protected void invokeInitMethods(String beanName, final Object bean,
-    		@Nullable RootBeanDefinition mbd)
-            throws Throwable {
+protected void invokeInitMethods(String beanName, final Object bean,
+                                 @Nullable RootBeanDefinition mbd)
+    throws Throwable {
 
-        // 是否实现 InitializingBean
-        // 如果实现了 InitializingBean 接口，则只掉调用bean的 afterPropertiesSet()
-        boolean isInitializingBean = (bean instanceof InitializingBean);
-        if (isInitializingBean && (mbd == null || 
-                          !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Invoking afterPropertiesSet() on bean with name '"
-                             + beanName + "'");
+    // 是否实现 InitializingBean
+    // 如果实现了 InitializingBean 接口，则只掉调用bean的 afterPropertiesSet()
+    boolean isInitializingBean = (bean instanceof InitializingBean);
+    if (isInitializingBean && (mbd == null || 
+				!mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) {
+      
+        if (System.getSecurityManager() != null) {
+            try {
+                AccessController.doPrivileged((PrivilegedExceptionAction<Object>) 
+                       () -> { ((InitializingBean) bean).afterPropertiesSet();
+                                                  return null;
+                 			 }, getAccessControlContext());
             }
-            if (System.getSecurityManager() != null) {
-                try {
-                    AccessController.doPrivileged((PrivilegedExceptionAction<Object>) 
-                                                  () -> {
-                        ((InitializingBean) bean).afterPropertiesSet();
-                        return null;
-                    }, getAccessControlContext());
-                }
-                catch (PrivilegedActionException pae) {
-                    throw pae.getException();
-                }
-            }
-            else {
-                // 直接调用 afterPropertiesSet()
-                ((InitializingBean) bean).afterPropertiesSet();
+            catch (PrivilegedActionException pae) {
+                throw pae.getException();
             }
         }
-
-        if (mbd != null && bean.getClass() != NullBean.class) {
-            // 判断是否指定了 init-method()，
-            // 如果指定了 init-method()，则再调用制定的init-method
-            String initMethodName = mbd.getInitMethodName();
-            if (StringUtils.hasLength(initMethodName) &&
-                    !(isInitializingBean && 
-                      	"afterPropertiesSet".equals(initMethodName)) &&
-                    !mbd.isExternallyManagedInitMethod(initMethodName)) {
-                // 利用反射机制执行
-                invokeCustomInitMethod(beanName, bean, mbd);
-            }
+        else {
+            // 直接调用 afterPropertiesSet()
+            ((InitializingBean) bean).afterPropertiesSet();
         }
     }
+
+    if (mbd != null && bean.getClass() != NullBean.class) {
+        // 判断是否指定了 init-method()，
+        // 如果指定了 init-method()，则再调用制定的init-method
+        String initMethodName = mbd.getInitMethodName();
+        if (StringUtils.hasLength(initMethodName) &&
+            !(isInitializingBean && 
+              "afterPropertiesSet".equals(initMethodName)) &&
+            !mbd.isExternallyManagedInitMethod(initMethodName)) {
+            // 利用反射机制执行
+            invokeCustomInitMethod(beanName, bean, mbd);
+        }
+    }
+}
 ```
 
 首先检测当前 bean 是否实现了 InitializingBean 接口，如果实现了则调用其 `afterPropertiesSet()`，然后再检查是否也指定了 `init-method()`，如果指定了则通过反射机制调用指定的 `init-method()`。
@@ -154,12 +152,15 @@ public class InitializingBeanTest {
 
 执行结果:
 
-![upload successful](/images/pasted-20.png)
+```
+InitializingBeanTest initializing...
+name : chenssy 3 号
+```
 
 完全可以达到和 InitializingBean 一样的效果，而且在代码中我们没有看到丝毫 Spring 侵入的现象。所以通过 init-method 我们可以使用业务对象中定义的任何方法来实现 bean 实例对象的初始化定制化，而不再受制于 InitializingBean的 `afterPropertiesSet()`。同时我们可以使用 `<beans>` 标签的 `default-init-method` 属性来统一指定初始化方法，这样就省了需要在每个 `<bean>` 标签中都设置 `init-method` 这样的繁琐工作了。比如在 `default-init-method` 规定所有初始化操作全部以 `initBean()` 命名。如下：
 
 ![upload successful](/images/pasted-21.png)
 
-从 `invokeInitMethods()` 中，我们知道 `init-method` 指定的方法会在 `afterPropertiesSet()` 之后执行，如果 `afterPropertiesSet()` 中出现了异常，则 `init-method` 是不会执行的，而且由于 `init-method` 采用的是反射执行的方式，所以 `afterPropertiesSet()` 的执行效率一般会高些，但是并不能排除我们要优先使用 `init-method`，主要是因为它消除了 bean 对 Spring 的依赖，Spring 没有侵入到我们业务代码，这样会更加符合 Spring 的理念。诚然，`init-method` 是基于 xml 配置文件的，就目前而言，我们的工程几乎都摒弃了配置，而采用注释的方式，那么 `@PreDestory` 可能适合你，当然这个注解我们后面分析。
+从 `invokeInitMethods()` 中，我们知道 `init-method` 指定的方法会在 `afterPropertiesSet()` 之后执行，如果 `afterPropertiesSet()` 中出现了异常，则 `init-method` 是不会执行的，而且由于 `init-method` 采用的是反射执行的方式，所以 `afterPropertiesSet()` 的执行效率一般会高些，但是并不能排除我们要优先使用 `init-method`，主要是因为它消除了 bean 对 Spring 的依赖，Spring 没有侵入到我们业务代码，这样会更加符合 Spring 的理念。诚然，`init-method` 是基于XML 配置文件的，就目前而言，我们的工程几乎都摒弃了配置，而采用注解的方式，那么 `@PreDestory` 可能适合你，当然这个注解我们后面分析。
 
 至此，InitializingBean 和 init-method 已经分析完毕了，对于DisposableBean 和 destory-method，他们和 init 相似，这里就不做阐述了。

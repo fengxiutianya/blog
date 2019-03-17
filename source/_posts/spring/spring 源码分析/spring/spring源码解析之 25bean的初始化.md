@@ -15,43 +15,41 @@ date: 2019-01-15 03:57:00
 前面我们已经分析了bean的创建，属性的注入，依赖处理，其实这时bean基本上已经可以用了，不知道你还记不记得我们在xml中还可以配置init-method属性，这个到现在为止还没有处理，这就是最后一步初始化，也就是 `initializeBean()`，所以这篇文章我们分析 `doCreateBean()` 中最后一步：初始化 bean。
 <!-- more -->
 ```java
-    protected Object initializeBean(final String beanName, final Object bean, 
-                                    @Nullable RootBeanDefinition mbd) {
-        // 这个判断现在可以不理，主要是为了安全，重点是invokeAwareMethods方法
-        if (System.getSecurityManager() != null) {
-            AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
-                invokeAwareMethods(beanName, bean);
-                return null;
-            }, getAccessControlContext());
-        }
-        else {
-            // / 激活 Aware 方法，对特殊的 bean 处理：
-            // Aware、BeanClassLoaderAware、BeanFactoryAware
+protected Object initializeBean(final String beanName, final Object bean, 
+                                @Nullable RootBeanDefinition mbd) {
+    // 这个判断现在可以不理，主要是为了安全，重点是invokeAwareMethods方法
+    if (System.getSecurityManager() != null) {
+        AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
             invokeAwareMethods(beanName, bean);
-        }
-        Object wrappedBean = bean;
-        if (mbd == null || !mbd.isSynthetic()) {
-            // 在调用init-method之前的处理
-            wrappedBean = 
-                applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
-        }
-
-        try {
-            // 激活用户自定义的 init 方法
-            invokeInitMethods(beanName, wrappedBean, mbd);
-        }
-        catch (Throwable ex) {
-            throw new BeanCreationException(
-                    (mbd != null ? mbd.getResourceDescription() : null),
-                    beanName, "Invocation of init method failed", ex);
-        }
-        if (mbd == null || !mbd.isSynthetic()) {
-            // bean调用init-method之后的处理
-            wrappedBean = 
-                applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
-        }
-        return wrappedBean;
+            return null;
+        }, getAccessControlContext());
     }
+    else {
+        // 激活 Aware方法，对特殊的bean处理：
+        // Aware、BeanClassLoaderAware、BeanFactoryAware
+        invokeAwareMethods(beanName, bean);
+    }
+    Object wrappedBean = bean;
+    if (mbd == null || !mbd.isSynthetic()) {
+        // 在调用init-method之前的处理也就是BeanPostProcessor前置处理
+        wrappedBean = 
+            applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
+    }
+
+    try {
+        // 激活用户自定义的 init 方法
+        invokeInitMethods(beanName, wrappedBean, mbd);
+    }
+    catch (Throwable ex) {
+       。。。省略异常
+    }
+    if (mbd == null || !mbd.isSynthetic()) {
+        // bean调用init-method之后的处理也就是BeanPostProcessor后置处理
+        wrappedBean = 
+            applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
+    }
+    return wrappedBean;
+}
 ```
 
 初始化 bean 的方法其实就是三个步骤的处理，而这三个步骤主要还是根据用户设定的来进行初始化，这三个过程为：
@@ -112,36 +110,36 @@ Spring 提供了如下系列的 Aware 接口：
 BeanPostProcessor 在前面介绍 bean 加载的过程曾多次遇到，相信各位不陌生，这是 Spring 中开放式框架中必不可少的一个亮点。BeanPostProcessor 的作用是：如果我们想要在 Spring 容器完成 Bean 的实例化，配置和其他的初始化后添加一些自己的逻辑处理，那么请使用该接口，这个接口给与了用户充足的权限去更改或者扩展 Spring，是我们对 Spring 进行扩展和增强处理一个必不可少的接口。
 
 ```java
-    public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, 
-                                 String beanName) throws BeansException {
+public Object applyBeanPostProcessorsBeforeInitialization(Object existingBean, 
+                                String beanName) throws BeansException {
 
-        Object result = existingBean;
-        for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
-            Object current = beanProcessor.postProcessBeforeInitialization(result, 
-                                                                           beanName);
-            if (current == null) {
-                return result;
-            }
-            result = current;
+    Object result = existingBean;
+    for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+        Object current = beanProcessor.postProcessBeforeInitialization(result, 
+                                                                       beanName);
+        if (current == null) {
+            return result;
         }
-        return result;
+        result = current;
     }
+    return result;
+}
 
-    @Override
-    public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, 
-                               String beanName) throws BeansException {
+@Override
+public Object applyBeanPostProcessorsAfterInitialization(Object existingBean, 
+                           String beanName) throws BeansException {
 
-        Object result = existingBean;
-        for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
-            Object current = beanProcessor.postProcessAfterInitialization(result, 
-                                                                          beanName);
-            if (current == null) {
-                return result;
-            }
-            result = current;
+    Object result = existingBean;
+    for (BeanPostProcessor beanProcessor : getBeanPostProcessors()) {
+        Object current = beanProcessor.postProcessAfterInitialization(result, 
+                                                                      beanName);
+        if (current == null) {
+            return result;
         }
-        return result;
+        result = current;
     }
+    return result;
+}
 ```
 
 其实逻辑就是通过 `getBeanPostProcessors()` 获取定义的 BeanPostProcessor ，然后分别调用其 `postProcessBeforeInitialization()`、`postProcessAfterInitialization()` 进行业务处理。
@@ -151,46 +149,45 @@ BeanPostProcessor 在前面介绍 bean 加载的过程曾多次遇到，相信�
 如果熟悉 `<bean>` 标签的配置，一定不会忘记 `init-method` 方法，该方法的执行就是在这里执行的。
 
 ```java
-   protected void invokeInitMethods(String beanName, final Object bean, 
-                                    @Nullable RootBeanDefinition mbd)
-            throws Throwable {
-        // 首先会检查是否是 InitializingBean ，如果是的话需要调用 afterPropertiesSet()
-        boolean isInitializingBean = (bean instanceof InitializingBean);
-        if (isInitializingBean && 
-            (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) 
-        {
-            if (logger.isDebugEnabled()) {
-              	// 省略日志
+protected void invokeInitMethods(String beanName, final Object bean, 
+           @Nullable RootBeanDefinition mbd) throws Throwable {
+    
+    // 首先会检查是否是 InitializingBean ，如果是的话需要调用 afterPropertiesSet()
+    boolean isInitializingBean = (bean instanceof InitializingBean);
+    if (isInitializingBean && 
+        (mbd == null || !mbd.isExternallyManagedInitMethod("afterPropertiesSet"))) 
+    {
+        if (logger.isDebugEnabled()) {
+            // 省略日志
+        }
+        if (System.getSecurityManager() != null) {
+            try {
+                AccessController.doPrivileged((PrivilegedExceptionAction<Object>) 
+                             () -> {((InitializingBean) bean).afterPropertiesSet();
+                                                  return null;
+                              }, getAccessControlContext());
             }
-            if (System.getSecurityManager() != null) {
-                try {
-                    AccessController.doPrivileged((PrivilegedExceptionAction<Object>) 
-                                                  () -> {
-                        ((InitializingBean) bean).afterPropertiesSet();
-                        return null;
-                    }, getAccessControlContext());
-                }
-                catch (PrivilegedActionException pae) {
-                    throw pae.getException();
-                }
-            }
-            else {
-                // 属性初始化的处理
-                ((InitializingBean) bean).afterPropertiesSet();
+            catch (PrivilegedActionException pae) {
+                throw pae.getException();
             }
         }
-
-        if (mbd != null && bean.getClass() != NullBean.class) {
-            String initMethodName = mbd.getInitMethodName();
-            if (StringUtils.hasLength(initMethodName) &&
-                    !(isInitializingBean && 
-                      "afterPropertiesSet".equals(initMethodName)) &&
-                    !mbd.isExternallyManagedInitMethod(initMethodName)) {
-                // 激活用户自定义的 初始化方法
-                invokeCustomInitMethod(beanName, bean, mbd);
-            }
+        else {
+            // 属性初始化的处理
+            ((InitializingBean) bean).afterPropertiesSet();
         }
     }
+
+    if (mbd != null && bean.getClass() != NullBean.class) {
+        String initMethodName = mbd.getInitMethodName();
+        if (StringUtils.hasLength(initMethodName) &&
+            !(isInitializingBean && 
+              "afterPropertiesSet".equals(initMethodName)) &&
+            !mbd.isExternallyManagedInitMethod(initMethodName)) {
+            // 激活用户自定义的 初始化方法
+            invokeCustomInitMethod(beanName, bean, mbd);
+        }
+    }
+}
 ```
 
 首先检查是否为 InitializingBean ，如果是的话需要执行 `afterPropertiesSet()`，因为我们除了可以使用 `init-method`来自定初始化方法外，还可以实现 InitializingBean 接口，该接口仅有一个 `afterPropertiesSet()` 方法，而两者的执行先后顺序是先 `afterPropertiesSet()` 后 `init-method`。
@@ -202,28 +199,28 @@ spring中不但提供了对于初始化方法的扩展入口同样也提供了�
 ```java
 protected void registerDisposableBeanIfNecessary(String beanName, Object bean, 
                                                  RootBeanDefinition mbd) {
-		AccessControlContext acc = (System.getSecurityManager() != null ? 
-                                    getAccessControlContext() : null);
-    
-		if (!mbd.isPrototype() && requiresDestruction(bean, mbd)) {
-            // 单例bean的注册销毁
-			if (mbd.isSingleton()) {
-                // 在bean销毁之前调用这个destroy-method
-				registerDisposableBean(beanName,
-						new DisposableBeanAdapter(bean, beanName, mbd, 
-                                                  getBeanPostProcessors(), acc));
+    AccessControlContext acc = (System.getSecurityManager() != null ? 
+                                getAccessControlContext() : null);
+
+    if (!mbd.isPrototype() && requiresDestruction(bean, mbd)) {
+        // 单例bean的注册销毁
+        if (mbd.isSingleton()) {
+            // 在bean销毁之前调用这个destroy-method
+            registerDisposableBean(beanName,
+         new DisposableBeanAdapter(bean, beanName, mbd, getBeanPostProcessors(), acc));
             // 其他scope bean的注册销毁
-			} else {
-				Scope scope = this.scopes.get(mbd.getScope());
-				if (scope == null) {
-						// 抛出异常省略
-				}
-				scope.registerDestructionCallback(beanName,
-						new DisposableBeanAdapter(bean, beanName, mbd, 
-                                                  getBeanPostProcessors(), acc));
-			}
-		}
-	}
+        } else {
+            Scope scope = this.scopes.get(mbd.getScope());
+            if (scope == null) {
+                // 抛出异常省略
+            }
+            scope.registerDestructionCallback(beanName,
+                        new DisposableBeanAdapter(bean, beanName, mbd, 
+                                  getBeanPostProcessors(), acc));
+        }
+    }
+}
 ```
 
 其实这个销毁方法对于单例bean来说，扩展在这里我感觉是没有多大作用，因为单例bean的销毁是随着整个容器而销毁，而整个容器的销毁也代表者这个应用销毁，不起作用所以这里掉不掉用销毁方法已经没什么作用。对于其他的scope，是可以起作用的，类如request，session的scope是可以在里面加入一些定制化的逻辑。后面分析springMVC时会具体说道。
+

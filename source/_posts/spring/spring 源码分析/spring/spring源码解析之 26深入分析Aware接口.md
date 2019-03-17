@@ -9,8 +9,6 @@ author: fengxiutianya
 abbrlink: fa9db44e
 date: 2019-01-15 06:38:00
 ---
-# spring源码解析之 26深入分析Aware接口
-
 我们经过前面的解析，已经知道了如何创建一个bean。但是在在上一篇博客bean的初始化中，说道bean的初始化initializeBean会做以下三件事，分别是：
 
 1. 激活 Aware 方法
@@ -114,7 +112,8 @@ public interface ApplicationContextAware extends Aware {
 下面简单演示下上面四个接口的使用方法：
 
 ```java
-public class MyApplicationAware implements BeanNameAware,BeanFactoryAware,BeanClassLoaderAware{
+public class MyApplicationAware implements 
+       BeanNameAware,BeanFactoryAware,BeanClassLoaderAware{
 
     private String beanName;
 
