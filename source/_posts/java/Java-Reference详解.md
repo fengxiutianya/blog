@@ -324,4 +324,4 @@ PhantomReference使用时一定要传一个referenceQueue,当然也可以传null
 
 [Reference、ReferenceQueue 详解](http://www.importnew.com/26250.html)
 
-[用弱引用堵住内存泄漏](
+[用弱引用堵住内存泄漏](https://www.ibm.com/developerworks/cn/java/j-jtp11225/)
