@@ -5,8 +5,8 @@ tags:
   - JUC
 categories:
   - java
+  - juc
   - 线程池
-author: zhangke
 abbrlink: d4c4bc29
 date: 2018-07-24 15:12:00
 ---

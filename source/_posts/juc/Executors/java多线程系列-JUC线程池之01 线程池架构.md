@@ -5,8 +5,8 @@ tags:
   - 线程池
 categories:
   - java
+  - juc
   - 线程池
-author: zhangke
 abbrlink: 984191f2
 date: 2018-07-23 14:07:00
 ---

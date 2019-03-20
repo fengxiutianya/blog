@@ -1,13 +1,15 @@
-abbrlink: '0'
+---
 title: Atomic
 tags:
   - atomic
 categories:
   - java
   - juc
-date: 2019-03-17 13:19:00
+  - atomic
+abbrlink: 3a5a614f
+date: 2019-03-18 08:37:00
 ---
-# Atomic 
+# Atomic
 
 ### 概要
 
@@ -48,16 +50,16 @@ date: 2019-03-17 13:19:00
 >
 >```Java
 >public final native boolean 
->       compareAndSwapObject(Object paramObject1, long paramLong, 
->                              Object paramObject2, Object paramObject3); 
+>  compareAndSwapObject(Object paramObject1, long paramLong, 
+>                         Object paramObject2, Object paramObject3); 
 >
 >public final native boolean 
 >		compareAndSwapInt(Object paramObject,long paramLong,
->                          		int paramInt1, int paramInt2); 
+>                     		int paramInt1, int paramInt2); 
 >
 >public final native boolean 
 >			compareAndSwapLong(Object paramObject, long paramLong1, 
->                               		long paramLong2, long paramLong3);  
+>                          		long paramLong2, long paramLong3);  
 >```
 >
 >首先拿**compareAndSwapObject**这个函数来讲解一下大概的意思：
@@ -93,97 +95,97 @@ date: 2019-03-17 13:19:00
 >
 >public class AtomicIntegerTest {
 >
->    public final static AtomicInteger TEST_INTEGER = new AtomicInteger(1);
->    
->    public static int test = 1;
+>public final static AtomicInteger TEST_INTEGER = new AtomicInteger(1);
 >
->    public static void main(String[] args) throws InterruptedException {
->        AtomicTest();
->        intTest();
->        CountDownLatch cd = new CountDownLatch(1);
+>public static int test = 1;
+>
+>public static void main(String[] args) throws InterruptedException {
+>   AtomicTest();
+>   intTest();
+>   CountDownLatch cd = new CountDownLatch(1);
 >
 >
->    }
+>}
 >
->    /**
->   * 最终打印的结果一定是：11
->       *
->   * @throws InterruptedException
->     */
->    public static void AtomicTest() throws InterruptedException {
->        Thread[] threads = new Thread[10];
->        CountDownLatch cd = new CountDownLatch(10);
->        for (int i = 0; i < 10; i++) {
+>/**
+>  * 最终打印的结果一定是：11
+>  *
+>  * @throws InterruptedException
+>*/
+>public static void AtomicTest() throws InterruptedException {
+>   Thread[] threads = new Thread[10];
+>   CountDownLatch cd = new CountDownLatch(10);
+>   for (int i = 0; i < 10; i++) {
 >
->            final int num = i;
+>       final int num = i;
 >
->            threads[i] = new Thread() {
->                public void run() {
->                    cd.countDown();
->                    try {
+>       threads[i] = new Thread() {
+>           public void run() {
+>               cd.countDown();
+>               try {
 >
->                        cd.await();  //等待10 个线程创建成功
+>                   cd.await();  //等待10 个线程创建成功
 >
->                    } catch (InterruptedException e) {
->                        e.printStackTrace();
->                    }
->                    try {
->                        Thread.sleep(1000);
->                    } catch (InterruptedException e) {
->                        e.printStackTrace();
->                    }
+>               } catch (InterruptedException e) {
+>                   e.printStackTrace();
+>               }
+>               try {
+>                   Thread.sleep(1000);
+>               } catch (InterruptedException e) {
+>                   e.printStackTrace();
+>               }
 >
->                    int now = TEST_INTEGER.incrementAndGet();
->                  
->                }
->            };
->            threads[i].start();
->        }
->        for (Thread t : threads) {
->            t.join();
->        }
->        System.out.println("AtomicTest最终运行结果：" + TEST_INTEGER.get());
->    }
+>               int now = TEST_INTEGER.incrementAndGet();
+>             
+>           }
+>       };
+>       threads[i].start();
+>   }
+>   for (Thread t : threads) {
+>       t.join();
+>   }
+>   System.out.println("AtomicTest最终运行结果：" + TEST_INTEGER.get());
+>}
 >
->    /**
->     * 普通int测试。最终打印的结果不确定
->     *
->     * @throws InterruptedException
->     */
->    public static void intTest() throws InterruptedException {
->        Thread[] threads = new Thread[10];
->        CountDownLatch cd = new CountDownLatch(10);
->        for (int i = 0; i < 10; i++) {
+>/**
+>    * 普通int测试。最终打印的结果不确定
+>*
+>    * @throws InterruptedException
+>*/
+>public static void intTest() throws InterruptedException {
+>   Thread[] threads = new Thread[10];
+>   CountDownLatch cd = new CountDownLatch(10);
+>   for (int i = 0; i < 10; i++) {
 >
->            final int num = i;
+>       final int num = i;
 >
->            threads[i] = new Thread() {
->                public void run() {
->                    cd.countDown();
->                    try {
+>       threads[i] = new Thread() {
+>           public void run() {
+>               cd.countDown();
+>               try {
 >
->                        cd.await();  //等待10 个线程创建成功
+>                   cd.await();  //等待10 个线程创建成功
 >
->                    } catch (InterruptedException e) {
->                        e.printStackTrace();
->                    }
->                    try {
->                        Thread.sleep(1000);
->                    } catch (InterruptedException e) {
->                        e.printStackTrace();
->                    }
->                    int now = ++test;
->                }
->            };
+>               } catch (InterruptedException e) {
+>                   e.printStackTrace();
+>               }
+>               try {
+>                   Thread.sleep(1000);
+>               } catch (InterruptedException e) {
+>                   e.printStackTrace();
+>               }
+>               int now = ++test;
+>           }
+>       };
 >
->            threads[i].start();
->        }
->        for (Thread t : threads) {
->            t.join();
->        }
+>       threads[i].start();
+>   }
+>   for (Thread t : threads) {
+>       t.join();
+>   }
 >
->        System.out.println("intTest最终运行结果：" + test);
->    }
+>   System.out.println("intTest最终运行结果：" + test);
+>}
 >}
 >```
 >
@@ -256,31 +258,31 @@ date: 2019-03-17 13:19:00
 >
 >```Java
 >import java.util.concurrent.atomic.AtomicReference;  
->  
+>
 >public class AtomicReferenceTest {  
->  
->    public final static AtomicReference<String> ATOMIC_REFERENCE =
->                new AtomicReference<String>("abc");  
->      
->    public static void main(String []args) {  
->        for(int i = 0 ; i < 100 ; i++) {  
->            final int num = i;  
->            new Thread() {  
->                public void run() {  
->                    try {  
->                        Thread.sleep(Math.abs((int)(Math.random() * 100)));  
->                    } catch (InterruptedException e) {  
->                        e.printStackTrace();  
->                    }  
->                    
->                    if(ATOMIC_REFERENCE.compareAndSet("abc", new String("abc"))) {  
->                        System.out.println("我是线程：" + num + 
->                                           ",获得了锁进行了对象修改！");  
->                    }  
->                }  
->            }.start();  
->        }  
->    }  
+>
+>public final static AtomicReference<String> ATOMIC_REFERENCE =
+>           new AtomicReference<String>("abc");  
+> 
+>public static void main(String []args) {  
+>   for(int i = 0 ; i < 100 ; i++) {  
+>       final int num = i;  
+>       new Thread() {  
+>           public void run() {  
+>               try {  
+>                   Thread.sleep(Math.abs((int)(Math.random() * 100)));  
+>               } catch (InterruptedException e) {  
+>                   e.printStackTrace();  
+>               }  
+>               
+>               if(ATOMIC_REFERENCE.compareAndSet("abc", new String("abc"))) {  
+>                   System.out.println("我是线程：" + num + 
+>                                      ",获得了锁进行了对象修改！");  
+>               }  
+>           }  
+>       }.start();  
+>   }  
+>}  
 >}  
 >//这个结果应该只打印一次
 >```
@@ -294,40 +296,40 @@ date: 2019-03-17 13:19:00
 >```java
 >
 >import java.util.concurrent.atomic.AtomicReference;  
->  
+>
 >/** 
-> * ABA问题模拟，线程并发中，导致ABA问题，解决方案是使用|AtomicMarkableReference 
-> * 请参看相应的例子：AtomicStampedReferenceTest、AtomicMarkableReferenceTest 
-> * 
-> */  
+>* ABA问题模拟，线程并发中，导致ABA问题，解决方案是使用|AtomicMarkableReference 
+>* 请参看相应的例子：AtomicStampedReferenceTest、AtomicMarkableReferenceTest 
+>* 
+>*/  
 >public class AtomicReferenceABATest {  
->      
->    public final static AtomicReference <String>ATOMIC_REFERENCE = new AtomicReference<String>("abc");  
->  
->    public static void main(String []args) {  
->        for(int i = 0 ; i < 100 ; i++) {  
->            final int num = i;  
->            new Thread() {  
->                public void run() {  
->                    try {  
->                        Thread.sleep(Math.abs((int)(Math.random() * 100)));  
->                    } catch (InterruptedException e) {  
->                        e.printStackTrace();  
->                    }  
->                    if(ATOMIC_REFERENCE.compareAndSet("abc" , "abc2")) {  
->                        System.out.println("我是线程：" + num + 
->                                 ",我获得了锁进行了对象修改！");  
->                    }  
->                }  
->            }.start();  
->        }  
->        new Thread() {  
->            public void run() {  
->                while(!ATOMIC_REFERENCE.compareAndSet("abc2", "abc"));  
->                System.out.println("已经改为原始值！");  
->            }  
->        }.start();  
->    }  
+> 
+>public final static AtomicReference <String>ATOMIC_REFERENCE = new AtomicReference<String>("abc");  
+>
+>public static void main(String []args) {  
+>   for(int i = 0 ; i < 100 ; i++) {  
+>       final int num = i;  
+>       new Thread() {  
+>           public void run() {  
+>               try {  
+>                   Thread.sleep(Math.abs((int)(Math.random() * 100)));  
+>               } catch (InterruptedException e) {  
+>                   e.printStackTrace();  
+>               }  
+>               if(ATOMIC_REFERENCE.compareAndSet("abc" , "abc2")) {  
+>                   System.out.println("我是线程：" + num + 
+>                            ",我获得了锁进行了对象修改！");  
+>               }  
+>           }  
+>       }.start();  
+>   }  
+>   new Thread() {  
+>       public void run() {  
+>           while(!ATOMIC_REFERENCE.compareAndSet("abc2", "abc"));  
+>           System.out.println("已经改为原始值！");  
+>       }  
+>   }.start();  
+>}  
 >}
 >```
 >
@@ -349,40 +351,40 @@ date: 2019-03-17 13:19:00
 >
 >```java
 >import java.util.concurrent.atomic.AtomicStampedReference;  
->  
+>
 >public class AtomicStampedReferenceTest {  
->      
->    public final static AtomicStampedReference <String>ATOMIC_REFERENCE = 
->           new AtomicStampedReference<String>("abc" , 0);  
->      
->    public static void main(String []args) {  
->        for(int i = 0 ; i < 100 ; i++) {  
->            final int num = i;  
->            final int stamp = ATOMIC_REFERENCE.getStamp();  
->            new Thread() {  
->                public void run() {  
->                    try {  
->                        Thread.sleep(Math.abs((int)(Math.random() * 100)));  
->                    } catch (InterruptedException e) {  
->                        e.printStackTrace();  
->                    }  
->                    if(ATOMIC_REFERENCE.compareAndSet("abc" , "abc2" ,
->                    			stamp , stamp + 1)) {  
->                        System.out.println("我是线程：" + num + 
->                        			",我获得了锁进行了对象修改！");  
->                    }  
->                }  
->            }.start();  
->        }  
->        new Thread() {  
->            public void run() {  
->                int stamp = ATOMIC_REFERENCE.getStamp();  
->                while(!ATOMIC_REFERENCE.compareAndSet("abc2", "abc" , 
->                			stamp , stamp + 1));  
->                System.out.println("已经改回为原始值！");  
->            }  
->        }.start();  
->    }  
+> 
+>public final static AtomicStampedReference <String>ATOMIC_REFERENCE = 
+>      new AtomicStampedReference<String>("abc" , 0);  
+> 
+>public static void main(String []args) {  
+>   for(int i = 0 ; i < 100 ; i++) {  
+>       final int num = i;  
+>       final int stamp = ATOMIC_REFERENCE.getStamp();  
+>       new Thread() {  
+>           public void run() {  
+>               try {  
+>                   Thread.sleep(Math.abs((int)(Math.random() * 100)));  
+>               } catch (InterruptedException e) {  
+>                   e.printStackTrace();  
+>               }  
+>               if(ATOMIC_REFERENCE.compareAndSet("abc" , "abc2" ,
+>               			stamp , stamp + 1)) {  
+>                   System.out.println("我是线程：" + num + 
+>                   			",我获得了锁进行了对象修改！");  
+>               }  
+>           }  
+>       }.start();  
+>   }  
+>   new Thread() {  
+>       public void run() {  
+>           int stamp = ATOMIC_REFERENCE.getStamp();  
+>           while(!ATOMIC_REFERENCE.compareAndSet("abc2", "abc" , 
+>           			stamp , stamp + 1));  
+>           System.out.println("已经改回为原始值！");  
+>       }  
+>   }.start();  
+>}  
 >}
 >```
 >
@@ -392,7 +394,7 @@ date: 2019-03-17 13:19:00
 >
 >```Java
 >public final static AtomicMarkableReference <String>ATOMIC_MARKABLE_REFERENCE = 
->        new AtomicMarkableReference<String>("abc" , false);
+>   new AtomicMarkableReference<String>("abc" , false);
 >```
 >
 >操作时使用
@@ -413,46 +415,46 @@ date: 2019-03-17 13:19:00
 >
 >```java
 >import java.util.concurrent.atomic.AtomicIntegerArray;  
->  
+>
 >public class AtomicIntegerArrayTest {  
->  
->    /** 
->     * 常见的方法列表 
->     * @see AtomicIntegerArray#addAndGet(int, int) 执行加法，第一个参数为数组的下标，第二个参数为增加的数量，返回增加后的结果 
->     * @see AtomicIntegerArray#compareAndSet(int, int, int) 对比修改，参数1：数组下标，参数2：原始值，参数3，修改目标值，修改成功返回true否则false 
->     * @see AtomicIntegerArray#decrementAndGet(int) 参数为数组下标，将数组对应数字减少1，返回减少后的数据 
->     * @see AtomicIntegerArray#incrementAndGet(int) 参数为数组下标，将数组对应数字增加1，返回增加后的数据 
->     *  
->     * @see AtomicIntegerArray#getAndAdd(int, int) 和addAndGet类似，区别是返回值是变化前的数据 
->     * @see AtomicIntegerArray#getAndDecrement(int) 和decrementAndGet类似，区别是返回变化前的数据 
->     * @see AtomicIntegerArray#getAndIncrement(int) 和incrementAndGet类似，区别是返回变化前的数据 
->     * @see AtomicIntegerArray#getAndSet(int, int) 将对应下标的数字设置为指定值，第二个参数为设置的值，返回是变化前的数据 
->     */  
->    private final static AtomicIntegerArray ATOMIC_INTEGER_ARRAY = new AtomicIntegerArray(new int[]{1,2,3,4,5,6,7,8,9,10});  
->      
->    public static void main(String []args) throws InterruptedException {  
->        Thread []threads = new Thread[100];  
->        for(int i = 0 ; i < 100 ; i++) {  
->            final int index = i % 10;  
->            final int threadNum = i;  
->            threads[i] = new Thread() {  
->                public void run() {  
->                    int result = ATOMIC_INTEGER_ARRAY.addAndGet(index, index + 1);  
->                    System.out.println("线程编号为：" + 
->                                       threadNum + " , 对应的原始值为：" + 
->                                        (index + 1) + "，增加后的结果为：" + result);  
->                }  
->            };  
->            threads[i].start();  
->        }  
->        for(Thread thread : threads) {  
->            thread.join();  
->        }  
->        System.out.println("=========================>\n执行已经完成，结果列表：");  
->        for(int i = 0 ; i < ATOMIC_INTEGER_ARRAY.length() ; i++) {  
->            System.out.println(ATOMIC_INTEGER_ARRAY.get(i));  
->        }  
->    }  
+>
+>/** 
+>    * 常见的方法列表 
+>    * @see AtomicIntegerArray#addAndGet(int, int) 执行加法，第一个参数为数组的下标，第二个参数为增加的数量，返回增加后的结果 
+>    * @see AtomicIntegerArray#compareAndSet(int, int, int) 对比修改，参数1：数组下标，参数2：原始值，参数3，修改目标值，修改成功返回true否则false 
+>    * @see AtomicIntegerArray#decrementAndGet(int) 参数为数组下标，将数组对应数字减少1，返回减少后的数据 
+>    * @see AtomicIntegerArray#incrementAndGet(int) 参数为数组下标，将数组对应数字增加1，返回增加后的数据 
+>    *  
+>    * @see AtomicIntegerArray#getAndAdd(int, int) 和addAndGet类似，区别是返回值是变化前的数据 
+>    * @see AtomicIntegerArray#getAndDecrement(int) 和decrementAndGet类似，区别是返回变化前的数据 
+>    * @see AtomicIntegerArray#getAndIncrement(int) 和incrementAndGet类似，区别是返回变化前的数据 
+>    * @see AtomicIntegerArray#getAndSet(int, int) 将对应下标的数字设置为指定值，第二个参数为设置的值，返回是变化前的数据 
+>*/  
+>private final static AtomicIntegerArray ATOMIC_INTEGER_ARRAY = new AtomicIntegerArray(new int[]{1,2,3,4,5,6,7,8,9,10});  
+> 
+>public static void main(String []args) throws InterruptedException {  
+>   Thread []threads = new Thread[100];  
+>   for(int i = 0 ; i < 100 ; i++) {  
+>       final int index = i % 10;  
+>       final int threadNum = i;  
+>       threads[i] = new Thread() {  
+>           public void run() {  
+>               int result = ATOMIC_INTEGER_ARRAY.addAndGet(index, index + 1);  
+>               System.out.println("线程编号为：" + 
+>                                  threadNum + " , 对应的原始值为：" + 
+>                                   (index + 1) + "，增加后的结果为：" + result);  
+>           }  
+>       };  
+>       threads[i].start();  
+>   }  
+>   for(Thread thread : threads) {  
+>       thread.join();  
+>   }  
+>   System.out.println("=========================>\n执行已经完成，结果列表：");  
+>   for(int i = 0 ; i < ATOMIC_INTEGER_ARRAY.length() ; i++) {  
+>       System.out.println(ATOMIC_INTEGER_ARRAY.get(i));  
+>   }  
+>}  
 >} 
 >```
 >
@@ -480,45 +482,45 @@ date: 2019-03-17 13:19:00
 >
 >```
 >import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;  
->  
+>
 >public class AtomicIntegerFieldUpdaterTest {  
->  
->    static class A {  
->        volatile int intValue = 100;  
->    }  
->      
->    /** 
->     * 可以直接访问对应的变量，进行修改和处理 
->     * 条件：要在可访问的区域内，如果是private或挎包访问default类型以及非父亲类的protected均无法访问到 
->     * 其次访问对象不能是static类型的变量（因为在计算属性的偏移量的时候无法计算），也不能是final类型的变量（因为根本无法修改），必须是普通的成员变量 
->     *  
->     * 方法（说明上和AtomicInteger几乎一致，唯一的区别是第一个参数需要传入对象的引用） 
->     * @see AtomicIntegerFieldUpdater#addAndGet(Object, int) 
->     * @see AtomicIntegerFieldUpdater#compareAndSet(Object, int, int) 
->     * @see AtomicIntegerFieldUpdater#decrementAndGet(Object) 
->     * @see AtomicIntegerFieldUpdater#incrementAndGet(Object) 
->     *  
->     * @see AtomicIntegerFieldUpdater#getAndAdd(Object, int) 
->     * @see AtomicIntegerFieldUpdater#getAndDecrement(Object) 
->     * @see AtomicIntegerFieldUpdater#getAndIncrement(Object) 
->     * @see AtomicIntegerFieldUpdater#getAndSet(Object, int) 
->     */  
->    public final static AtomicIntegerFieldUpdater <A>ATOMIC_INTEGER_UPDATER = AtomicIntegerFieldUpdater.newUpdater(A.class, "intValue");  
->      
->    public static void main(String []args) {  
->        final A a = new A();  
->        for(int i = 0 ; i < 100 ; i++) {  
->            final int num = i;  
->            new Thread() {  
->                public void run() {  
->                    if(ATOMIC_INTEGER_UPDATER.compareAndSet(a, 100, 120)) {  
->                        System.out.println("我是线程：" + num + 
->                        				" 我对对应的值做了修改！");  
->                    }  
->                }  
->            }.start();  
->        }  
->    }  
+>
+>static class A {  
+>   volatile int intValue = 100;  
+>}  
+> 
+>/** 
+>    * 可以直接访问对应的变量，进行修改和处理 
+>    * 条件：要在可访问的区域内，如果是private或挎包访问default类型以及非父亲类的protected均无法访问到 
+>    * 其次访问对象不能是static类型的变量（因为在计算属性的偏移量的时候无法计算），也不能是final类型的变量（因为根本无法修改），必须是普通的成员变量 
+>    *  
+>    * 方法（说明上和AtomicInteger几乎一致，唯一的区别是第一个参数需要传入对象的引用） 
+>    * @see AtomicIntegerFieldUpdater#addAndGet(Object, int) 
+>    * @see AtomicIntegerFieldUpdater#compareAndSet(Object, int, int) 
+>    * @see AtomicIntegerFieldUpdater#decrementAndGet(Object) 
+>    * @see AtomicIntegerFieldUpdater#incrementAndGet(Object) 
+>    *  
+>    * @see AtomicIntegerFieldUpdater#getAndAdd(Object, int) 
+>    * @see AtomicIntegerFieldUpdater#getAndDecrement(Object) 
+>    * @see AtomicIntegerFieldUpdater#getAndIncrement(Object) 
+>    * @see AtomicIntegerFieldUpdater#getAndSet(Object, int) 
+>*/  
+>public final static AtomicIntegerFieldUpdater <A>ATOMIC_INTEGER_UPDATER = AtomicIntegerFieldUpdater.newUpdater(A.class, "intValue");  
+> 
+>public static void main(String []args) {  
+>   final A a = new A();  
+>   for(int i = 0 ; i < 100 ; i++) {  
+>       final int num = i;  
+>       new Thread() {  
+>           public void run() {  
+>               if(ATOMIC_INTEGER_UPDATER.compareAndSet(a, 100, 120)) {  
+>                   System.out.println("我是线程：" + num + 
+>                   				" 我对对应的值做了修改！");  
+>               }  
+>           }  
+>       }.start();  
+>   }  
+>}  
 >}  
 >```
 >
@@ -530,9 +532,9 @@ date: 2019-03-17 13:19:00
 >
 >```java
 >static class A {  
->    volatile String stringValue = "abc";  
+>volatile String stringValue = "abc";  
 >}  
->  
+>
 >AtomicReferenceFieldUpdater <A ,String>ATOMIC_REFERENCE_FIELD_UPDATER =    AtomicReferenceFieldUpdater.newUpdater(A.class, String.class, "stringValue");  
 >```
 >
@@ -551,31 +553,31 @@ date: 2019-03-17 13:19:00
 >
 >//构造函数
 >LongAdder()
->    //创建初始和为零的新加法器。
+>//创建初始和为零的新加法器。
 >
 >//方法摘要
 >void    add(long x)
->    //添加给定的值。
+>//添加给定的值。
 >void    decrement()
->    //相当于add(-1)。
+>//相当于add(-1)。
 >double  doubleValue()
->    //在扩展原始转换之后返回sum()as double。
+>//在扩展原始转换之后返回sum()as double。
 >float   floatValue()
->    //在扩展原始转换之后返回sum()as float。
+>//在扩展原始转换之后返回sum()as float。
 >void    increment()
->    //相当于add(1)。
+>//相当于add(1)。
 >int intValue()
->    //返回sum()作为int一个基本收缩转换之后。
+>//返回sum()作为int一个基本收缩转换之后。
 >long    longValue()
->    //相当于sum()。
+>//相当于sum()。
 >void    reset()
->    //重置将总和保持为零的变量。
+>//重置将总和保持为零的变量。
 >long    sum()
->    //返回当前的总和。
+>//返回当前的总和。
 >long    sumThenReset()
->    //等同于sum()后面的效果reset()。
+>//等同于sum()后面的效果reset()。
 >String  toString()
->    //返回。的字符串表示形式sum()。
+>//返回。的字符串表示形式sum()。
 >```
 >
 >**实现原理：**
@@ -589,5 +591,3 @@ date: 2019-03-17 13:19:00
 >LongAdder这样的处理方式是有坏处的，分段操作必然带来空间上的浪费，可以空间换时间；
 >
 >AtomicInteger和LongAdder的速度关系是： 低并发时LongAdder和AtomicLong性能差不多，高并发时LongAdder更高效
-
-
