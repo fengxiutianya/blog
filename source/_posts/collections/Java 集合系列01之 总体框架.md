@@ -1,10 +1,10 @@
 ---
---
 title: Java 集合系列01之 总体框架
 tags:
   - 集合
 categories:
   - java
+  - Collection
 abbrlink: 2d62f277
 date: 2019-03-04 09:08:00
 ---

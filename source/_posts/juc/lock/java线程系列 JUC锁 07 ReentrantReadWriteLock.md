@@ -30,6 +30,7 @@ ReentrantReadWriteLock中包含：Sync对象，读锁ReadLock和写锁WriteLock�
 读锁ReadLock和写锁WriteLock都实现了Lock接口。读锁ReadLock和写锁WriteLock中也都分别包含了相同的Sync对象，里面所有的功能实现也都是靠这个对象。它们的Sync对象和ReentrantReadWriteLock的Sync对象是一样，就是通过sync，读锁和写锁实现了对同一个对象的访问。
 
 和ReentrantLock一样，Sync也是一个继承于AQS的抽象类。Sync也包括公平锁FairSync和非公平锁NonfairSync。在创建读写锁时可以选择其中俩个其中一个，默认是NonfairSync。
+<!-- more  -->
 
 ### 公平读写锁源码分析
 
