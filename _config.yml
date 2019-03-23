@@ -91,3 +91,10 @@ algolia:
   chunkSize: 5000
 admin:
   deployCommand: "./upload.sh"
+# Post wordcount display settings
+# Dependencies: https://github.com/theme-next/hexo-symbols-count-time
+symbols_count_time:
+  symbols: true
+  time: true
+  total_symbols: true
+  total_time: true
