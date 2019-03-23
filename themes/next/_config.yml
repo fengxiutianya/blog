@@ -436,7 +436,7 @@ font:
 
 # Math Equations Render Support
 math:
-  enable: false
+  enable: true
 
   # Default(true) will load mathjax/katex script on demand
   # That is it only render those page who has `mathjax: true` in Front Matter.
@@ -607,7 +607,7 @@ needmoreshare2:
 #google_site_verification:
 
 # Google Analytics
-#google_analytics:
+google_analytics: UA-136781627-1
 
 # Bing Webmaster tools verification setting
 # See: https://www.bing.com/webmaster
@@ -705,7 +705,7 @@ busuanzi_count:
 #tencent_mta:
 
 # Enable baidu push so that the blog will push the url to baidu automatically which is very helpful for SEO.
-baidu_push: true
+baidu_push: false
 
 # Google Calendar
 # Share your recent schedule to others via calendar page.
@@ -847,7 +847,7 @@ pace_theme: pace-theme-minimal
 # Canvas-nest
 # Dependencies: https://github.com/theme-next/theme-next-canvas-nest
 canvas_nest:
-  enable: false
+  enable: true
   onmobile: true # display on mobile or not
   color: "0,0,255" # RGB values, use ',' to separate
   opacity: 0.5 # the opacity of line: 0~1
