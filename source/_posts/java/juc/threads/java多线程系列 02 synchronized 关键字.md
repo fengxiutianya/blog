@@ -1,7 +1,8 @@
 ---
 title: java多线程系列 02 sychronized关键字
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
   - 线程

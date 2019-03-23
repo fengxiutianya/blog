@@ -1,7 +1,8 @@
 ---
 title: java多线程系列 06  线程优先级和守护线程
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
   - 线程

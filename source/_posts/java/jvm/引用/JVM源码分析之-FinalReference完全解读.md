@@ -1,15 +1,14 @@
 ---
 title: JVM源码分析之 FinalReference 完全解读
 tags:
-  - java
+  - 引用
 categories:
   - java
+  - JVM
   - 引用
 abbrlink: 53c15109
 date: 2019-01-04 10:24:00
 ---
-# JVM源码分析之 FinalReference完全解读
-
 ## 概述
 
 Java对象引用体系除了强引用之外，出于对性能、可扩展性等方面考虑还特地实现了4种其他引用：`SoftReference`、`WeakReference`、`PhantomReference`、`FinalReference`，本文主要想讲的是`FinalReference`，因为当使用内存分析工具，比如zprofiler、mat等，分析一些oom的heap时，经常能看到 `java.lang.ref.Finalizer`占用的内存大小远远排在前面，而这个类占用的内存大小又和我们这次的主角`FinalReference`有着密不可分的关系。

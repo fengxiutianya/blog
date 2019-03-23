@@ -1,14 +1,14 @@
 ---
 title: 'java 注解 02：@Inherited '
 tags:
+  - 注解
+categories:
   - java
-categories: []
+  - 基础
 author: fengxiutianya
 abbrlink: ca158b7a
 date: 2019-03-04 07:22:00
 ---
-# java 注解 02：`@Inherited `
-
 `@Inherited` 作用：**注解继承声明，是否允许子类继承该注解**
 
 下面看具体示例

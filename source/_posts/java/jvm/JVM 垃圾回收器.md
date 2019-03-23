@@ -2,8 +2,8 @@
 title: JVM 垃圾回收器
 tags:
   - 垃圾回收
-  - ''
 categories:
+  - java
   - JVM
   - 垃圾回收
 abbrlink: 1d97a19

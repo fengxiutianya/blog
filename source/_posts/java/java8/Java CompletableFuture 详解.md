@@ -5,25 +5,20 @@ tags:
   - Future
 categories:
   - java
+  - java8
 author: zhangke
 abbrlink: 931a340
 date: 2019-01-04 16:49:00
 ---
-# Java CompletableFuture 详解
-
 ### 概述
-
 1. 前言
 2. 准备工作
 3. CompleteableFuture基本使用
-4.  CompletableFuture 类使用示例
-
+4. CompletableFuture 类使用示例
 ### 前言
-
 Java 5 并发库主要关注于异步任务的处理，它采用了这样一种模式，producer 线程创建任务并且利用阻塞队列将其传递给任务的 consumer。这种模型在 Java 7 和 8 中进一步发展，并且开始支持另外一种风格的任务执行，那就是将任务的数据集分解为子集，每个子集都可以由独立且同质的子任务来负责处理。
 
 这种风格的基础库也就是 fork/join 框架，它允许程序员规定数据集该如何进行分割，并且支持将子任务提交到默认的标准线程池中，也就是通用的**ForkJoinPool**。Java 8 中，fork/join 并行功能借助并行流的机制变得更加具有可用性。但是，不是所有的问题都适合这种风格的并行处理：所处理的元素必须是独立的，数据集要足够大，并且在并行加速方面，每个元素的处理成本要足够高，这样才能补偿建立 fork/join 框架所消耗的成本。CompletableFuture 类则是 Java 8 在并行流方面的创新。
-
 <!--  more -->
 
 ### 准备工作

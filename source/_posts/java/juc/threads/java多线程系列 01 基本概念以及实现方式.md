@@ -1,7 +1,7 @@
 ---
 title: java多线程系列 01 基本概念以及实现方式
 tags:
-  - 多线程
+  - 并发
 categories:
   - java
   - 线程

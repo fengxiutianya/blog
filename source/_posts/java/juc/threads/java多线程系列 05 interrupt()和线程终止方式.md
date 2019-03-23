@@ -1,7 +1,8 @@
 ---
 title: 'Java多线程系列 05 interrupt()和线程终止方式'
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
   - 线程

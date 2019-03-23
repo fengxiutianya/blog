@@ -1,31 +1,25 @@
 ---
 title: java 打包技术之jar文件
 tags:
-  - java
   - jar
 categories:
   - java
+  - jar
 author: zhangke
 abbrlink: 2f7bd7dc
 date: 2019-01-08 08:55:00
 ---
-# java 打包技术之jar文件
-
-### 概述
-
+## 概述
 1. jar技术简介及使用
 2. Manifest文件
 
 ### jar技术简介及使用
-
 本文主要是参照[Lesson: Packaging Programs in JAR Files](https://docs.oracle.com/javase/tutorial/deployment/jar/apiindex.html)来写，如果你的英文不错，可以直接看这个java官方教程。
 
 在开始看下文你需要确认你安装的jdk环境带有jar命令，只需要在命令行中输入**jar -h**看看能不能找到命令即可。如果你安装的是oracle JDK，那么这个命令已经内置在java开发套件中。
-
 下文所使用的源代码地址[gihub](https://github.com/fengxiutianya/blogsource/tree/master/jarstudy)
 <!-- more -->
 **jar技术是什么以及可以用来干什么？**
-
 官方给出的解释如下：JAR文件以zip文件格式打包，因此您可以将其用于无损数据压缩、归档、解压缩和归档解包等任务。这些任务是JAR文件最常见的用途之一，您只需使用这些基本特性就可以实现许多JAR文件的好处。
 
 我这里先不解释这句话，先看看例子，最后我们来总结一些自己理解的jar技术。
@@ -49,13 +43,13 @@ jar cf jar-file input-file(s)
 
 下面这些参数都是可选的，可以和上面一起使用
 
-|   可选项   |                                             意义                                             |
-|:-------:|:------------------------------------------------------------------------------------------:|
-|    v    |                                      当创建jar文件时，打印创建过程                                      |
-| 0（zero） |                                            不压缩文件                                           |
-|    M    |                                      不创建默认的manifest文件                                      |
-|    m    | 用来包含指定manifest信息从指定文件中<br />使用格式如下<br />`jar cmf jar-file existing-manifest input-file(s)` |
-|    -C   |                                      用于修改打包过程中文件的具体位置                                      |
+|  可选项   |                                                      意义                                                      |
+| :-------: | :------------------------------------------------------------------------------------------------------------: |
+|     v     |                                         当创建jar文件时，打印创建过程                                          |
+| 0（zero） |                                                   不压缩文件                                                   |
+|     M     |                                            不创建默认的manifest文件                                            |
+|     m     | 用来包含指定manifest信息从指定文件中<br />使用格式如下<br />`jar cmf jar-file existing-manifest input-file(s)` |
+|    -C     |                                        用于修改打包过程中文件的具体位置                                        |
 
 具体例子:
 

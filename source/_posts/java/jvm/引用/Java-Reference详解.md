@@ -2,17 +2,15 @@
 title: Java Reference详解
 author: 枫秀天涯
 tags:
-  - java
+  - 引用
 categories:
   - java
+  - JVM
   - 引用
 abbrlink: 2e7bd07f
 date: 2019-01-04 10:25:00
 ---
-# Java Reference详解
-
 ### 概述
-
 Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。
 
 除了强引用外，Java还引入了SoftReference，WeakReference，PhantomReference，FinalReference ，这些类放在java.lang.ref包下，类的继承体系如下图。Java额外引入这个四种类型引用主要目的是在jvm 在gc时，按照引用类型的不同，在回收时采用不同的逻辑。可以把这些引用看作是对对象的一层包裹，jvm根据外层不同的包裹，对其包裹的对象采用不同的回收策略，或特殊逻辑处理。 这几种类型的引用主要在jvm内存缓存、资源释放、对象可达性事件处理等场景会用到。
@@ -307,12 +305,12 @@ PhantomReference使用时一定要传一个referenceQueue,当然也可以传null
 
 #### 引用类型对比
 
-| 序号  | 引用类型 | 取得目标对象方式   | 垃圾回收条件  | 是否可能内存泄漏 |
-|-----|------|------------|---------|----------|
-| 1   | 强引用  | 直接调用       | 不回收     | 可能       |
-| 2   | 软引用  | 通过 get()方法 | 视内存情况回收 | 不可能      |
-| 3   | 弱引用  | 通过 get()方法 | 永远回收    | 不可能      |
-| 4   | 虚引用  | 无法取得       | 不回收     | 可能       |
+| 序号 | 引用类型 | 取得目标对象方式 | 垃圾回收条件   | 是否可能内存泄漏 |
+| ---- | -------- | ---------------- | -------------- | ---------------- |
+| 1    | 强引用   | 直接调用         | 不回收         | 可能             |
+| 2    | 软引用   | 通过 get()方法   | 视内存情况回收 | 不可能           |
+| 3    | 弱引用   | 通过 get()方法   | 永远回收       | 不可能           |
+| 4    | 虚引用   | 无法取得         | 不回收         | 可能             |
 
 通过对SoftReference，WeakReference，PhantomReference 的介绍，可以看出JDK提供这些类型的reference 主要是用来和GC交互的，根据reference的不同，让JVM采用不同策略来进行对对象的回收(reclaim)。softly-reachable的referent在保证在OutOfMemoryError之前回收对象，weakly-reachable的referent在发生GC时就会被回收,同时这些reference和referenceQueue在一起提供通知机制，PhantomReference的作用就是仅仅就是提供对象回收通知机制，Finalizer借助这种机制实现referent的finalize执行，SoftReference、WeakReference也可以配合referenceQueue使用，实现对象回收通知机制。
 

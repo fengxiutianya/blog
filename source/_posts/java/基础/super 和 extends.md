@@ -5,7 +5,7 @@ tags:
   - 泛型
 categories:
   - java
-  - java基础
+  - 基础
 author: zhangke
 abbrlink: eb0962ed
 date: 2018-01-11 13:55:00

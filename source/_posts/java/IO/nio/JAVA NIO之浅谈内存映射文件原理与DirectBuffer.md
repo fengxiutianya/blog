@@ -5,6 +5,7 @@ tags:
   - 直接内存
 categories:
   - java
+  - IO
   - NIO
 abbrlink: e3ecb02e
 date: 2019-01-13 16:40:00

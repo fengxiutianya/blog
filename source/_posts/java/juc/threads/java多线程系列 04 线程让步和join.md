@@ -1,13 +1,14 @@
 ---
 title: java多线程系列 04 线程让步和join
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
   - 线程
 author: zhangke
 abbrlink: 9dbd6aed
-date: 2018-07-13 11:20:00
+date: 2018-07-13 11:08:00
 ---
 # java 多线系列之 04 线程让步和join
 

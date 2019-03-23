@@ -1,7 +1,8 @@
 ---
 title: ' java多线程系列 03 线程等待与唤醒，线程休眠'
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
   - 线程

@@ -1,15 +1,15 @@
 ---
 title: java多线程系列 08 ThreadLocal
 tags:
-  - 多线程
+  - java
+  - 并发
 categories:
   - java
+  - 线程
 author: zhangke
 abbrlink: 1354fe55
 date: 2018-07-13 16:50:00
 ---
-# java多线程系列之 08 ThreadLocal
-
 ### 概要
 
 >1. ThreadLocal介绍

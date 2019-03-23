@@ -4,26 +4,20 @@ abbrlink: 400f00a6
 tags:
   - java
   - 并发
-  - 线程
-  - thread
 categories:
   - java
-  - 并发
+  - 线程
 date: 2018-09-12 10:28:00
 ---
 ###  概述
-
 1. ThreadLocal是什么
 2. 如何使用ThreadLocal
 3. ThreadLocal源码分析
 4. 总结
 
 ### ThreadLocal 是什么
-
 首先我们要明白一点，线程同步主要是为了完成线程间数据共享和同步，保持数据的完整性。而ThreadLocal正如他的名字一样是线程的本地变量，也就是线程所私有的。因此他和线程同步无关，（因为不存在线程之间共享变量的问题，就不需要使用同步机制）。ThreadLocal虽然提供了一种解决多线程环境下成员变量的问题，但是它并不是解决多线程共享变量的问题。那么ThreadLocal到底是什么呢？
-
 <!-- more --->
-
 #### API是这样介绍它的：
 
 **This class provides thread-local variables. These variables differ from their normal counterparts in that each thread that accesses one (via its {@code get} or {@code set} method) has its own, independently initialized copy of the variable. {@code ThreadLocal} instances are typically private static fields in classes that wish to associate state with a thread (e.g.,a user ID or Transaction ID).**
