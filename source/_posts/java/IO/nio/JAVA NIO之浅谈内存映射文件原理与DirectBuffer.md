@@ -6,7 +6,7 @@ tags:
 categories:
   - java
   - IO
-  - NIO
+  - nio
 abbrlink: e3ecb02e
 date: 2019-01-13 16:40:00
 ---

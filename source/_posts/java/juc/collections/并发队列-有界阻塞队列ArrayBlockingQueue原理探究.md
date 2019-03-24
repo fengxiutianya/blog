@@ -6,7 +6,7 @@ tags:
 categories:
   - java
   - juc
-  - 队列
+  - collections
 abbrlink: 5fda9009
 date: 2019-03-06 19:05:00
 ---

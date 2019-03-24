@@ -5,7 +5,7 @@ tags:
 categories:
   - java
   - juc
-  - 线程池
+  - Executors
 title: java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析
 abbrlink: ca60f1d2
 date: 2018-07-23 14:35:00

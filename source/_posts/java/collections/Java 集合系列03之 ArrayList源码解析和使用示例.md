@@ -4,7 +4,7 @@ tags:
   - 集合
 categories:
   - java
-  - Collection
+  - collections
 abbrlink: 4dcbcf5f
 date: 2019-03-04 12:09:00
 ---

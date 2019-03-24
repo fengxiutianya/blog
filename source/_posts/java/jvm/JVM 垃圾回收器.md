@@ -4,8 +4,7 @@ tags:
   - 垃圾回收
 categories:
   - java
-  - JVM
-  - 垃圾回收
+  - jvm
 abbrlink: 1d97a19
 date: 2019-03-15 09:02:00
 ---

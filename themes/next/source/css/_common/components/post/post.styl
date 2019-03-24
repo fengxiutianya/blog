@@ -48,7 +48,16 @@
   if hexo-config('motion.transition.post_body') { .post-body { opacity: 0; } }
   if hexo-config('motion.transition.coll_header') { .collection-title { opacity: 0; } }
 }
-
+.post-body  a{
+  color: #0593d3;
+  border-bottom: none;
+  border-bottom: 1px solid #0593d3;
+  &:hover {
+    color: #fc6423;
+    border-bottom: none;
+    border-bottom: 1px solid #fc6423;
+  }
+}
 @import "post-expand";
 @import "post-collapse";
 @import "post-type";
@@ -64,3 +73,4 @@
 @import "post-widgets" if (hexo-config('facebook_sdk.enable') and hexo-config('facebook_sdk.like_button')) or (hexo-config('vkontakte_api.enable') and hexo-config('vkontakte_api.like')) or hexo-config('rating.enable') or (hexo-config('needmoreshare2.enable') and hexo-config('needmoreshare2.postbottom.enable')) or hexo-config('baidushare');
 @import "post-rtl";
 @import "post-reading_progress" if hexo-config('reading_progress.enable');
+@import "my-post-copyright"

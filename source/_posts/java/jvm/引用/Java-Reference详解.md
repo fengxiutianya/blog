@@ -5,7 +5,7 @@ tags:
   - 引用
 categories:
   - java
-  - JVM
+  - jvm
   - 引用
 abbrlink: 2e7bd07f
 date: 2019-01-04 10:25:00

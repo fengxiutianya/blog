@@ -5,7 +5,7 @@ tags:
 categories:
   - java
   - juc
-  - sync同步器
+  - tools
 abbrlink: c05d7ca
 date: 2019-03-19 11:32:00
 ---

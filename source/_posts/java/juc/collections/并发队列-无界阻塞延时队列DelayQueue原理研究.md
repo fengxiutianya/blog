@@ -4,7 +4,7 @@ tags:
 categories:
   - java
   - juc
-  - 队列
+  - collections
 title: 并发队列-无界阻塞延时队列DelayQueue原理研究
 abbrlink: b9225de
 date: 2019-03-06 19:05:00

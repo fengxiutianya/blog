@@ -5,7 +5,8 @@ tags:
   - 并发
 categories:
   - java
-  - 线程
+  - juc
+  - threads
 author: zhangke
 abbrlink: 876c7808
 date: 2018-07-13 11:08:00

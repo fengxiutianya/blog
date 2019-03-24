@@ -1,3 +1,4 @@
+---
 title: 深入分析ThreadLocal
 author: zhangke
 abbrlink: 400f00a6
@@ -6,7 +7,8 @@ tags:
   - 并发
 categories:
   - java
-  - 线程
+  - juc
+  - threads
 date: 2018-09-12 10:28:00
 ---
 ###  概述

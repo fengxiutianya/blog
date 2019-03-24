@@ -4,8 +4,7 @@ tags:
   - 内存模型
 categories:
   - java
-  - JVM
-  - 内存模型
+  - jvm
 abbrlink: 56bd0dd8
 date: 2019-03-23 08:01:51
 ---

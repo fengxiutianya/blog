@@ -5,7 +5,7 @@ tags:
 categories:
   - java
   - juc
-  - 工具类
+  - others
 author: zhangke
 abbrlink: '54488428'
 date: 2018-12-12 15:42:00

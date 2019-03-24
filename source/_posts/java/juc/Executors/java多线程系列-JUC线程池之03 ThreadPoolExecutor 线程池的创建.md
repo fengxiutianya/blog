@@ -6,7 +6,7 @@ tags:
 categories:
   - java
   - juc
-  - 线程池
+  - Executors
 abbrlink: a1d13062
 date: 2018-07-24 13:58:00
 ---

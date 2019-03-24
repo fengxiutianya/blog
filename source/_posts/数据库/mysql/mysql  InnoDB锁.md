@@ -5,7 +5,6 @@ tags:
 categories:
   - 数据库
   - mysql
-  - innodb
 abbrlink: 31ad40b4
 date: 2019-03-21 15:03:03
 ---
