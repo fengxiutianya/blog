@@ -98,3 +98,9 @@ symbols_count_time:
   time: true
   total_symbols: true
   total_time: true
+# Generate categories from directory-tree
+# Dependencies: https://github.com/xu-song/hexo-auto-category
+# depth: the max_depth of directory-tree you want to generate, should > 0
+auto_category:
+  enable: true
+  depth:
