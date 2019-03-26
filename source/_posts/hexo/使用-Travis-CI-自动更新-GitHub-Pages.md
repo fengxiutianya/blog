@@ -4,7 +4,7 @@ author: 枫秀天涯
 tags:
   - 博客建站
 categories:
-  - others
+  - hexo
 abbrlink: 32102
 date: 2018-12-28 14:59:00
 ---
