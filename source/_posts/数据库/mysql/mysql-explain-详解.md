@@ -1,19 +1,18 @@
 ---
 title: mysql explain 详解
-abbrlink: dd6beb0a
 categories:
   - 数据库
   - mysql
-date: 2019-03-26 19:57:28
-tags: 
+tags:
   - mysql
   - explain
+abbrlink: dd6beb0a
+date: 2019-03-26 19:57:28
 copyright:
 ---
 今天在看《高性能mysql》这本书的时候，经常看到explain这个命令。所以希望总结一下这个命令的一些知识点。此外，我们为了能够在数据库运行过程中去优化，就会开启慢查询日志，而慢查询日志记录一些执行时间比较久的SQL语句，但是找出这些SQL语句并不意味着完事了。我们需要分析为什么这条sql执行的慢，也就是找出具体的原因。这时我们常常用到explain这个命令来查看一个这些SQL语句的执行计划，查看该SQL语句有没有使用上了索引，有没有做全表扫描，这都可以通过explain命令来查看。所以我们深入了解MySQL的基于开销的优化器，还可以获得很多可能被优化器考虑到的访问策略的细节，以及当运行SQL语句时哪种策略预计会被优化器采用。（QEP：sql生成一个执行计划query Execution plan）
-首先我们看看这个命令输出的具体格式，然后分别的解释其中每列代表的意思：
-
-如果执行这条sql语句`explain  select * from film`,输出的内容如下：
+<!-- more -->
+首先我们看看这个命令输出的具体格式，然后分别的解释其中每列代表的意思,如果执行这条sql语句`explain  select * from film`,输出的内容如下：
 
 | id  | select_type | table | type | possible_keys | key  | key_len | ref  | rows | filtered | Extras |
 |-----|-------------|-------|------|---------------|------|---------|------|------|----------|--------|

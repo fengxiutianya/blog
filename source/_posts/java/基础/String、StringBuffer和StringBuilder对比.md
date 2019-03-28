@@ -130,5 +130,6 @@ stringBuilder.toString();// 这时就会产生 new String("ABCABC)
 不知道对不对，欢迎大家讨论
 ### 参考
 
-1.  [String,StringBuffer与StringBuilder的区别|线程安全与线程不安全](https://www.cnblogs.com/xingzc/p/6277581.html)
-2. [字面量和常量池初探](https://mccxj.github.io/blog/20130615_java-string-constant-pool.html) 基于java1.6
+1. [String,StringBuffer与StringBuilder的区别|线程安全与线程不安全](https://www.cnblogs.com/xingzc/p/6277581.html)
+2. [字面量和常量池初探  基于java1.6](https://mccxj.github.io/blog/20130615_java-string-constant-pool.html)
+3. [String：字符串常量池](https://segmentfault.com/a/1190000009888357)
