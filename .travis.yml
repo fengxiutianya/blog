@@ -25,8 +25,8 @@ script:
 after_success:
   - cd ./public
   - git init
-  - git config user.name "398757724@qq.com"
-  - git config user.email "iloveyou617"
+  - git config user.name  "zhangke"
+  - git config user.email "398757724@qq.com"
   - git add --all
   - git commit -m "version 1"
   - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages
