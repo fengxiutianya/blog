@@ -46,7 +46,7 @@ relative_link: false
 future: true
 highlight:
   enable: false
-  line_number: true
+  line_number: false
   auto_detect: true
   tab_replace: false
 
