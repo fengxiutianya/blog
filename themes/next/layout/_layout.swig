@@ -119,16 +119,9 @@
   {% include '_third-party/bookmark.swig' %}
   {% include '_third-party/copy-code.swig' %}
   {% include '_third-party/pdf.swig' %}
+  
+  {# 加入prettify 代码高亮显示#}
+  {% include '_third-party/prettify.swig' %}
 
-{# 加入 highlight代码高亮#}
-<link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.12.0/styles/atom-one-dark.min.css">
-<script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js">
-</script>
-<script>
-    $(function() {
-    hljs.initHighlighting();
-
-  });
-</script>
 </body>
 </html>

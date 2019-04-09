@@ -305,7 +305,7 @@ codeblock:
   border_radius:
   # Add copy button on codeblock
   copy_button:
-    enable: true
+    enable: false
     # Show text copy result
     show_result: true
 
@@ -1042,7 +1042,10 @@ vendors:
   # Example:
   # md5: //cdn.jsdelivr.net/npm/js-md5@0/src/md5.min.js
   md5:
-
+#####  自定义
+## prettify 主题配置，可以去下面的网站中寻找合适的主题名称
+### https://jmblog.github.io/color-themes-for-google-code-prettify/
+custom_highlight_theme: atelier-estuary-light
 # Assets
 css: css
 js: js

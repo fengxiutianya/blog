@@ -3,13 +3,12 @@ title: nginx之rewrite模块
 abbrlink: 4123ac31
 categories:
   - nginx
-date: 2019-04-08 15:17:04
+  - 模块
 tags:
   - nginx
   - 重定向
+date: 2019-04-08 15:17:04
 ---
-如果你的英文阅读水平可以，那么你可以一边看官方文档，然后对应着看本篇博客的例子，这样效果会比较好。[官方文档](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html)
-
 **ngx_http_rewrite_module**模块用于使用pcre正则表达式更改请求URI、返回重定向和有条件地选择配置。此模块主要有下面几个指令：`break`,`if`,`return`,`rewrite`和`set`指令，这些指令按照以下顺序被执行：
 1.  首先按照顺序执行server上下文中的rewrite模块指令。
 2.  循环执行以下指令
@@ -349,6 +348,6 @@ Context:	http, server, location, if
 
 ##  参考
 
-1.  [搞懂nginx的rewrite模块](https://segmentfault.com/a/1190000008102599)
+1. [搞懂nginx的rewrite模块](https://segmentfault.com/a/1190000008102599)
 2. [Module ngx_http_rewrite_module](http://nginx.org/en/docs/http/ngx_http_rewrite_module.html)
 
