@@ -1,4 +1,5 @@
 #!/bin/bash
+pwd
 if [ ! -n "$1" ] ;then
     echo "请输入此次提交git的注释"
 else
