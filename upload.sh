@@ -7,5 +7,5 @@ else
     hexo clean
     git add --all
     git commit -m $1
-    git push orgin master:master
+    git push origin master:master
 fi
