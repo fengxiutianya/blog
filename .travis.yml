@@ -38,9 +38,9 @@ deploy:
   local_dir: ./public # 设置需要上传的目录
   target_branch: gh-pages
   keep_history: true
-  # on:
-  #  all_branches: true
-  #  condition: 
+  on:
+   all_branches: true
+   condition: $TRAVIS_BRANCH =dev
 notifications:
   email: false
 
