@@ -23,14 +23,24 @@ script:
   - hexo generate
   - export HEXO_ALGOLIA_INDEXING_KEY=d55e0adb332e8d9ef9023a6b4afd46f1 && hexo algolia
 
-after_success:
-  - cd ./public
-  - git init
-  - git config user.name  "zhangke"
-  - git config user.email "398757724@qq.com"
-  - git add --all
-  - git commit -m "version 1"
-  - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages
+# after_success:
+#   - cd ./public
+#   - git init
+#   - git config user.name  "zhangke"
+#   - git config user.email "398757724@qq.com"
+#   - git add --all
+#   - git commit -m "version 1"
+#   - git push --force --quiet "https://${GH_TOKEN}@${GH_REF}" master:gh-pages
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN 
+  local_dir: ./public # 设置需要上传的目录
+  target_branch: gh-pages
+  keep_history: true
+  on:
+   all_branches: true
+   condition: $TRAVIS_BRANCH = master|dev
 
 notifications:
   email: false
