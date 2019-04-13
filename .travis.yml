@@ -34,7 +34,7 @@ script:
 deploy:
   provider: pages
   skip_cleanup: true
-  github_token: $GITHUB_TOKEN 
+  github_token: $GH_TOKEN 
   local_dir: ./public # 设置需要上传的目录
   target_branch: gh-pages
   keep_history: true
