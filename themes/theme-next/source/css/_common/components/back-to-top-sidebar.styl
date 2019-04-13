@@ -6,10 +6,10 @@
   opacity: $b2t-opacity;
   cursor: pointer;
   text-align: center;
-  &:hover { opacity: $b2t-opacity-hover; }
+  &:hover { opacity: 0.8; }
 
   +tablet-mobile() {
-    hide() if not hexo-config('sidebar.onmobile');
+    hexo-config('sidebar.onmobile') ? fixbutton() : hide();
   }
 
   &.back-to-top-on {
