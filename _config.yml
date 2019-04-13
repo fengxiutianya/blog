@@ -5,8 +5,8 @@
 # Site
 title: 枫秀天涯
 subtitle:
-description: java,spring,分布式,数据库
-keywords: java,spring,分布式,数据库
+description: [java,spring,分布式,数据库]
+keywords: [java,spring,分布式,数据库]
 author: 枫秀天涯
 language: zh-CN
 timezone: Asia/Shanghai
@@ -80,6 +80,7 @@ pagination_dir: page
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
 theme: next
+
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
