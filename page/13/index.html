@@ -375,6 +375,324 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/190054bc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/posts/190054bc/" class="post-title-link" itemprop="url">String、StringBuffer和StringBuilder对比</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-02 13:24:00" itemprop="dateCreated datePublished" datetime="2019-01-02T13:24:00+08:00">2019-01-02</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/190054bc/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/190054bc/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/190054bc/" class="leancloud_visitors" data-flag-title="String、StringBuffer和StringBuilder对比">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4.6k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
+<li>简单介绍</li>
+<li>性能对比</li>
+<li>字符串常量池</li>
+</ol>
+<h2 id="1-简单介绍"><a href="#1-简单介绍" class="headerlink" title="1. 简单介绍"></a>1. 简单介绍</h2><p>这里只对这三个类做个简单的总结，如果你希望详细了解这三个类，可以看一下三篇文章，我觉得写得很好。</p>
+<ol>
+<li><a href="https://www.cnblogs.com/skywang12345/p/string01.html" target="_blank" rel="noopener">String 详解(String系列之1)</a></li>
+<li><a href="http://www.cnblogs.com/skywang12345/p/string02.html" target="_blank" rel="noopener">StringBuilder 详解 (String系列之2)</a></li>
+<li><a href="http://www.cnblogs.com/skywang12345/p/string03.html" target="_blank" rel="noopener">StringBuffer 详解 (String系列之3)</a></li>
+</ol>
+<p>首先一个简单的对比<br><strong>String 字符串常量</strong><br><strong>StringBuffer 字符串变量（线程安全）</strong><br><strong>StringBuilder 字符串变量（非线程安全）</strong><br>StringBuffer与StringBuilder的实现几乎是一样的，只是StringBufferr为了保证线程安全，在方法前面加上Synchronize关键字来保证安全性，StringBuilder是在Jdk1.5之后才出现的，因此下面先用StringBuffer来和String进行对比</p>
+<h3 id="String-VS-StringBuffer"><a href="#String-VS-StringBuffer" class="headerlink" title="String VS StringBuffer"></a>String VS StringBuffer</h3><p>String类型和StringBuffer类型俩者都是线程安全，主要区别其实在于String是不可变的对象, 因此在每次对String类型进行改变的时候其实都等同于生成了一个新的String对象，然后将指针指向新的String对象，所以经常改变内容的字符串最好不要用String，因为每次生成对象都会对系统性能产生影响，特别当内存中无引用对象多了以后， JVM的GC就会开始工作，那速度是一定会相当慢的。</p>
+<p>而如果是使用StringBuffer类则结果就不一样了，每次结果都会对StringBuffer对象本身进行操作，而不是生成新的对象，再改变对象引用。所以在一般情况下我们推荐使用StringBuffer，特别是字符串对象经常改变的情况下。而在某些特别情况下，String对象的字符串拼接其实是被JVM解释成了StringBuffer对象的拼接，所以这些时候String对象的速度并不会比StringBuffer对象慢，而特别是以下的字符串对象生成中， String效率是远要比StringBuffer快：</p>
+<pre><code class="java"> String S1 = “This is only a” + “ simple” + “ test”;
+ StringBuffer Sb = new StringBuffer(“This is only a”).append(“ simple”).append(“ test”);
+</code></pre>
+<p>测试结果：</p>
+<pre><code>Benchmark                         Mode  Cnt   Score    Error  Units
+StringBenchmark.testString        avgt    3   5.701 ±  2.431  ns/op
+StringBenchmark.testStringBuffer  avgt    3  27.077 ± 21.828  ns/op
+</code></pre><p><strong>其中score对应是每次操作花费的纳秒数</strong>你会很惊讶的发现，生成S1对象的速度简直太快了，而这个时候StringBuffer居然速度上根本一点都不占优势。其实这是JVM做的一次优化，在JVM眼里，这个<strong>String S1 = “This is only a” + “ simple” + “test”;</strong>其实就是：<strong>String S1 = “This is only a simple test”</strong>; 所以拼接速度很快。但大家这里要注意的是，如果你的字符串是来自另外的String对象的话，速度就没那么快了，下面就是一个例子：</p>
+<pre><code class="java">String S2 = “This is only a”;
+String S3 = “ simple”;
+String S4 = “ test”;
+String S1 = S2 +S3 + S4;
+</code></pre>
+<p>这时候 JVM 会规规矩矩的按照原来的方式去做,在大部分情况下StringBuffer的性能要好于String。</p>
+<h3 id="StringBuffer-VS-StringBuilder"><a href="#StringBuffer-VS-StringBuilder" class="headerlink" title="StringBuffer VS StringBuilder"></a>StringBuffer VS StringBuilder</h3><p><strong>StringBuffer</strong><br>Java.lang.StringBuffer线程安全的可变字符序列。虽然在任意时间点上它都包含某种特定的字符序列，但通过某些方法调用可以改变该序列的长度和内容。可将字符串缓冲区安全地用于多个线程。可以在必要时对这些方法进行同步，因此任意特定实例上的所有操作就好像是以串行顺序发生的，该顺序与所涉及的每个线程进行的方法调用顺序一致。StringBuffer上的主要操作是append和insert方法，可重载这些方法，以接受任意类型的数据。每个方法都能有效地将给定的数据转换成字符串，然后将该字符串的字符追加或插入到字符串缓冲区中。append方法始终将这些字符添加到缓冲区的末端；而insert方法则在指定的点添加字符。<br><strong>StringBuilder</strong><br>java.lang.StringBuilder一个可变的字符序列，是5.0新增的。此类提供一个与StringBuffer兼容的 API，但不保证同步。该类被设计用作StringBuffer的一个简易替换，用在字符串缓冲区被单个线程使用的时候（这种情况很普遍）。如果可能，建议优先采用该类，因为在大多数实现中，它比StringBuffer要快。两者的方法基本相同。</p>
+<h2 id="2-性能对比"><a href="#2-性能对比" class="headerlink" title="2. 性能对比"></a>2. 性能对比</h2><p>测试性能源码(使用了JMH来进行基准测试)</p>
+<pre><code class="java">@BenchmarkMode({Mode.AverageTime})
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Warmup(iterations = 3, time = 3)
+@Measurement(iterations = 3, time = 3)
+@Threads(1)
+@Fork(1)
+@State(Scope.Thread)
+public class StringBenchmark {
+    String s1;
+    StringBuffer stringBuffer;
+    StringBuilder stringBuilder;
+
+    @Setup(Level.Iteration)
+    public void before() {
+        s1 = &quot;s1&quot;;
+        stringBuffer = new StringBuffer(&quot;s1&quot;);
+        stringBuilder = new StringBuilder(&quot;s1&quot;);
+    }
+    @Benchmark
+    public String testStringAppend() {
+        return s1 += &quot;s2&quot;;
+    }
+    @Benchmark
+    public StringBuffer testStringBufferAppend() {
+        return stringBuffer.append(&quot;s2&quot;);
+    }
+    @Benchmark
+    public StringBuilder testStringBuilderAppend() {
+        //下面这个还会单独生成一个String对象，因此性能上有所损失，所以调整一下
+//        return new StringBuilder(&quot;s1&quot;).append(&quot;s2&quot;).toString();
+        return stringBuilder.append(&quot;s2&quot;);
+    }
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(StringBenchmark.class.getSimpleName())
+                .build();
+        new Runner(opt).run();
+    }
+}
+</code></pre>
+<p>测试结果</p>
+<pre><code>Benchmark                                Mode  Cnt      Score       Error  Units
+StringBenchmark.testStringAppend         avgt    3  28179.211 ± 25587.942  ns/op
+StringBenchmark.testStringBufferAppend   avgt    3     26.152 ±   189.157  ns/op
+StringBenchmark.testStringBuilderAppend  avgt    3     21.150 ±    48.648  ns/op
+</code></pre><p>从结果可以验证，在上面简单介绍中所说的，如果字符串拼接操作，最好选择StringBuilder，如果要保证线程安全选择StringBuffer，另外上面结果有一点需要注意的是，从测试结果看，StringBuffer和StringBuilder的性能差不多，这是因为我是在jdk8上运行并且只有一个线程，因此对Synchronize做了优化，使得StringBuffer性能得到提升。</p>
+<h2 id="3-字符串常量池"><a href="#3-字符串常量池" class="headerlink" title="3.字符串常量池"></a>3.字符串常量池</h2><p>我觉得这篇文章已经写得非常好因此可以看这篇文章<br><a href="https://segmentfault.com/a/1190000009888357" target="_blank" rel="noopener">String：字符串常量池</a><br>但是我对这个持有疑问<br><strong>String str2 = new String(“ABC”) + “ABC” ; 会创建多少个对象?</strong><br>str2 ：<br>字符串常量池：”ABC” : 1个<br>堆：new String(“ABC”) ：1个<br>引用： str2 ：1个<br>总共 ： 3个<br>我认为结果是这样的：<br>字符串常量池 “ABC” 1个<br>堆：new String(“ABC”),new String(“ABCABC”),new StringBuilder()<br>new String(“ABCABC”) 是由于new String(“ABC”)+”ABC”在编译的时候会按照下面这种方式来生成</p>
+<pre><code class="java">StringBuilder  stringBuilder = new StringBuilder();
+stringBuilder.append(&quot;ABC&quot;);
+stringBuilder.append(&quot;ABC);
+stringBuilder.toString();// 这时就会产生 new String(&quot;ABCABC)
+</code></pre>
+<p>另外由于这个是使用new String(“ABC”) + “ABC”，因此ABCABC不会进入常量池，除非调用String.intern()方法<br>不知道对不对，欢迎大家讨论</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://www.cnblogs.com/xingzc/p/6277581.html" target="_blank" rel="noopener">String,StringBuffer与StringBuilder的区别|线程安全与线程不安全</a></li>
+<li><a href="https://mccxj.github.io/blog/20130615_java-string-constant-pool.html" target="_blank" rel="noopener">字面量和常量池初探  基于java1.6</a></li>
+<li><a href="https://segmentfault.com/a/1190000009888357" target="_blank" rel="noopener">String：字符串常量池</a></li>
+</ol>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/32102/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -437,7 +755,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -665,7 +983,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -917,7 +1235,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -1167,7 +1485,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -1416,7 +1734,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -1666,7 +1984,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -1916,7 +2234,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -2175,7 +2493,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -2423,7 +2741,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
+                <time title="修改时间：2019-04-14 00:56:17" itemprop="dateModified" datetime="2019-04-14T00:56:17+08:00">2019-04-14</time>
               
             
           </span>
@@ -2593,258 +2911,6 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/1354fe55/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="枫秀天涯">
-      <meta itemprop="description" content="java,spring,分布式,数据库">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫秀天涯">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/posts/1354fe55/" class="post-title-link" itemprop="url">java多线程系列 08 ThreadLocal</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2018-07-13 16:50:00" itemprop="dateCreated datePublished" datetime="2018-07-13T16:50:00+08:00">2018-07-13</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-13 20:00:57" itemprop="dateModified" datetime="2019-04-13T20:00:57+08:00">2019-04-13</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/threads/" itemprop="url" rel="index"><span itemprop="name">threads</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/posts/1354fe55/#comments" itemprop="discussionUrl">
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/1354fe55/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/posts/1354fe55/" class="leancloud_visitors" data-flag-title="java多线程系列 08 ThreadLocal">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数：</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">3.7k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">3 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><blockquote>
-<ol>
-<li>ThreadLocal介绍</li>
-<li>基本用法</li>
-<li>ThreadLocal引起的内存泄漏</li>
-</ol>
-</blockquote>
-<h3 id="ThreadLocal-介绍"><a href="#ThreadLocal-介绍" class="headerlink" title="ThreadLocal 介绍"></a>ThreadLocal 介绍</h3><blockquote>
-<p>ThreadLocal提供了线程本地变量，它可以保证访问到的变量属于当前线程，每个线程都保存有一个变量副本，每个线程的变量都不同，而同一个线程在任何时候访问这个本地变量的结果都是一致的。当此线程结束生命周期时，所有的线程本地实例都会被GC。ThreadLocal相当于提供了一种线程隔离，将变量与线程相绑定。ThreadLocal通常定义为<code>private static</code>类型。<br>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/posts/1354fe55/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </p></blockquote></div>
-
-    
-
-    
-    
-    
-
-      
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2894,7 +2960,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-count">143</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -2975,7 +3041,11 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
                     
                       
                     
-                    <span class="site-state-item-count">34</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">36</span>
                     <span class="site-state-item-name">分类</span>
                   </a>
                 </div>
@@ -3098,7 +3168,11 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
                     
                       
                     
-                    <span class="site-state-item-count">54</span>
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">56</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3182,7 +3256,7 @@ ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, Ti
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">18:49</span>
+    <span title="站点阅读时长">18:52</span>
   
 </div>
 
