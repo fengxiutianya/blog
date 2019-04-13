@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="spring源码解析之 22构造函数实例化autowireConstructor()这个初始化方法我们可以简单理解为是带有参数的初始化 bean 。">
+<meta name="keywords" content="spring源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" spring源码解析之 22构造函数实例化">
+<meta property="og:url" content="http://fengxiutianya.top/posts/f83ca2ec/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="spring源码解析之 22构造函数实例化autowireConstructor()这个初始化方法我们可以简单理解为是带有参数的初始化 bean 。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" spring源码解析之 22构造函数实例化">
+<meta name="twitter:description" content="spring源码解析之 22构造函数实例化autowireConstructor()这个初始化方法我们可以简单理解为是带有参数的初始化 bean 。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/f83ca2ec/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title> spring源码解析之 22构造函数实例化 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/f83ca2ec/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline"> spring源码解析之 22构造函数实例化
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-15 03:36:00" itemprop="dateCreated datePublished" datetime="2019-01-15T03:36:00+08:00">2019-01-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/f83ca2ec/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/f83ca2ec/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/f83ca2ec/" class="leancloud_visitors" data-flag-title=" spring源码解析之 22构造函数实例化">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">16k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="spring源码解析之-22构造函数实例化"><a href="#spring源码解析之-22构造函数实例化" class="headerlink" title="spring源码解析之 22构造函数实例化"></a>spring源码解析之 22构造函数实例化</h1><h2 id="autowireConstructor"><a href="#autowireConstructor" class="headerlink" title="autowireConstructor()"></a>autowireConstructor()</h2><p>这个初始化方法我们可以简单理解为是带有参数的初始化 bean 。<br><a id="more"></a></p>
+<pre><code class="java">public BeanWrapper autowireConstructor(String beanName, RootBeanDefinition mbd,
+                                       @Nullable Constructor&lt;?&gt;[] chosenCtors, 
+                                       @Nullable Object[] explicitArgs) {
+    // 实例化BeanWrapper对象
+    BeanWrapperImpl bw = new BeanWrapperImpl();
+    this.beanFactory.initBeanWrapper(bw);
+
+    Constructor&lt;?&gt; constructorToUse = null;
+    ArgumentsHolder argsHolderToUse = null;
+    Object[] argsToUse = null;
+    // explicit通过getBean方法传入
+    // 如果getBean方法调用的时候指定方法参数，那么直接使用
+    if (explicitArgs != null) {
+        argsToUse = explicitArgs;
+    } else {
+        // 如果在getBean方法时候没有指定则尝试从配置文件中解析
+        Object[] argsToResolve = null;
+
+        // 尝试从缓存中获取获取参数
+        synchronized (mbd.constructorArgumentLock) {
+            constructorToUse = (Constructor&lt;?&gt;)
+                mbd.resolvedConstructorOrFactoryMethod;
+            if (constructorToUse != null &amp;&amp; mbd.constructorArgumentsResolved) {
+                // 缓存中的构造参数
+                argsToUse = mbd.resolvedConstructorArguments;
+                if (argsToUse == null) {
+                    argsToResolve = mbd.preparedConstructorArguments;
+                }
+            }
+        }
+        // 如果缓存中存在
+        if (argsToResolve != null) {
+            // 解析参数类型，如给定方法的构造函数A(int,int)则通过此方法后就会
+            // 把配置中(&quot;1&quot;,&quot;1&quot;)转换为(1,1)
+            // 缓存中的值可能是原始值也可能是最终值，在这里做处理
+            argsToUse = resolvePreparedArguments(beanName, mbd,
+                                                 bw, constructorToUse, 
+                                                 argsToResolve, true);
+        }
+    }
+    // 没有缓存也没有明确指定
+    if (constructorToUse == null || argsToUse == null) {
+        // Take specified constructors, if any.
+        Constructor&lt;?&gt;[] candidates = chosenCtors;
+
+        // 如果参数中没有指定构造函数
+        if (candidates == null) {
+            // 获取当前bean对应的class对象
+            Class&lt;?&gt; beanClass = mbd.getBeanClass();
+            try {
+                // 获取所有的构造函数
+                candidates = (mbd.isNonPublicAccessAllowed() ?
+                              beanClass.getDeclaredConstructors() : 
+                              beanClass.getConstructors());
+            } catch (Throwable ex) {
+
+            }
+        }
+        // 如果只有默认构造函数并且配置文件中也没有参数配置
+        if (candidates.length == 1 &amp;&amp; explicitArgs == null 
+            &amp;&amp; !mbd.hasConstructorArgumentValues()) {
+            Constructor&lt;?&gt; uniqueCandidate = candidates[0];
+            // 缓存构造函数
+            if (uniqueCandidate.getParameterCount() == 0) {
+                synchronized (mbd.constructorArgumentLock) {
+                    mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
+                    mbd.constructorArgumentsResolved = true;
+                    mbd.resolvedConstructorArguments = EMPTY_ARGS;
+                }
+                // 使用默认构造函数初始化对象
+                bw.setBeanInstance(instantiate(beanName, mbd, 
+                                               uniqueCandidate, EMPTY_ARGS));
+                return bw;
+            }
+        }
+
+
+        // Need to resolve the constructor.
+        // 判断是否需要解析构造函数
+        boolean autowiring = (chosenCtors != null ||
+                              mbd.getResolvedAutowireMode() == 
+                              AutowireCapableBeanFactory.AUTOWIRE_CONSTRUCTOR);
+
+        // 用于承载解析后的构造函数的值
+        ConstructorArgumentValues resolvedValues = null;
+
+        int minNrOfArgs;
+        if (explicitArgs != null) {
+            minNrOfArgs = explicitArgs.length;
+        } else {
+            // 从BeanDefinition中获取构造参数，也就是从配置文件中提取构造函数
+            ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
+            resolvedValues = new ConstructorArgumentValues();
+            // 解析构造函数的参数
+            // 将该bean的构造函数参数解析为resolvedValues对象，其中会涉及到其它bean
+            minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, 
+                                                      cargs, resolvedValues);
+        }
+        // 对构造函数进行排序处理
+        // public 构造函数优先参数数量降序，非public 构造函数参数数量降序
+        AutowireUtils.sortConstructors(candidates);
+        //  最小参数类型权重
+        int minTypeDiffWeight = Integer.MAX_VALUE;
+        Set&lt;Constructor&lt;?&gt;&gt; ambiguousConstructors = null;
+        LinkedList&lt;UnsatisfiedDependencyException&gt; causes = null;
+
+        // 迭代所有构造函数
+        for (Constructor&lt;?&gt; candidate : candidates) {
+            // 获取构造函数参数类型
+            Class&lt;?&gt;[] paramTypes = candidate.getParameterTypes();
+            // 如果已经找到选用的构造函数或者需要的参数个数小于当前的构造函数参数个数，则终止
+            // 因为已经按照参数个数降序排列了
+            if (constructorToUse != null &amp;&amp; argsToUse != null &amp;&amp;
+                argsToUse.length &gt; paramTypes.length) {
+
+                break;
+            }
+            // 参数个数不等，继续
+            if (paramTypes.length &lt; minNrOfArgs) {
+                continue;
+            }
+
+            // 参数持有者
+            ArgumentsHolder argsHolder;
+            // 有参数
+            if (resolvedValues != null) {
+                try {
+                    // 注解上获取参数名称
+                    String[] paramNames = 
+                        ConstructorPropertiesChecker.evaluate(candidate, 
+                                                              paramTypes.length);
+
+                    if (paramNames == null) {
+                        // 获取构造函数、方法参数的探测器
+                        ParameterNameDiscoverer pnd = 
+                            this.beanFactory.getParameterNameDiscoverer();
+                        if (pnd != null) {
+                            // 通过探测器获取构造函数的参数名称
+                            paramNames = pnd.getParameterNames(candidate);
+                        }
+                    }
+                    // 根据构造函数和构造参数创建参数持有者
+                    argsHolder = createArgumentArray(beanName, mbd, 
+                                                     resolvedValues, bw, 
+                                                     paramTypes, paramNames,
+                             getUserDeclaredConstructor(candidate), autowiring, 
+                                                     candidates.length == 1);
+                } catch (UnsatisfiedDependencyException ex) {
+
+                }
+                // Swallow and try next constructor.
+                if (causes == null) {
+                    causes = new LinkedList&lt;&gt;();
+                }
+                causes.add(ex);
+                continue;
+            }
+        } else {
+            // 构造函数没有参数
+
+            if (paramTypes.length != explicitArgs.length) {
+                continue;
+            }
+            argsHolder = new ArgumentsHolder(explicitArgs);
+        }
+        //isLenientConstructorResolution判断解析构造函数的时候是否以宽松模式还是严格模式
+        // 严格模式：解析构造函数时，必须所有的都需要匹配，否则抛出异常
+        // 宽松模式：使用具有&quot;最接近的模式&quot;进行匹配
+        // typeDiffWeight：类型差异权重
+        int typeDiffWeight = (mbd.isLenientConstructorResolution() ?
+                              argsHolder.getTypeDifferenceWeight(paramTypes) :
+                              argsHolder.getAssignabilityWeight(paramTypes));
+        // Choose this constructor if it represents the closest match.
+        // 如果它代表着当前最接近的匹配则选择其作为构造函数
+        if (typeDiffWeight &lt; minTypeDiffWeight) {
+            constructorToUse = candidate;
+            argsHolderToUse = argsHolder;
+            argsToUse = argsHolder.arguments;
+            minTypeDiffWeight = typeDiffWeight;
+            ambiguousConstructors = null;
+        } else if (constructorToUse != null &amp;&amp;
+                   typeDiffWeight == minTypeDiffWeight) {
+            if (ambiguousConstructors == null) {
+                ambiguousConstructors = new LinkedHashSet&lt;&gt;();
+                ambiguousConstructors.add(constructorToUse);
+            }
+            ambiguousConstructors.add(candidate);
+        }
+    }
+
+    if (constructorToUse == null) {
+        if (causes != null) {
+            UnsatisfiedDependencyException ex = causes.removeLast();
+            for (Exception cause : causes) {
+                this.beanFactory.onSuppressedException(cause);
+            }
+            throw ex;
+        }
+
+    } else if (ambiguousConstructors != null &amp;&amp; 
+               !mbd.isLenientConstructorResolution()) {
+
+    }
+    // 将构造函数、构造参数保存到缓存中
+    if (explicitArgs == null &amp;&amp; argsHolderToUse != null) {
+        argsHolderToUse.storeCache(mbd, constructorToUse);
+    }
+}
+
+Assert.state(argsToUse != null, &quot;Unresolved constructor arguments&quot;);
+// 实例化bean
+bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
+return bw;
+}
+
+</code></pre>
+<p>代码与 <code>instantiateUsingFactoryMethod()</code> 一样，又长又难懂，但是如果理解了 <code>instantiateUsingFactoryMethod()</code> 初始化 bean 的过程，那么 <code>autowireConstructor()</code> 也不存在什么难的地方了，一句话概括：首先确定构造函数参数、构造函数，然后调用相应的初始化策略进行 bean 的初始化。关于如何确定构造函数、构造参数，该部分逻辑和 <code>instantiateUsingFactoryMethod()</code> 基本一致。所以这里你应该相对会轻松点</p>
+<ol>
+<li><p>构造函数参数的确定</p>
+<ul>
+<li><p>根据explicitArgs参数判断</p>
+<p>如果传入的参数explicitArgs不为空，那边可以直接确定参数，因为explicitArgs参数是在调用bean的时候用户指定的，在BeanFactory类中存在这样的方法：</p>
+<pre><code class="java">Object getBean(String name,Object... args) throws BeansException
+</code></pre>
+<p>在获取bean的时候，用户不但可以指定bean的名称还可以指定bean对应类的构造函数或者工厂方法的方法参数，主要用于静态工厂方法的调用，而这里需要先给定完全匹配的参数，如果传入参数explicitArg不为空，则可以确定构造函数参数就是它。</p>
+</li>
+<li><p>缓存中获取</p>
+<p>除此之外，确定参数的办法如果之前已经分析过，也就是说构造参数已经记录在缓存中，那么便可以直接拿来使用。而且，这里要提到的是，在魂村中换粗的可能是参数的最终类型也可能是参数的初始类型。如果是初始类型，则需要进行转换。</p>
+</li>
+<li><p>配置文件中获取</p>
+<p>如果不能根据传入参数explicitArg确定构造函数的参数也无法在缓存中得到相关信息，那么只能开始新一轮的分析。分析从配置文件中配置的构造函数信息开始，经过之前的分析，我们知道，spring中配置文件中的信息经过转换都会通过BeanDefinition实例承载，也就是参数mbd中包含，那么可以通过调用mdb.getContructorArgumentValues来获取配置的构造函数信息。有了配置中的信息便可以获取对应的参数值信息。获取参数值的信息包括直接指定值，如：直接指定构造函数中某个值为原始类型String类型，或者是一个队其他bean的引用，这里处理委托给resolveConstrucorArguments方法，并返回能解析到的参数的个数</p>
+</li>
+</ul>
+</li>
+<li><p>构造函数的确定</p>
+<p>经过了第一步后已经确定了构造函数的参数，接下来的任务就是根据构造函数参数在所有构造函数中锁定对应的构造函数，而匹配的方法就是根据参数个数匹配，所以在匹配之前需要先对构造函数按照public构造函数优先参数量降序、feipublic构造函数参数数量降序，这样可以在遍历的情况下循序判断牌子啊后面的构造函数参数个数是否符合条件。</p>
+<p>由于在配置文件中并不是唯一现在使用参数位置索引的方式去创建，同样还支持指定参数名称进行设定参数值的情况，如<code>&lt;constructor-arg name=&quot;aa&quot;&gt;</code>，那么这种情况就需要首先确定构造函数中的参数名称。</p>
+<p>获取参数名称可以有俩种方式，一种是通过注解的方式直接获取，另一种就是使用spring中提供的工具类ParameterNameDiscover来获取，构造函数、参数名称、参数哦类型、参数值都确定后就可以锁定构造函数以及转换对应的参数类型。</p>
+</li>
+<li><p>根据确定的构造函数转换对应的参数类型</p>
+<p>主要使用spring中提供的类型转换器或者用户提供的自定义类型转换器进行转换。</p>
+</li>
+<li><p>根据构造函数不确定性的验证</p>
+<p>当然，有时候即使构造函数，参数名称，参数类型、参数值都确定后也不一定会直接锁定构造函数，不同构造函数的参数为父子类型，所以spring在最后有做了一次验证。</p>
+<p>根据实例化策略以及得到的构造函数即构造函数参数实例化bean。下面我们重点分析初始化策略：</p>
+</li>
+</ol>
+<p>对于初始化策略，首先是获取实例化 bean 的策略，如下：</p>
+<pre><code class="java">final InstantiationStrategy strategy = beanFactory.getInstantiationStrategy();
+</code></pre>
+<p>然后是调用其 <code>instantiate()</code>方法，该方法在 SimpleInstantiationStrategy 中实现，如下：</p>
+<pre><code class="java">public Object instantiate(RootBeanDefinition bd, 
+                          @Nullable String beanName, BeanFactory owner) {
+    // 没有覆盖
+    // 直接使用反射实例化即可
+    if (!bd.hasMethodOverrides()) {
+        // 重新检测获取下构造函数
+        // 该构造函数是经过前面 N 多复杂过程确认的构造函数
+        Constructor&lt;?&gt; constructorToUse;
+        synchronized (bd.constructorArgumentLock) {
+            // 获取已经解析的构造函数
+            constructorToUse = (Constructor&lt;?&gt;) 
+                bd.resolvedConstructorOrFactoryMethod;
+            // 如果为 null，从 class 中解析获取，并设置
+            if (constructorToUse == null) {
+                final Class&lt;?&gt; clazz = bd.getBeanClass();
+                if (clazz.isInterface()) {
+                  。。。。省略异常
+                }
+                try {
+                    if (System.getSecurityManager() != null) {
+                        constructorToUse = AccessController.doPrivileged(
+                            (PrivilegedExceptionAction&lt;Constructor&lt;?&gt;&gt;) 
+                            clazz::getDeclaredConstructor);
+                    }
+                    else {
+                        constructorToUse =  clazz.getDeclaredConstructor();
+                    }
+                    bd.resolvedConstructorOrFactoryMethod = constructorToUse;
+                }
+                catch (Throwable ex) {
+                  。。。省略异常
+                }
+            }
+        }
+
+        // 通过BeanUtils直接使用构造器对象实例化bean
+        return BeanUtils.instantiateClass(constructorToUse);
+    }
+    else {
+        // 生成CGLIB创建的子类对象
+        return instantiateWithMethodInjection(bd, beanName, owner);
+    }
+}
+</code></pre>
+<p>如果该 bean 没有配置 lookup-method、replaced-method 标签或者 @Lookup 注解，则直接通过反射的方式实例化 bean 即可，方便快捷，但是如果存在需要覆盖的方法或者动态替换的方法则需要使用 CGLIB 进行动态代理，因为可以在创建代理的同时将动态方法织入类中。</p>
+<p><strong>反射</strong></p>
+<p>调用工具类 BeanUtils 的 <code>instantiateClass()</code> 方法完成反射工作：</p>
+<pre><code class="java">public static &lt;T&gt; T instantiateClass(Constructor&lt;T&gt; ctor, Object... args)
+    throws BeanInstantiationException {
+    Assert.notNull(ctor, &quot;Constructor must not be null&quot;);
+    try {
+        ReflectionUtils.makeAccessible(ctor);
+        return (KotlinDetector.isKotlinType(ctor.getDeclaringClass()) ?
+                KotlinDelegate.instantiateClass(ctor, args) : 
+                ctor.newInstance(args));
+    }
+    // 省略一些 catch 
+}
+</code></pre>
+<p><strong>CGLIB</strong></p>
+<pre><code class="java">protected Object instantiateWithMethodInjection(RootBeanDefinition bd,
+        @Nullable String beanName, BeanFactory owner) {
+    throw new UnsupportedOperationException(&quot;Method Injection not supported in 
+                                            SimpleInstantiationStrategy&quot;);
+}
+</code></pre>
+<p>方法默认是没有实现的，具体过程由其子类 CglibSubclassingInstantiationStrategy 实现：</p>
+<pre><code class="java">protected Object instantiateWithMethodInjection(RootBeanDefinition bd, 
+                    @Nullable String beanName, BeanFactory owner) {
+    return instantiateWithMethodInjection(bd, beanName, owner, null);
+}
+
+protected Object instantiateWithMethodInjection(RootBeanDefinition bd, 
+              @Nullable String beanName, BeanFactory owner,
+              @Nullable Constructor&lt;?&gt; ctor, @Nullable Object... args) {
+
+    // 通过CGLIB生成一个子类对象
+    return new CglibSubclassCreator(bd, owner).instantiate(ctor, args);
+}
+</code></pre>
+<p>创建一个 CglibSubclassCreator 对象，调用其 <code>instantiate()</code> 方法生成其子类对象：</p>
+<pre><code class="java">public Object instantiate(@Nullable Constructor&lt;?&gt; ctor, @Nullable Object... args) 
+{
+    // 通过 Cglib 创建一个代理类
+    Class&lt;?&gt; subclass = createEnhancedSubclass(this.beanDefinition);
+    Object instance;
+    // 没有构造器，通过 BeanUtils 使用默认构造器创建一个bean实例
+    if (ctor == null) {
+        instance = BeanUtils.instantiateClass(subclass);
+    }
+    else {
+        try {
+            // 获取代理类对应的构造器对象，并实例化 bean
+            Constructor&lt;?&gt; enhancedSubclassConstructor = 
+                subclass.getConstructor(ctor.getParameterTypes());
+            instance = enhancedSubclassConstructor.newInstance(args);
+        }
+        catch (Exception ex) {
+
+        }
+    }
+
+    // 为了避免memory leaks异常，直接在bean实例上设置回调对象
+    Factory factory = (Factory) instance;
+    factory.setCallbacks(new Callback[] {NoOp.INSTANCE,
+                 new CglibSubclassingInstantiationStrategy
+                     .LookupOverrideMethodInterceptor(this.beanDefinition, this.owner),
+                                         new CglibSubclassingInstantiationStrategy
+            .ReplaceOverrideMethodInterceptor(this.beanDefinition, this.owner)});
+    return instance;
+}
+</code></pre>
+<p>到这类 CGLIB 的方式分析完毕了，当然这里还没有具体分析 CGLIB 生成子类的详细过程，具体的过程等后续分析 AOP 的时候再详细地介绍。</p>
+<h2 id="instantiateBean"><a href="#instantiateBean" class="headerlink" title="instantiateBean()"></a>instantiateBean()</h2><pre><code class="java">   protected BeanWrapper instantiateBean(final String beanName,
+                                         final RootBeanDefinition mbd) {
+        try {
+            Object beanInstance;
+            final BeanFactory parent = this;
+            if (System.getSecurityManager() != null) {
+                beanInstance = AccessController.doPrivileged(
+                    (PrivilegedAction&lt;Object&gt;) () -&gt;
+                                getInstantiationStrategy().instantiate(mbd,
+                                   beanName, parent),
+                        getAccessControlContext());
+            }
+            else {
+                beanInstance = getInstantiationStrategy()
+                            .instantiate(mbd, beanName, parent);
+            }
+            BeanWrapper bw = new BeanWrapperImpl(beanInstance);
+            initBeanWrapper(bw);
+            return bw;
+        }
+        catch (Throwable ex) {
+              、、。。。
+        }
+    }
+</code></pre>
+<p>这个方法相比于 <code>instantiateUsingFactoryMethod()</code> 、 <code>autowireConstructor()</code> 方法相对简单，因为它没有参数，所以不需要确认经过复杂的过来来确定构造器、构造参数，所以这里就不过多阐述了。</p>
+<p>对于 <code>createBeanInstance()</code> 而言，他就是选择合适实例化策略来为 bean 创建实例对象，具体的策略有：Supplier 回调方式、工厂方法初始化、构造函数自动注入初始化、默认构造函数注入。其中工厂方法初始化和构造函数自动注入初始化两种方式最为复杂，主要是因为构造函数和构造参数的不确定性，Spring 需要花大量的精力来确定构造函数和构造参数，如果确定了则好办，直接选择实例化策略即可。当然在实例化的时候会根据是否有需要覆盖或者动态替换掉的方法，因为存在覆盖或者织入的话需要创建动态代理将方法织入，这个时候就只能选择 CGLIB 的方式来实例化，否则直接利用反射的方式即可，方便快捷。</p>
+<p>到这里 <code>createBeanInstance()</code> 的过程就已经分析完毕了，下篇介绍 <code>doCreateBean()</code> 方法中的第二个过程：属性填充。</p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/48fb5eaf/" rel="bookmark">Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c51c4fa0/" rel="bookmark">Spring源码解析之 01环境搭建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e84d4767/" rel="bookmark">spring源码解析之 04（下）获取验证模型</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/20cd1d0c/" rel="bookmark">spring源码解析之 11bean标签：解析自定义标签</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/fa9db44e/" rel="bookmark">spring源码解析之 26深入分析Aware接口</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/f83ca2ec/"> spring源码解析之 22构造函数实例化</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月15日 - 03:36</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/f83ca2ec/" title=" spring源码解析之 22构造函数实例化"> spring源码解析之 22构造函数实例化</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/f83ca2ec/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring源码解析/" rel="tag">  <i class="fa fa-tag"></i> spring源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/f61178aa/" rel="next" title="spring源码解析之 21 实例化bean">
+                <i class="fa fa-chevron-left"></i> spring源码解析之 21 实例化bean
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/fc74fa99/" rel="prev" title="spring源码解析之 23属性填充">
+                spring源码解析之 23属性填充 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spring源码解析之-22构造函数实例化"><span class="nav-text">spring源码解析之 22构造函数实例化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#autowireConstructor"><span class="nav-text">autowireConstructor()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#instantiateBean"><span class="nav-text">instantiateBean()</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/f83ca2ec/";
+        this.page.identifier = "posts/f83ca2ec/";
+        this.page.title = ' spring源码解析之 22构造函数实例化';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

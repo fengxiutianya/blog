@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述 jar技术简介及使用 Manifest文件  jar技术简介及使用本文主要是参照Lesson: Packaging Programs in JAR Files来写，如果你的英文不错，可以直接看这个java官方教程。 在开始看下文你需要确认你安装的jdk环境带有jar命令，只需要在命令行中输入jar -h看看能不能找到命令即可。如果你安装的是oracle JDK，那么这个命令已经内置在java">
+<meta name="keywords" content="jar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java 打包技术之jar文件">
+<meta property="og:url" content="http://fengxiutianya.top/posts/2f7bd7dc/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述 jar技术简介及使用 Manifest文件  jar技术简介及使用本文主要是参照Lesson: Packaging Programs in JAR Files来写，如果你的英文不错，可以直接看这个java官方教程。 在开始看下文你需要确认你安装的jdk环境带有jar命令，只需要在命令行中输入jar -h看看能不能找到命令即可。如果你安装的是oracle JDK，那么这个命令已经内置在java">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java 打包技术之jar文件">
+<meta name="twitter:description" content="概述 jar技术简介及使用 Manifest文件  jar技术简介及使用本文主要是参照Lesson: Packaging Programs in JAR Files来写，如果你的英文不错，可以直接看这个java官方教程。 在开始看下文你需要确认你安装的jdk环境带有jar命令，只需要在命令行中输入jar -h看看能不能找到命令即可。如果你安装的是oracle JDK，那么这个命令已经内置在java">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/2f7bd7dc/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java 打包技术之jar文件 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/2f7bd7dc/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java 打包技术之jar文件
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-08 08:55:00" itemprop="dateCreated datePublished" datetime="2019-01-08T08:55:00+08:00">2019-01-08</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/2f7bd7dc/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/2f7bd7dc/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/2f7bd7dc/" class="leancloud_visitors" data-flag-title="java 打包技术之jar文件">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">5.2k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">5 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
+<li>jar技术简介及使用</li>
+<li>Manifest文件</li>
+</ol>
+<h3 id="jar技术简介及使用"><a href="#jar技术简介及使用" class="headerlink" title="jar技术简介及使用"></a>jar技术简介及使用</h3><p>本文主要是参照<a href="https://docs.oracle.com/javase/tutorial/deployment/jar/apiindex.html" target="_blank" rel="noopener">Lesson: Packaging Programs in JAR Files</a>来写，如果你的英文不错，可以直接看这个java官方教程。</p>
+<p>在开始看下文你需要确认你安装的jdk环境带有jar命令，只需要在命令行中输入<strong>jar -h</strong>看看能不能找到命令即可。如果你安装的是oracle JDK，那么这个命令已经内置在java开发套件中。<br>下文所使用的源代码地址<a href="https://github.com/fengxiutianya/blogsource/tree/master/jarstudy" target="_blank" rel="noopener">gihub</a><br><a id="more"></a><br><strong>jar技术是什么以及可以用来干什么？</strong><br>官方给出的解释如下：JAR文件以zip文件格式打包，因此您可以将其用于无损数据压缩、归档、解压缩和归档解包等任务。这些任务是JAR文件最常见的用途之一，您只需使用这些基本特性就可以实现许多JAR文件的好处。</p>
+<p>我这里先不解释这句话，先看看例子，最后我们来总结一些自己理解的jar技术。</p>
+<h4 id="创建jar文件"><a href="#创建jar文件" class="headerlink" title="创建jar文件"></a>创建jar文件</h4><p>基本的命令格式</p>
+<pre><code>jar cf jar-file input-file(s)
+</code></pre><p>命令解释：</p>
+<ol>
+<li><code>c</code> :代表创建一个jar文件</li>
+<li><code>f</code>: 代表将创建的jar文件输入到指定的文件而不是stdout</li>
+<li><code>jar-file</code>： 表示创建这个jar文件的名字，通常是以jar后缀结尾，但这不是必须。</li>
+<li><code>input-file(s)</code>: 代表要包含在jar文件包中的一个或更多的文件，如果是多个文件，以空格隔开，也可以使用通配符<code>*</code>来表示所有的文件，如果指定的是文件夹，将递归的将此文件夹中所有的文件都打包进jar中。</li>
+</ol>
+<p>参数<code>c</code>和<code>f</code>的顺序可以是任意的。此命令还会创建一个默认的manifest文件（这个后面会说）。</p>
+<p>下面这些参数都是可选的，可以和上面一起使用</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">可选项</th>
+<th style="text-align:center">意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">v</td>
+<td style="text-align:center">当创建jar文件时，打印创建过程</td>
+</tr>
+<tr>
+<td style="text-align:center">0（zero）</td>
+<td style="text-align:center">不压缩文件</td>
+</tr>
+<tr>
+<td style="text-align:center">M</td>
+<td style="text-align:center">不创建默认的manifest文件</td>
+</tr>
+<tr>
+<td style="text-align:center">m</td>
+<td style="text-align:center">用来包含指定manifest信息从指定文件中<br>使用格式如下<br><code>jar cmf jar-file existing-manifest input-file(s)</code></td>
+</tr>
+<tr>
+<td style="text-align:center">-C</td>
+<td style="text-align:center">用于修改打包过程中文件的具体位置</td>
+</tr>
+</tbody>
+</table>
+<p>具体例子:</p>
+<p>文件夹内容如下</p>
+<pre><code>demo1
+    Main.class
+    images
+        test.png
+        ico.gif 
+    audio
+        test.log
+</code></pre><p>打包所有文件到一个单个jar文件，命令如下：</p>
+<pre><code>jar cvf demo1.jar Main.clss audio images
+</code></pre><p>执行命令结果</p>
+<pre><code>已添加清单
+正在添加: Main.class(输入 = 409) (输出 = 282)(压缩了 31%)
+正在添加: audio/(输入 = 0) (输出 = 0)(存储了 0%)
+正在添加: images/(输入 = 0) (输出 = 0)(存储了 0%)
+正在添加: images/test.png(输入 = 0) (输出 = 0)(存储了 0%)
+正在添加: images/ico.gif(输入 = 0) (输出 = 0)(存储了 0%)
+</code></pre><p>从上面的结果可以看出，这个命令在打包过程中压缩了文件。</p>
+<p>如果不想压缩使用如下命令</p>
+<pre><code>jar cvf0 demo1.jar Main.clss audio images
+</code></pre><p>如果打包的是整个文件夹下的内容，也可以采用下面的命令</p>
+<pre><code>jar cvf demo1.jar *
+</code></pre><p>如果你希望在打包过程中改变某个文件的位置，可以使用<code>-C</code>参数，注意这里是大写的C</p>
+<pre><code>jar cvf demo1.jar Main.class -C audio . -C images .
+</code></pre><p>打包之后，demo1.jar包中的文件位置如下</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+test.log
+test.png
+ico.gif
+</code></pre><p>如果没有使用<code>-C</code>则包中的文件位置如下</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+audio/
+audio/test.log
+images/
+images/test.png
+images/ico.gif
+</code></pre><h4 id="查看jar文件的内容"><a href="#查看jar文件的内容" class="headerlink" title="查看jar文件的内容"></a>查看jar文件的内容</h4><p>这个也是我上面为什么能显示包中文件位置使用的命令。</p>
+<p>基本命令格式</p>
+<pre><code>jar tf jar-file
+</code></pre><p>命令解释</p>
+<ol>
+<li><code>t</code>: 表示显示jar文件的目录</li>
+<li><code>f</code>:表示显示的jar文件在命令的参数中</li>
+<li>Jar-file:显示的文件的具体位置</li>
+</ol>
+<p>具体例子</p>
+<pre><code>jar tf demo1.jar
+</code></pre><p>输出结果</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+audio/
+audio/test.log
+images/
+images/test.png
+images/ico.gif
+</code></pre><p>使用选项<code>V</code>也可以显示额外的信息，具体的就不演示。</p>
+<h4 id="解压jar文件的内容"><a href="#解压jar文件的内容" class="headerlink" title="解压jar文件的内容"></a>解压jar文件的内容</h4><p>基本的命令格式</p>
+<pre><code class="ba&amp;#39;sh">jar xf jar-file [archived-file(s)]
+</code></pre>
+<p>命令解释：</p>
+<ol>
+<li><p><code>x</code>:表示解压这个jar</p>
+</li>
+<li><p><code>[archived-file(s)]</code>:如果没有这个参数，则解压所有的文件，如果有这个文件解压所有的文件</p>
+<p>其他的和上面的命令一样</p>
+</li>
+</ol>
+<p>具体例子</p>
+<pre><code class="bash">## 解压所有的内容
+jar xf demo1.jar
+
+## 解压指定的文件
+jar xf demo1.jar Main.class images/ico.gif
+
+</code></pre>
+<p>上面的命令会解压所有的文件或者指定的文件到当前目录中，如果当前目录中不存在则创建。</p>
+<h4 id="更新jar文件"><a href="#更新jar文件" class="headerlink" title="更新jar文件"></a>更新jar文件</h4><p>基本的命令格式</p>
+<pre><code>jar uf jar-file input-file(s)
+</code></pre><p>命令解释：</p>
+<ol>
+<li><code>u</code>:表示更新文件</li>
+</ol>
+<p>其他选项和参数与上面一样</p>
+<p>例子</p>
+<p><strong>demo1.jar</strong>的内容如下</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+audio/
+audio/test.log
+images/
+images/test.png
+images/ico.gif
+</code></pre><p>执行下面命令</p>
+<pre><code>jar uf demo1.jar ../demo2/tem.log
+</code></pre><p><strong>demo1.jar</strong>文件内容如下</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+audio/
+audio/test.log
+images/
+images/test.png
+images/ico.gif
+demo2/tem.log
+</code></pre><h4 id="运行jar"><a href="#运行jar" class="headerlink" title="运行jar"></a>运行jar</h4><p>如果你看到这里可以跳过，先看后面的内容然后再来看这一块的内容。</p>
+<p>如果你希望你打包的jar可以运行，那么就需要在mainfest文件中添加这样一行内容<strong>Main-class: 入口函数，也就是main函数所在的类</strong>，具体怎么添加可以看下文。</p>
+<p>运行命令</p>
+<pre><code>java -jar jar-filename
+</code></pre><p><strong>总结：</strong>其实jar文件就是按照某个特定格式打包的文件，和普通的zip打包的文件没什么区别，这点你可以用解压软件来测试。只不过这个打包的文件里面需要按照java官方规定放置一些特定的文件来方便jar运行或者引用时使用。</p>
+<h3 id="Manifest文件"><a href="#Manifest文件" class="headerlink" title="Manifest文件"></a>Manifest文件</h3><p>JAR文件支持广泛的功能，包括电子签名、版本控制、包密封等。什么使JAR文件具有这种多功能性？答案是JAR文件的清单。清单是一个特殊的文件，可以包含关于打包在JAR文件中的文件的信息。通过定制清单包含的这个“元”信息，您可以使JAR文件满足各种目的。</p>
+<h4 id="默认Manifest"><a href="#默认Manifest" class="headerlink" title="默认Manifest"></a>默认Manifest</h4><p>在前面我们也说过，当创建jar文件时，会默认创建<strong>META-INF/MANIFEST.MF</strong>这样的文件，这个也就是我们所说的manifest文件，只不过是默认生成的，里面的具体内容是什么呢，主要是下面俩行：</p>
+<pre><code>Manifest-Version: 当前jar的版本号
+Created-By: 创建的jdk名称和版本号
+</code></pre><p>通过上面俩行你大概也猜出这个文件的具体格式<strong>header:value</strong>每一对是通过换行符分割开。</p>
+<h4 id="修改Manifest文件"><a href="#修改Manifest文件" class="headerlink" title="修改Manifest文件"></a>修改Manifest文件</h4><p>基本命令格式</p>
+<pre><code>jar cfm jar-file manifest-addition input-file(s)
+</code></pre><p>命令解释</p>
+<ol>
+<li>m：表示希望合并指定文件中的内容到manifest文件中去。</li>
+<li><code>manifest-addition</code>:希望合并到manifest文件中的文件名</li>
+</ol>
+<p>m和f参数的具体位置必须和上面的相同。</p>
+<h4 id="设置应用的入口点"><a href="#设置应用的入口点" class="headerlink" title="设置应用的入口点"></a>设置应用的入口点</h4><p>设置入口点也就是增加main函数所在位置，主要是在Manifest文件中加入这一行即可<code>Main-Class: classname</code></p>
+<p>加入这行代码之后，就可以使用<code>jar -jar jar-name</code>来运行这个jar。</p>
+<p>具体例子</p>
+<p>首先在当前目录下创建一个文件，名字Manifest.txt,内容如下<strong>这里需要特别注意一点，在这行后面敲一个换行符，要不然这行是添加不进Manifest文件中去，这个在java官方文档中也有说</strong></p>
+<pre><code>Main-class: Main (类名要根据你的具体环境来配置，是类的完整路径) 
+</code></pre><p>创建jar</p>
+<pre><code>jar cfm demo1.jar Manifest.txt *.class
+</code></pre><p>使用<code>jar tf demo1.jar</code>查看文件的内容如下</p>
+<pre><code>META-INF/
+META-INF/MANIFEST.MF
+Main.class
+</code></pre><p>使用<code>jar xf demo1.jar  META-INF/MANIFEST.MF</code> 解压指定的文件，查看内容如下</p>
+<pre><code>Manifest-Version: 1.0
+Created-By: 1.8.0_144 (Oracle Corporation)
+Main-class: Main
+
+</code></pre><p>运行jar</p>
+<pre><code>java -jar demo1.jar
+</code></pre><p>结果</p>
+<pre><code>zhangke
+</code></pre><p>运行正确，我在main函数里面就打印了一下我的名称。</p>
+<p>通过上面例子我们实现了一个简单的可运行的jar，并且熟悉了前面的内容。</p>
+<h4 id="添加类路径到jar文件的类路径中"><a href="#添加类路径到jar文件的类路径中" class="headerlink" title="添加类路径到jar文件的类路径中"></a>添加类路径到jar文件的类路径中</h4><p>一般我们在开发项目中，都会用到其他的包，那么我们就需要将这些jar添加到当前jar的类路径中。</p>
+<p>也就是添加下面这样一行</p>
+<pre><code>Class-Path: jar1-name jar2-name directory-name/jar3-name
+</code></pre><p>注意的一点是：路径头指向本地网络上的类或JAR文件，而不是JAR文件中的JAR文件或通过Internet协议访问的类。要将JAR文件中的JAR文件中的类加载到类路径中，必须编写自定义代码来加载这些类。例如，如果myjar.jar包含另一个jar文件myutils.jar，则不能使用myjar.jar清单中的类路径头将myutils.jar中的类加载到类路径中</p>
+<p>具体例子</p>
+<ol>
+<li><p>创建demo2文件夹，将上面demo1打包成demo1.jar,注意这里不写Main-class，直接使用</p>
+<pre><code>jar  cf demo1.jar *.class
+</code></pre></li>
+<li><p>将上面打包的demo1.jar,放到lib目录下面</p>
+</li>
+<li><p>创建manifest.txt添加如下内容</p>
+<pre><code>Main-class: Main
+Class-path: lib/demo1.jar
+</code></pre></li>
+<li><p>打包此目录</p>
+<pre><code> jar cfm demo2.jar Manifest.txt *
+</code></pre></li>
+<li><p>运行jar</p>
+<pre><code>java -jar demo2.jar
+### 运行结果
+zhangke
+</code></pre><p>说明导入的jar已经生效。这有点类似于设置java.ext.path选项，不过我觉得这种比较好，因为将所有的jar打包到jar中，不用在单独的下载所有的依赖。</p>
+</li>
+</ol>
+<h4 id="package-sealing"><a href="#package-sealing" class="headerlink" title="package sealing"></a>package sealing</h4><p>我感觉翻译过来不怎好，就没翻译，直接使用英文。</p>
+<p>那么什么是package sealing，简单的说就是将你使用的外部依赖直接打包到你当前的文件中去，和上面添加类路径我现在还没感觉到有什么区别。这里就先不说。后面如果发现了，再来添加。</p>
+<p>主要格式如下,在manifest文件中加入下面俩行</p>
+<pre><code>Name: 包名
+Sealed: true
+</code></pre><p>如果你有多个不同的包，可以设置多行，</p>
+<p>如果希望将所有的包都sealing，那么直接写上，<code>Sealed:true</code></p>
+<p>具体的例子可以看这篇<a href="https://blog.csdn.net/TechNerd/article/details/8945587" target="_blank" rel="noopener">Java中 Package Sealing 的探秘之旅</a></p>
+<p>从官方的解释可以看出，jar是采用zip来进行打包，只不过打包的后缀名都已jar来命名，因大家习惯上就成为jar文件，另外如果希望jar能够被使用或者运行，那么就需要遵循java委员会定义的一些规则。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="http://todayguesswhat.blogspot.com/2011/03/jar-manifestmf-class-path-referencing.html" target="_blank" rel="noopener"> JAR : MANIFEST.MF Class-Path referencing a directory</a> 设置class-path路径，对比了绝对和相对路径</li>
+<li><a href="https://blog.csdn.net/TechNerd/article/details/8945587" target="_blank" rel="noopener">Java中 Package Sealing 的探秘之旅</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/2f7bd7dc/">java 打包技术之jar文件</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月08日 - 08:55</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/2f7bd7dc/" title="java 打包技术之jar文件">java 打包技术之jar文件</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/2f7bd7dc/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/jar/" rel="tag">  <i class="fa fa-tag"></i> jar</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/1284c29c/" rel="next" title="Spring源码分析之 02IOC原理">
+                <i class="fa fa-chevron-left"></i> Spring源码分析之 02IOC原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/e3ecb02e/" rel="prev" title="Java NIO之浅谈内存映射文件原理与DirectMemory">
+                Java NIO之浅谈内存映射文件原理与DirectMemory <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#jar技术简介及使用"><span class="nav-text">jar技术简介及使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建jar文件"><span class="nav-text">创建jar文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#查看jar文件的内容"><span class="nav-text">查看jar文件的内容</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#解压jar文件的内容"><span class="nav-text">解压jar文件的内容</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#更新jar文件"><span class="nav-text">更新jar文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#运行jar"><span class="nav-text">运行jar</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Manifest文件"><span class="nav-text">Manifest文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#默认Manifest"><span class="nav-text">默认Manifest</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#修改Manifest文件"><span class="nav-text">修改Manifest文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置应用的入口点"><span class="nav-text">设置应用的入口点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#添加类路径到jar文件的类路径中"><span class="nav-text">添加类路径到jar文件的类路径中</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#package-sealing"><span class="nav-text">package sealing</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/2f7bd7dc/";
+        this.page.identifier = "posts/2f7bd7dc/";
+        this.page.title = 'java 打包技术之jar文件';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

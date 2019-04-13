@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述 list概括 list使用场景 ArrayList和LinkedList性能分析 vector和ArrayList对比">
+<meta name="keywords" content="集合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)">
+<meta property="og:url" content="http://fengxiutianya.top/posts/e23e1ac6/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述 list概括 list使用场景 ArrayList和LinkedList性能分析 vector和ArrayList对比">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-160.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)">
+<meta name="twitter:description" content="概述 list概括 list使用场景 ArrayList和LinkedList性能分析 vector和ArrayList对比">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-160.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/e23e1ac6/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析) | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/e23e1ac6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 17:39:00" itemprop="dateCreated datePublished" datetime="2019-03-04T17:39:00+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/collections/" itemprop="url" rel="index"><span itemprop="name">collections</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/e23e1ac6/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/e23e1ac6/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/e23e1ac6/" class="leancloud_visitors" data-flag-title="Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">13k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">12 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
+<li>list概括</li>
+<li>list使用场景</li>
+<li>ArrayList和LinkedList性能分析</li>
+<li>vector和ArrayList对比</li>
+</ol>
+<a id="more"></a>
+<h2 id="1-List概括"><a href="#1-List概括" class="headerlink" title="1. List概括"></a>1. List概括</h2><p><img src="/images/pasted-160.png" alt="upload successful"></p>
+<ol>
+<li>List 是一个接口，它继承于Collection的接口。它代表着有序的队列。</li>
+<li>AbstractList 是一个抽象类，它继承于AbstractCollection。AbstractList实现List接口中除size()、get(int location)之外的函数。</li>
+<li><p>AbstractSequentialList 是一个抽象类，它继承于AbstractList。AbstractSequentialList 实现了“链表中，根据index索引值操作链表的全部函数”。</p>
+</li>
+<li><p>ArrayList, LinkedList, Vector, Stack是List的4个实现类。</p>
+<ul>
+<li>ArrayList 是一个<strong>数组队列，相当于动态数组</strong>。它由数组实现，随机访问效率高，随机插入、随机删除效率低。</li>
+<li>LinkedList 是一个<strong>双向链表</strong>。它也可以被当作堆栈、队列或双端队列进行操作。LinkedList随机访问效率低，但随机插入、随机删除效率低。</li>
+<li>Vector 是<strong>矢量队列，和ArrayList一样，它也是一个动态数组，由数组实现</strong>。但是ArrayList是非线程安全的，而Vector是线程安全的。</li>
+<li>Stack 是<strong>栈，它继承于Vector</strong>。它的特性是：先进后出(FILO, First In Last Out)。</li>
+</ul>
+</li>
+</ol>
+<h2 id="2-List-使用场景"><a href="#2-List-使用场景" class="headerlink" title="2. List 使用场景"></a>2. List 使用场景</h2><p>学东西的最终目的是为了<strong>能够理解、使用它</strong>。下面<strong>先概括的说明一下各个List的使用场景</strong>，<strong>后面再分析原因</strong>。</p>
+<p><strong>如果涉及到“栈”、“队列”、“链表”等操作，应该考虑用List，具体的选择哪个List，根据下面的标准来取舍。</strong><br>(01) 对于需要快速插入，删除元素，应该使用LinkedList。<br>(02) 对于需要快速随机访问元素，应该使用ArrayList。<br>(03) 对于“<strong>单线程环境</strong>” 或者 “<strong>多线程环境，但List仅仅只会被单个线程操作</strong>”，此时应该使用非同步的类(如ArrayList)。<br>​       对于“<strong>多线程环境</strong>，且List可能同时被多个线程操作”，此时，应该使用同步的类(如Vector)。</p>
+<p>通过下面的测试程序，我们来验证上面的(01)和(02)结论。参考代码如下：</p>
+<pre><code class="java"> 1 import java.util.*;
+ 2 import java.lang.Class;
+ 3 
+ 4 /*
+ 5  * @desc 对比ArrayList和LinkedList的插入、随机读取效率、删除的效率
+ 6  *
+ 7  * @author skywang
+ 8  */
+ 9 public class ListCompareTest {
+10 
+11     private static final int COUNT = 100000;
+12 
+13     private static LinkedList linkedList = new LinkedList();
+14     private static ArrayList arrayList = new ArrayList();
+15     private static Vector vector = new Vector();
+16     private static Stack stack = new Stack();
+17 
+18     public static void main(String[] args) {
+19         // 换行符
+20         System.out.println();
+21         // 插入
+22         insertByPosition(stack) ;
+23         insertByPosition(vector) ;
+24         insertByPosition(linkedList) ;
+25         insertByPosition(arrayList) ;
+26 
+27         // 换行符
+28         System.out.println();
+29         // 随机读取
+30         readByPosition(stack);
+31         readByPosition(vector);
+32         readByPosition(linkedList);
+33         readByPosition(arrayList);
+34 
+35         // 换行符
+36         System.out.println();
+37         // 删除 
+38         deleteByPosition(stack);
+39         deleteByPosition(vector);
+40         deleteByPosition(linkedList);
+41         deleteByPosition(arrayList);
+42     }
+43 
+44     // 获取list的名称
+45     private static String getListName(List list) {
+46         if (list instanceof LinkedList) {
+47             return &quot;LinkedList&quot;;
+48         } else if (list instanceof ArrayList) {
+49             return &quot;ArrayList&quot;;
+50         } else if (list instanceof Stack) {
+51             return &quot;Stack&quot;;
+52         } else if (list instanceof Vector) {
+53             return &quot;Vector&quot;;
+54         } else {
+55             return &quot;List&quot;;
+56         }
+57     }
+58 
+59     // 向list的指定位置插入COUNT个元素，并统计时间
+60     private static void insertByPosition(List list) {
+61         long startTime = System.currentTimeMillis();
+62 
+63         // 向list的位置0插入COUNT个数
+64         for (int i=0; i&lt;COUNT; i++)
+65             list.add(0, i);
+66 
+67         long endTime = System.currentTimeMillis();
+68         long interval = endTime - startTime;
+69         System.out.println(getListName(list) + &quot; : insert &quot;+COUNT+&quot; elements into the 1st position use time：&quot; + interval+&quot; ms&quot;);
+70     }
+71 
+72     // 从list的指定位置删除COUNT个元素，并统计时间
+73     private static void deleteByPosition(List list) {
+74         long startTime = System.currentTimeMillis();
+75 
+76         // 删除list第一个位置元素
+77         for (int i=0; i&lt;COUNT; i++)
+78             list.remove(0);
+79 
+80         long endTime = System.currentTimeMillis();
+81         long interval = endTime - startTime;
+82         System.out.println(getListName(list) + &quot; : delete &quot;+COUNT+&quot; elements from the 1st position use time：&quot; + interval+&quot; ms&quot;);
+83     }
+84 
+85     // 根据position，不断从list中读取元素，并统计时间
+86     private static void readByPosition(List list) {
+87         long startTime = System.currentTimeMillis();
+88 
+89         // 读取list元素
+90         for (int i=0; i&lt;COUNT; i++)
+91             list.get(i);
+92 
+93         long endTime = System.currentTimeMillis();
+94         long interval = endTime - startTime;
+95         System.out.println(getListName(list) + &quot; : read &quot;+COUNT+&quot; elements by position use time：&quot; + interval+&quot; ms&quot;);
+96     }
+97 }
+</code></pre>
+<p><strong>运行结果如下</strong>：</p>
+<pre><code>Stack : insert 100000 elements into the 1st position use time：1640 ms
+Vector : insert 100000 elements into the 1st position use time：1607 ms
+LinkedList : insert 100000 elements into the 1st position use time：29 ms
+ArrayList : insert 100000 elements into the 1st position use time：1617 ms
+
+Stack : read 100000 elements by position use time：9 ms
+Vector : read 100000 elements by position use time：6 ms
+LinkedList : read 100000 elements by position use time：10809 ms
+ArrayList : read 100000 elements by position use time：5 ms
+
+Stack : delete 100000 elements from the 1st position use time：1916 ms
+Vector : delete 100000 elements from the 1st position use time：1910 ms
+LinkedList : delete 100000 elements from the 1st position use time：15 ms
+ArrayList : delete 100000 elements from the 1st position use time：1909 ms
+</code></pre><p><strong>从中，我们可以发现</strong>：<br>插入10万个元素，LinkedList所花时间最短：<strong>29ms</strong>。<br>删除10万个元素，LinkedList所花时间最短：<strong>15ms</strong>。<br>遍历10万个元素，LinkedList所花时间最长：<strong>10809 ms</strong>；而ArrayList、Stack和Vector则相差不多，都只用了几秒。</p>
+<p>考虑到Vector是支持同步的，而Stack又是继承于Vector的；因此，得出结论：<br><strong>(01) 对于需要快速插入，删除元素，应该使用LinkedList。</strong><br><strong>(02) 对于需要快速随机访问元素，应该使用ArrayList。</strong><br><strong>(03)</strong> <strong>对于“单线程环境” 或者 “多线程环境，但List仅仅只会被单个线程操作”，此时应该使用非同步的类。</strong></p>
+<h2 id="3-ArrayList和LinkedList性能分析"><a href="#3-ArrayList和LinkedList性能分析" class="headerlink" title="3. ArrayList和LinkedList性能分析"></a>3. ArrayList和LinkedList性能分析</h2><p>下面我们看看<strong>为什么LinkedList中插入元素很快，而ArrayList中插入元素很慢</strong>！</p>
+<p><strong>LinkedList.java中向指定位置插入元素的代码如下</strong>：</p>
+<pre><code class="java">// 在index前添加节点，且节点的值为element
+public void add(int index, E element) {
+    addBefore(element, (index==size ? header : entry(index)));
+}
+
+// 获取双向链表中指定位置的节点
+private Entry&lt;E&gt; entry(int index) {
+    if (index &lt; 0 || index &gt;= size)
+        throw new IndexOutOfBoundsException(&quot;Index: &quot;+index+
+                                            &quot;, Size: &quot;+size);
+    Entry&lt;E&gt; e = header;
+    // 获取index处的节点。
+    // 若index &lt; 双向链表长度的1/2,则从前向后查找;
+    // 否则，从后向前查找。
+    if (index &lt; (size &gt;&gt; 1)) {
+        for (int i = 0; i &lt;= index; i++)
+            e = e.next;
+    } else {
+        for (int i = size; i &gt; index; i--)
+            e = e.previous;
+    }
+    return e;
+}
+
+// 将节点(节点数据是e)添加到entry节点之前。
+private Entry&lt;E&gt; addBefore(E e, Entry&lt;E&gt; entry) {
+    // 新建节点newEntry，将newEntry插入到节点e之前；并且设置newEntry的数据是e
+    Entry&lt;E&gt; newEntry = new Entry&lt;E&gt;(e, entry, entry.previous);
+    // 插入newEntry到链表中
+    newEntry.previous.next = newEntry;
+    newEntry.next.previous = newEntry;
+    size++;
+    modCount++;
+    return newEntry;
+}
+</code></pre>
+<p>从中，我们可以看出：通过add(int index, E element)向LinkedList插入元素时。先是<strong>在双向链表中找到要插入节点的位置index</strong>；找到之后，<strong>再插入一个新节点</strong>。<br>双向链表查找index位置的节点时，有一个<strong>加速动作</strong>：<em>若index &lt; 双向链表长度的1/2，则从前向后查找; 否则，从后向前查找</em>。</p>
+<p><strong>接着，我们看看ArrayList.java中向指定位置插入元素的代码。</strong>如下：</p>
+<pre><code class="java">// 将e添加到ArrayList的指定位置
+public void add(int index, E element) {
+    if (index &gt; size || index &lt; 0)
+        throw new IndexOutOfBoundsException(
+        &quot;Index: &quot;+index+&quot;, Size: &quot;+size);
+
+    ensureCapacity(size+1);  // Increments modCount!!
+    System.arraycopy(elementData, index, elementData, index + 1,
+         size - index);
+    elementData[index] = element;
+    size++;
+}
+</code></pre>
+<p>ensureCapacity(size+1) 的作用是“<strong>确认ArrayList的容量，若容量不够，则增加容量。</strong>”<br>真正耗时的操作是 System.arraycopy(elementData, index, elementData, index + 1, size - index);</p>
+<p>Sun JDK包的java/lang/System.java中的arraycopy()声明如下：</p>
+<pre><code>public static native void arraycopy(Object src, int srcPos, Object dest, int destPos, int length);
+</code></pre><p>arraycopy()是个JNI函数，它是在JVM中实现的。sunJDK中看不到源码，不过可以在OpenJDK包中看到的源码。网上有对arraycopy()的分析说明，请参考：<a href="http://gutspot.com/2011/11/16/system-arraycopy%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_blank" rel="noopener">System.arraycopy源码分析</a><br>实际上，我们只需要了解： <em>System.arraycopy(elementData, index, elementData, index + 1, size - index); **会移动index之后所有元素即可**。</em>这就意味着，ArrayList的add(int index, E element)函数，会引起index之后所有元素的改变！<br><strong>通过上面的分析，我们就能理解为什么LinkedList中插入元素很快，而ArrayList中插入元素很慢。</strong><br><strong>“删除元素”与“插入元素”的原理类似，这里就不再过多说明。</strong></p>
+<p>接下来，我们看看 <strong>“为什么LinkedList中随机访问很慢，而ArrayList中随机访问很快”</strong>。</p>
+<p>先看看<strong>LinkedList随机访问的代码</strong></p>
+<pre><code class="java">// 返回LinkedList指定位置的元素
+public E get(int index) {
+    return entry(index).element;
+}
+
+// 获取双向链表中指定位置的节点
+private Entry&lt;E&gt; entry(int index) {
+    if (index &lt; 0 || index &gt;= size)
+        throw new IndexOutOfBoundsException(&quot;Index: &quot;+index+
+                                            &quot;, Size: &quot;+size);
+    Entry&lt;E&gt; e = header;
+    // 获取index处的节点。
+    // 若index &lt; 双向链表长度的1/2,则从前先后查找;
+    // 否则，从后向前查找。
+    if (index &lt; (size &gt;&gt; 1)) {
+        for (int i = 0; i &lt;= index; i++)
+            e = e.next;
+    } else {
+        for (int i = size; i &gt; index; i--)
+            e = e.previous;
+    }
+    return e;
+}
+</code></pre>
+<p>从中，我们可以看出：通过get(int index)<strong>获取LinkedList第index个元素时</strong>。<em>先是在双向链表中找到要index位置的元素；找到之后再返回。</em><br>双向链表查找index位置的节点时，有一个<strong>加速动作</strong>：<strong>若index &lt; 双向链表长度的1/2，则从前向后查找; 否则，从后向前查找</strong></p>
+<p>下面看看<strong>ArrayList随机访问的代码</strong> </p>
+<pre><code class="java">// 获取index位置的元素值
+public E get(int index) {
+    RangeCheck(index);
+
+    return (E) elementData[index];
+}
+
+private void RangeCheck(int index) {
+    if (index &gt;= size)
+        throw new IndexOutOfBoundsException(
+        &quot;Index: &quot;+index+&quot;, Size: &quot;+size);
+}
+</code></pre>
+<p>从中，我们可以看出：通过get(int index)获取ArrayList第index个元素时。直接返回数组中index位置的元素，而不需要像LinkedList一样进行查找。</p>
+<h2 id="4-vector和ArrayList对比"><a href="#4-vector和ArrayList对比" class="headerlink" title="4. vector和ArrayList对比"></a>4. vector和ArrayList对比</h2><p><strong>相同之处</strong></p>
+<p><strong>1 它们都是List</strong></p>
+<p>它们都继承于AbstractList，并且实现List接口。<br>ArrayList和Vector的类定义如下：</p>
+<pre><code>// ArrayList的定义
+public class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+        implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable
+
+// Vector的定义
+public class Vector&lt;E&gt; extends AbstractList&lt;E&gt;
+    implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable {}  
+</code></pre><p><strong>2 它们都实现了RandomAccess和Cloneable接口</strong></p>
+<p>   实现RandomAccess接口，意味着它们都支持快速随机访问；<br>   实现Cloneable接口，意味着它们能克隆自己。</p>
+<p><strong>3 它们都是通过数组实现的，本质上都是动态数组</strong></p>
+<p>ArrayList.java中定义数组elementData用于保存元素</p>
+<pre><code>// 保存ArrayList中数据的数组
+private transient Object[] elementData;
+</code></pre><p>Vector.java中也定义了数组elementData用于保存元素</p>
+<pre><code>// 保存Vector中数据的数组
+protected Object[] elementData;
+</code></pre><p><strong>4 它们的默认数组容量是10</strong></p>
+<p>   若创建ArrayList或Vector时，没指定容量大小；则使用默认容量大小10。</p>
+<p>ArrayList的默认构造函数如下：</p>
+<pre><code>// ArrayList构造函数。默认容量是10。
+public ArrayList() {
+    this(10);
+}
+</code></pre><p>Vector的默认构造函数如下：</p>
+<pre><code>// Vector构造函数。默认容量是10。
+public Vector() {
+    this(10);
+} 
+</code></pre><p><strong>5 它们都支持Iterator和listIterator遍历</strong></p>
+<p>   它们都继承于AbstractList，而AbstractList中分别实现了 “iterator()接口返回Iterator迭代器” 和 “listIterator()返回ListIterator迭代器”。</p>
+<p><strong>不同之处</strong></p>
+<p><strong>1 线程安全性不一样</strong></p>
+<p>   ArrayList是非线程安全；<br>   而Vector是线程安全的，它的函数都是synchronized的，即都是支持同步的。<br>   ArrayList适用于单线程，Vector适用于多线程。</p>
+<p><strong>2 对序列化支持不同</strong></p>
+<p>   ArrayList支持序列化，而Vector不支持；即ArrayList有实现java.io.Serializable接口，而Vector没有实现该接口。</p>
+<p><strong>3 构造函数个数不同</strong><br>   ArrayList有3个构造函数，而Vector有4个构造函数。Vector除了包括和ArrayList类似的3个构造函数之外，另外的一个构造函数可以指定容量增加系数。</p>
+<p><strong>ArrayList的构造函数如下</strong>：</p>
+<pre><code>// 默认构造函数
+ArrayList()
+
+// capacity是ArrayList的默认容量大小。当由于增加数据导致容量不足时，容量会添加上一次容量大小的一半。
+ArrayList(int capacity)
+
+// 创建一个包含collection的ArrayList
+ArrayList(Collection&lt;? extends E&gt; collection)
+</code></pre><p><strong>Vector的构造函数如下</strong>：</p>
+<pre><code>// 默认构造函数
+Vector()
+
+// capacity是Vector的默认容量大小。当由于增加数据导致容量增加时，每次容量会增加一倍。
+Vector(int capacity)
+
+// 创建一个包含collection的Vector
+Vector(Collection&lt;? extends E&gt; collection)
+
+// capacity是Vector的默认容量大小，capacityIncrement是每次Vector容量增加时的增量值。
+Vector(int capacity, int capacityIncrement)
+</code></pre><p><strong>4 容量增加方式不同</strong></p>
+<p>   逐个添加元素时，若ArrayList容量不足时，“新的容量”=“原始容量x3”。<br>   而Vector的容量增长与“增长系数有关”，若指定了“增长系数”，且“增长系数有效(即，大于0)”；那么，每次容量不足时，“新的容量”=“原始容量+增长系数”。若增长系数无效(即，小于/等于0)，则“新的容量”=“原始容量 x 2”。</p>
+<p>ArrayList中容量增长的主要函数如下：</p>
+<pre><code class="java">public void ensureCapacity(int minCapacity) {
+     // overflow-conscious code
+        int oldCapacity = elementData.length;
+        int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);
+        if (newCapacity - minCapacity &lt; 0)
+            newCapacity = minCapacity;
+        if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+            newCapacity = hugeCapacity(minCapacity);
+        // minCapacity is usually close to size, so this is a win:
+        elementData = Arrays.copyOf(elementData, newCapacity);
+}
+</code></pre>
+<p>Vector中容量增长的主要函数如下：</p>
+<pre><code>private void ensureCapacityHelper(int minCapacity) {
+    int oldCapacity = elementData.length;
+    // 当Vector的容量不足以容纳当前的全部元素，增加容量大小。
+    // 若 容量增量系数&gt;0(即capacityIncrement&gt;0)，则将容量增大当capacityIncrement
+    // 否则，将容量增大一倍。
+    if (minCapacity &gt; oldCapacity) {
+        Object[] oldData = elementData;
+        int newCapacity = (capacityIncrement &gt; 0) ?
+            (oldCapacity + capacityIncrement) : (oldCapacity * 2);
+        if (newCapacity &lt; minCapacity) {
+            newCapacity = minCapacity;
+        }
+        elementData = Arrays.copyOf(elementData, newCapacity);
+    }
+}
+</code></pre><p><strong>5 对Enumeration的支持不同。Vector支持通过Enumeration去遍历，而List不支持</strong></p>
+<p>Vector中实现Enumeration的代码如下：</p>
+<pre><code class="java">public Enumeration&lt;E&gt; elements() {
+    // 通过匿名类实现Enumeration
+    return new Enumeration&lt;E&gt;() {
+        int count = 0;
+
+        // 是否存在下一个元素
+        public boolean hasMoreElements() {
+            return count &lt; elementCount;
+        }
+
+        // 获取下一个元素
+        public E nextElement() {
+            synchronized (Vector.this) {
+                if (count &lt; elementCount) {
+                    return (E)elementData[count++];
+                }
+            }
+            throw new NoSuchElementException(&quot;Vector Enumeration&quot;);
+        }
+    };
+}
+</code></pre>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/2d62f277/" rel="bookmark">Java 集合系列01之 总体框架</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ab3cc2a5/" rel="bookmark">Java 集合系列07之 Stack源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/719892b8/" rel="bookmark">Java 集合系列09之 Map架构</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8ab0f653/" rel="bookmark">Java集合系列14 之WeakHashMap源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8af04eac/" rel="bookmark">Java 集合系列16之 Set架构</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/e23e1ac6/">Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月04日 - 17:39</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/e23e1ac6/" title="Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)">Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/e23e1ac6/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/集合/" rel="tag">  <i class="fa fa-tag"></i> 集合</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/ab3cc2a5/" rel="next" title="Java 集合系列07之 Stack源码解析和使用示例">
+                <i class="fa fa-chevron-left"></i> Java 集合系列07之 Stack源码解析和使用示例
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/719892b8/" rel="prev" title="Java 集合系列09之 Map架构">
+                Java 集合系列09之 Map架构 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-List概括"><span class="nav-text">1. List概括</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-List-使用场景"><span class="nav-text">2. List 使用场景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-ArrayList和LinkedList性能分析"><span class="nav-text">3. ArrayList和LinkedList性能分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-vector和ArrayList对比"><span class="nav-text">4. vector和ArrayList对比</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/e23e1ac6/";
+        this.page.identifier = "posts/e23e1ac6/";
+        this.page.title = 'Java 集合系列08之 List总结(LinkedList,ArrayList等使用场景和性能分析)';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Random 与 ThreadLocalRandom 对比 简介 测试结果与分析 补充  1. 简介首先，如果你看到这篇文章相信对这俩个类有一定的了解，所以我就不再这里介绍具体的用法。简单的介绍一下这个类，Random，ThreadLocalRandom是Java中的随机数生成器，Random是我们比较常用的随机数生成器，他是线程安全的。ThreadLocalRandom是jdk7才出现的，是Ra">
+<meta name="keywords" content="ThreadLocalRandom">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Random 与 ThreadLocalRandom 对比">
+<meta property="og:url" content="http://fengxiutianya.top/posts/54488428/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="Random 与 ThreadLocalRandom 对比 简介 测试结果与分析 补充  1. 简介首先，如果你看到这篇文章相信对这俩个类有一定的了解，所以我就不再这里介绍具体的用法。简单的介绍一下这个类，Random，ThreadLocalRandom是Java中的随机数生成器，Random是我们比较常用的随机数生成器，他是线程安全的。ThreadLocalRandom是jdk7才出现的，是Ra">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Random 与 ThreadLocalRandom 对比">
+<meta name="twitter:description" content="Random 与 ThreadLocalRandom 对比 简介 测试结果与分析 补充  1. 简介首先，如果你看到这篇文章相信对这俩个类有一定的了解，所以我就不再这里介绍具体的用法。简单的介绍一下这个类，Random，ThreadLocalRandom是Java中的随机数生成器，Random是我们比较常用的随机数生成器，他是线程安全的。ThreadLocalRandom是jdk7才出现的，是Ra">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/54488428/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Random 与 ThreadLocalRandom 对比 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/54488428/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Random 与 ThreadLocalRandom 对比
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-12-12 15:42:00" itemprop="dateCreated datePublished" datetime="2018-12-12T15:42:00+08:00">2018-12-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/others/" itemprop="url" rel="index"><span itemprop="name">others</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/54488428/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/54488428/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/54488428/" class="leancloud_visitors" data-flag-title="Random 与 ThreadLocalRandom 对比">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">4 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Random-与-ThreadLocalRandom-对比"><a href="#Random-与-ThreadLocalRandom-对比" class="headerlink" title="Random 与 ThreadLocalRandom 对比"></a>Random 与 ThreadLocalRandom 对比</h1><ol>
+<li>简介</li>
+<li>测试结果与分析</li>
+<li>补充</li>
+</ol>
+<h3 id="1-简介"><a href="#1-简介" class="headerlink" title="1. 简介"></a>1. 简介</h3><p>首先，如果你看到这篇文章相信对这俩个类有一定的了解，所以我就不再这里介绍具体的用法。简单的介绍一下这个类，Random，ThreadLocalRandom是Java中的随机数生成器，Random是我们比较常用的随机数生成器，他是线程安全的。ThreadLocalRandom是jdk7才出现的，是Random的增强版。在并发访问的环境下，使用ThreadLocalRandom来代替Random可以减少多线程竞争，同时也能保证线程安全和提高性能。</p>
+<p>由于本人能力有限，如果你的英文比较好，可以看看StackOverFlow上的这个讨论<a href="https://stackoverflow.com/questions/23396033/random-over-threadlocalrandom" target="_blank" rel="noopener">https://stackoverflow.com/questions/23396033/random-over-threadlocalrandom</a><br><a id="more"></a></p>
+<h3 id="2-测试结果与分析"><a href="#2-测试结果与分析" class="headerlink" title="2. 测试结果与分析"></a>2. 测试结果与分析</h3><p>我使用的JMH来进行的压测，这篇文章可以帮助你<a href="https://www.cnkirito.moe/java-jmh/" target="_blank" rel="noopener">入门 JMH</a>。具体代码如下</p>
+<pre><code class="java">/**************************************
+ *      Author : zhangke
+ *      Date   : 2018-12-12 11:44
+ *      email  : 398757724@qq.com
+ *      Desc   : ThreadRandom 和 Random性能对比
+ ***************************************/
+@BenchmarkMode({Mode.AverageTime})
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Warmup(iterations = 3, time = 5)
+@Measurement(iterations = 3, time = 5)
+@Threads(10)
+@Fork(1)
+@State(Scope.Benchmark)
+public class Randombenchmark {
+    Random random = new Random();
+
+    ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+
+
+    @Benchmark
+    public int random() {
+        return random.nextInt();
+    }
+
+
+    @Benchmark
+    public int threadLocalRandom() {
+        return threadLocalRandom.nextInt();
+    }
+
+
+    public static void main(String[] args) throws RunnerException {
+        Options opt = new OptionsBuilder()
+                .include(Randombenchmark.class.getSimpleName())
+                .build();
+
+        new Runner(opt).run();
+    }
+}
+
+</code></pre>
+<p>测试结果</p>
+<pre><code>··· 前面一部分省略，主要内容如下
+Benchmark                          Mode  Cnt    Score     Error  Units
+Randombenchmark.random             avgt    3  349.952 ± 115.007  ns/op
+Randombenchmark.threadLocalRandom  avgt    3   26.393 ±  11.538  ns/op
+</code></pre><p>从上面结果可以看出，结果验证确实ThreadLocalRandom在多线程环境情况下更快，ThreadLocalRandom比Random快了将近13倍之多。</p>
+<p>至于为什么ThreadLocalRandom更快呢，这个要从源码来分析。</p>
+<p>Random的实现也比较简单，初始化的时候用当前的事件来初始化一个随机数种子，然后每次取值的时候用这个种子与有些MagicNumber运算，并更新种子。最核心的就是这个next的函数，不管你是调用了nextDouble还是nextInt还是nextBoolean，Random底层都是调这个next(int bits)。</p>
+<pre><code class="java">    protected int next(int bits) {
+        long oldseed, nextseed;
+        AtomicLong seed = this.seed;
+        do {
+            oldseed = seed.get();
+            nextseed = (oldseed * multiplier + addend) &amp; mask;
+        } while (!seed.compareAndSet(oldseed, nextseed));
+        return (int)(nextseed &gt;&gt;&gt; (48 - bits));
+    }
+</code></pre>
+<p>　　为了保证多线程下每次生成随机数都是用的不同，next()得保证seed的更新是原子操作，所以用了AtomicLong的compareAndSet()，该方法底层调用了sum.misc.Unsafe的compareAndSwapLong()，也就是大家常听到的CAS， 这是一个native方法，它能保证原子更新一个数。</p>
+<p>既然Random是线程安全的，又能满足我们大多说的要求，为什么concurrent包里还要实现一个ThreadLocalRandom。在oracle的jdk文档里发现这样一句话</p>
+<blockquote>
+<p>use of ThreadLocalRandom rather than shared Random objects in concurrent programs will typically encounter much less overhead and contention. Use of ThreadLocalRandom is particularly appropriate when multiple tasks (for example, each a ForkJoinTask) use random numbers in parallel in thread pools.</p>
+</blockquote>
+<p>大意就是用ThreadLocalRandom更适合用在多线程下，能大幅减少多线程并行下的性能开销和资源争抢。</p>
+<p>　既然ThreadLocalRandom在多线程下表现这么牛逼，它究竟是如何做到的？我们来看下源码，它的核心代码是这个（在看源码时需要注意一点，虽然ThreadLocalRandom也实现了next函数，但是在这个函数上面有一句，定义了这个方法，但绝不使用，你也可以从next*方法里面看出，使用的都是mix32(nextSeed)或者mix64(nextSeed)来获取随机数）</p>
+<pre><code class="java">    final long nextSeed() {
+        Thread t; long r; // read and update per-thread seed
+        UNSAFE.putLong(t = Thread.currentThread(), SEED,
+                       r = UNSAFE.getLong(t, SEED) + GAMMA);
+        return r;
+    }
+</code></pre>
+<p>上面虽然使用了UNSAFE对象，但是没有调用CAS方法，只是简单的替换Thread对象中的threadLocalRandomSeed属性，所以不要一看到UNSAFE这个类，就当成要调用CAS方法，我刚开始阅读的时候就有这个疑惑，自己太菜了。</p>
+<p>在创建ThreadLocalRandom对象时，ThreadLocalRandom是对每个线程都设置了单独的随机数种子，这样就不会发生多线程同时更新一个数时产生的资源争抢了，用空间换时间。</p>
+<h3 id="3-补充"><a href="#3-补充" class="headerlink" title="3. 补充"></a>3. 补充</h3><p>在生成验证码的情况下，不要使用Random，因为它是线性可预测的。所以在安全性要求比较高的场合，应当使用SecureRandom。从理论上来说计算机产生的随机数都是伪随机数，要想<strong>产生高强度的随机数，有两个重要的因素：种子和算法。当然算法是可以有很多的，但是如何选择种子是非常关键的因素。如Random，它的种子是System.currentTimeMillis()，所以它的随机数都是可预测的。那么如何得到一个近似随机的种子？这里有一个很别致的思路：收集计算机的各种信息，如键盘输入时间，CPU时钟，内存使用状态，硬盘空闲空间，IO延时，进程数量，线程数量等信息，来得到一个近似随机的种子。这样的话，除了理论上有破解的可能，实际上基本没有被破解的可能。而事实上，现在的高强度的随机数生成器都是这样实现的。</strong></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://xindoo.me/article/1400" target="_blank" rel="noopener">java.util.Random和concurrent.ThreadLocalRandom对比</a></li>
+<li><a href="https://blog.csdn.net/huqinweI987/article/details/70941199" target="_blank" rel="noopener">C 位操作 左移32位 错误</a> 这个是我在进行源码研究时，发先自己int类型的说移动32位还是原数子，从这篇文章找到了答案</li>
+<li><a href="https://www.cnkirito.moe/java-random/" target="_blank" rel="noopener">Java随机数探秘</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/54488428/">Random 与 ThreadLocalRandom 对比</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2018年12月12日 - 15:42</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/54488428/" title="Random 与 ThreadLocalRandom 对比">Random 与 ThreadLocalRandom 对比</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/54488428/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/ThreadLocalRandom/" rel="tag">  <i class="fa fa-tag"></i> ThreadLocalRandom</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/f79e4123/" rel="next" title="虚拟内存">
+                <i class="fa fa-chevron-left"></i> 虚拟内存
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/6d00129c/" rel="prev" title="自旋锁">
+                自旋锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Random-与-ThreadLocalRandom-对比"><span class="nav-text">Random 与 ThreadLocalRandom 对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-简介"><span class="nav-text">1. 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-测试结果与分析"><span class="nav-text">2. 测试结果与分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-补充"><span class="nav-text">3. 补充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/54488428/";
+        this.page.identifier = "posts/54488428/";
+        this.page.title = 'Random 与 ThreadLocalRandom 对比';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

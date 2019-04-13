@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="从字面意思理解就是信号量，本质上来说是用于线程之间访问共享资源，是一种同步原语，只是访问的资源可能有多个，其实现是通过AQS框架。在我们开发中，经常会碰见使用信号量的场景，比如出于系统性能的考虑需要限流，这时需要控制同时访问共享资源的最大线程数量，或者共享资源是稀缺资源，我们需要有一种办法能够协调各个线程，以保证合理的使用公共资源。可以看下图来理解有四个线程来共同竞争资源，现在信号量是5，则表明共">
+<meta name="keywords" content="同步器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程系列 JUC同步器 10 Semaphore">
+<meta property="og:url" content="http://fengxiutianya.top/posts/2313243/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="从字面意思理解就是信号量，本质上来说是用于线程之间访问共享资源，是一种同步原语，只是访问的资源可能有多个，其实现是通过AQS框架。在我们开发中，经常会碰见使用信号量的场景，比如出于系统性能的考虑需要限流，这时需要控制同时访问共享资源的最大线程数量，或者共享资源是稀缺资源，我们需要有一种办法能够协调各个线程，以保证合理的使用公共资源。可以看下图来理解有四个线程来共同竞争资源，现在信号量是5，则表明共">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-309.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-308.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程系列 JUC同步器 10 Semaphore">
+<meta name="twitter:description" content="从字面意思理解就是信号量，本质上来说是用于线程之间访问共享资源，是一种同步原语，只是访问的资源可能有多个，其实现是通过AQS框架。在我们开发中，经常会碰见使用信号量的场景，比如出于系统性能的考虑需要限流，这时需要控制同时访问共享资源的最大线程数量，或者共享资源是稀缺资源，我们需要有一种办法能够协调各个线程，以保证合理的使用公共资源。可以看下图来理解有四个线程来共同竞争资源，现在信号量是5，则表明共">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-309.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/2313243/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java线程系列 JUC同步器 10 Semaphore | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/2313243/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java线程系列 JUC同步器 10 Semaphore
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-20 14:51:38" itemprop="dateCreated datePublished" datetime="2019-03-20T14:51:38+08:00">2019-03-20</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/tools/" itemprop="url" rel="index"><span itemprop="name">tools</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/2313243/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/2313243/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/2313243/" class="leancloud_visitors" data-flag-title="java线程系列 JUC同步器 10 Semaphore">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>从字面意思理解就是信号量，本质上来说是用于线程之间访问共享资源，是一种同步原语，只是访问的资源可能有多个，其实现是通过AQS框架。在我们开发中，经常会碰见使用信号量的场景，比如出于系统性能的考虑需要限流，这时需要控制同时访问共享资源的最大线程数量，或者共享资源是稀缺资源，我们需要有一种办法能够协调各个线程，以保证合理的使用公共资源。<br>可以看下图来理解<br><img src="/images/pasted-309.png" alt="upload successful"><br>有四个线程来共同竞争资源，现在信号量是5，则表明共享资源的数量是5。如果每个线程申请一个资源，则可以同时满足5个线程申请资源，每个线程在使用完之后，需要释放资源。如果在线程在申请资源的时候，没有足够的资源来满足，则会阻塞线程。<br><a id="more"></a></p>
+<h2 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h2><pre><code class="java">package JUC.tools;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2018/4/20 20:00
+ *      Desc   : Semaphore 学习
+ ***************************************/
+public class SemaphoreTest1 {
+
+    public static void main(String[] args) {
+        Semaphore sem = new Semaphore(10);
+        ExecutorService threadPool = Executors.newFixedThreadPool(3);
+
+        //在线程池中执行任务
+        threadPool.execute(new MyThread(sem, 5));
+        threadPool.execute(new MyThread(sem, 4));
+        threadPool.execute(new MyThread(sem, 7));
+
+        //关闭池
+        threadPool.shutdown();
+    }
+
+
+    static class MyThread extends Thread {
+        private Semaphore sem;   //信号量
+        private int count;   //申请信号量的大小
+
+
+        public MyThread(Semaphore sem, int count) {
+            this.sem = sem;
+            this.count = count;
+        }
+
+
+        @Override
+        public void run() {
+
+            try {
+                //从信号量中获取count个许可
+                sem.acquire(count);
+                Thread.sleep(2000);
+                System.out.println(Thread.currentThread().getName() 
+                                   + &quot; acquire count=&quot; + count);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                // 释放给定数目的许可，将其返回到信号量。
+                sem.release(count);
+                System.out.println(Thread.currentThread().getName() 
+                                   + &quot; release &quot; + count + &quot;&quot;);
+            }
+        }
+    }
+}
+
+</code></pre>
+<p>上面演示了基本的信号量使用机制，当有线程尝试使用共享资源时，我们要求线程先获得许可（调用<strong>Semaphore</strong> 的<strong>acquire</strong>方法），这样线程就拥有了权限，否则就需要等待。当使用完资源后，线程需要调用<strong>Semaphore</strong> 的<strong>release</strong>方法释放许可。</p>
+<p>运行结果如下</p>
+<pre><code>pool-1-thread-2 acquire count=4
+pool-1-thread-1 acquire count=5
+pool-1-thread-1 release 5
+pool-1-thread-2 release 4
+pool-1-thread-3 acquire count=7
+pool-1-thread-3 release 7
+</code></pre><p>从结果可以看出，这有点类似于共享锁，锁的获取可以不用等待锁的释放。但必须满足下面的条件<strong>许可数 ≤ 0代表共享资源不可用。许可数 ＞ 0，代表共享资源可用，且多个线程可以同时访问共享资源。</strong></p>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>类图如下：</p>
+<p><img src="/images/pasted-308.png" alt="upload successful"></p>
+<ol>
+<li>Semaphore也包含sync对象，sync是Sync类型；而且，Sync是一个继承于AQS的抽象类。</li>
+<li>Sync包括两个子类：”公平信号量”FairSync 和 “非公平信号量”NonfairSync。sync是”FairSync的实例”，或者”NonfairSync的实例”；默认情况下，sync是NonfairSync(即，默认是非公平信号量)。</li>
+</ol>
+<h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><pre><code class="java">public Semaphore(int permits) {
+    sync = new NonfairSync(permits);
+}
+
+public Semaphore(int permits, boolean fair) {
+    sync = fair ? new FairSync(permits) : new NonfairSync(permits);
+}
+</code></pre>
+<p>从中，我们可以信号量分为公平信号量(FairSync)和非公平信号量(NonfairSync)。Semaphore(int permits)函数会默认创建非公平信号量。permits表示许可数，可以理解为资源可以被共享的数量。</p>
+<h3 id="公平信号量的获取"><a href="#公平信号量的获取" class="headerlink" title="公平信号量的获取"></a>公平信号量的获取</h3><p>获取信号量的源码如下：</p>
+<pre><code class="java">public void acquire() throws InterruptedException {
+    sync.acquireSharedInterruptibly(1);
+}
+
+public void acquire(int permits) throws InterruptedException {
+    if (permits &lt; 0) 
+        throw new IllegalArgumentException();
+    sync.acquireSharedInterruptibly(permits);
+}
+</code></pre>
+<p>从上面可以看出，内部是同过Sync对象的acquireSharedInterruptibly方法来获取，源码如下</p>
+<pre><code class="java">public final void acquireSharedInterruptibly(int arg)
+    throws InterruptedException {
+    // 如果线程是中断状态，则抛出异常。
+    if (Thread.interrupted())
+        throw new InterruptedException();
+    // 否则，尝试获取“共享锁”；获取成功则直接返回，
+    // 获取失败，则通过doAcquireSharedInterruptibly()获取。
+    if (tryAcquireShared(arg) &lt; 0)
+        doAcquireSharedInterruptibly(arg);
+}
+</code></pre>
+<p>tryAcquireShared对应公平锁的源码如下</p>
+<pre><code class="java">protected int tryAcquireShared(int acquires) {
+    for (;;) {
+        // 判断当前线程是不是CLH队列中的第一个线程线程，
+        // 若是的话，则返回-1。
+        if (hasQueuedPredecessors())
+            return -1;
+        // 设置可以获得的信号量的许可数
+        int available = getState();
+        // 设置获得acquires个信号量许可之后，剩余的信号量许可数
+        int remaining = available - acquires;
+        // 如果剩余的信号量许可数&gt;=0，则设置可以获得的信号量许可数为remaining。
+        // 设置成功则返回remaining
+        if (remaining &lt; 0 ||
+            compareAndSetState(available, remaining))
+            return remaining;
+    }
+}
+</code></pre>
+<p>tryAcquireShared()的作用是尝试获取acquires个信号量许可数。对于Semaphore而言，state表示的是当前可获得的信号量许可数。</p>
+<p>下面看看AQS中doAcquireSharedInterruptibly的实现</p>
+<pre><code class="java">private void doAcquireSharedInterruptibly(long arg)
+    throws InterruptedException {
+    // 创建当前线程的Node节点，且Node中记录的锁是共享锁类型；
+    // 并将该节点添加到CLH队列末尾。
+    final Node node = addWaiter(Node.SHARED);
+    boolean failed = true;
+    try {
+        for (;;) {
+            // 获取上一个节点。
+            // 如果上一节点是CLH队列的表头，则”尝试获取共享锁“。
+            final Node p = node.predecessor();
+            if (p == head) {
+                long r = tryAcquireShared(arg);
+                if (r &gt;= 0) {
+                    setHeadAndPropagate(node, r);
+                    p.next = null; // help GC
+                    failed = false;
+                    return;
+                }
+            }
+            // 当前线程一直等待，直到获取到共享锁。
+            // 如果线程在等待过程中被中断过，则再次中断该线程(还原之前的中断状态)。
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                parkAndCheckInterrupt())
+                throw new InterruptedException();
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+</code></pre>
+<p>doAcquireSharedInterruptibly()会使当前线程一直等待，直到当前线程获取到共享锁(或被中断)才返回。主要流程如下：</p>
+<ol>
+<li>addWaiter(Node.SHARED)的作用是，创建当前线程的Node节点，且Node中记录的锁的类型是共享锁(Node.SHARED)；并将该节点添加到CLH队列末尾。</li>
+<li>node.predecessor()的作用是，获取上一个节点。如果上一节点是CLH队列的表头，则尝试获取共享锁。</li>
+<li>shouldParkAfterFailedAcquire()的作用和它的名称一样，如果在尝试获取锁失败之后，线程应该等待，则返回true；否则，返回false。当shouldParkAfterFailedAcquire()返回ture时，则调用parkAndCheckInterrupt()，当前线程会进入等待状态，直到获取到共享锁才继续运行。如果检测到时中断导致的返回，则抛出异常。</li>
+</ol>
+<p>上面的函数在前面几篇文章中都已经介绍过，这里就不在重复讲，如果不理解可以看这几篇文章<a href="/categories/java/juc/lock">JUC 锁介绍</a></p>
+<h3 id="公平信号量的释放"><a href="#公平信号量的释放" class="headerlink" title="公平信号量的释放"></a>公平信号量的释放</h3><pre><code class="java">public void release() {
+    sync.releaseShared(1);
+}
+public void release(int permits) {
+    if (permits &lt; 0) 
+    throw new IllegalArgumentException();
+    sync.releaseShared(permits);
+}
+</code></pre>
+<p>信号量的释放是通过releases()释放函数，实际上调用的AQS中的releaseShared()</p>
+<pre><code class="java">public final boolean releaseShared(int arg) {
+    if (tryReleaseShared(arg)) {
+        doReleaseShared();
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>releaseShared()的目的是让当前线程释放它所持有的共享锁。它首先会通过tryReleaseShared()去尝试释放共享锁。尝试成功，则直接返回；尝试失败，则通过doReleaseShared()去释放共享锁。<br>Semaphore重写了tryReleaseShared()，它的源码如下：</p>
+<pre><code class="java">protected final boolean tryReleaseShared(int releases) {
+    for (;;) {
+        // 获取“可以获得的信号量的许可数”
+        int current = getState();
+        // 获取“释放releases个信号量许可之后，剩余的信号量许可数”
+        int next = current + releases;
+        if (next &lt; current) // overflow
+            throw new Error(&quot;Maximum permit count exceeded&quot;);
+        // 设置“可以获得的信号量的许可数”为next。
+        if (compareAndSetState(current, next))
+            return true;
+    }
+}
+</code></pre>
+<p>如果tryReleaseShared()尝试释放共享锁失败，则会调用doReleaseShared()去释放共享锁。doReleaseShared()的源码如下：</p>
+<pre><code class="java">private void doReleaseShared() {
+    for (;;) {
+        // 获取CLH队列的头节点
+        Node h = head;
+        // 如果头节点不为null，并且头节点不等于tail节点。
+        if (h != null &amp;&amp; h != tail) {
+            // 获取头节点对应的线程的状态
+            int ws = h.waitStatus;
+            // 如果头节点对应的线程是SIGNAL状态，则意味着“头节点的下一个节点所对应的线程”需要被unpark唤醒。
+            if (ws == Node.SIGNAL) {
+                // 设置“头节点对应的线程状态”为空状态。失败的话，则继续循环。
+                if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+                    continue;
+                // 唤醒“头节点的下一个节点所对应的线程”。
+                unparkSuccessor(h);
+            }
+            // 如果头节点对应的线程是空状态，则设置“节点对应的线程所拥有的共享锁”为其它线程获取锁的空状态。
+            else if (ws == 0 &amp;&amp;
+                     !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                continue;                // loop on failed CAS
+        }
+        // 如果头节点发生变化，则继续循环。否则，退出循环。
+        if (h == head)                   // loop if head changed
+            break;
+    }
+}
+</code></pre>
+<p>doReleaseShared()会释放共享锁。它会从前往后的遍历CLH队列，依次唤醒然后执行队列中每个节点对应的线程；最终的目的是让这些线程释放它们所持有的信号量。</p>
+<h2 id="非公平信号量获取和释放"><a href="#非公平信号量获取和释放" class="headerlink" title="非公平信号量获取和释放"></a>非公平信号量获取和释放</h2><p>Semaphore中的非公平信号量是NonFairSync。在Semaphore中，非公平信号量许可的释放(release)与公平信号量许可的释放(release)是一样的。<br>不同的是它们获取信号量许可的机制不同，下面是非公平信号量获取信号量许可的代码。</p>
+<p>非公平信号量的tryAcquireShared()实现如下：</p>
+<pre><code class="java">
+protected int tryAcquireShared(int acquires) {
+    return nonfairTryAcquireShared(acquires);
+}
+</code></pre>
+<p>nonfairTryAcquireShared()的实现如下：</p>
+<pre><code class="java">final int nonfairTryAcquireShared(int acquires) {
+    for (;;) {
+        // 设置“可以获得的信号量的许可数”
+        int available = getState();
+        // 设置“获得acquires个信号量许可之后，剩余的信号量许可数”
+        int remaining = available - acquires;
+        // 如果“剩余的信号量许可数&gt;=0”，则设置“可以获得的信号量许可数”为remaining。
+        if (remaining &lt; 0 ||
+            compareAndSetState(available, remaining))
+            return remaining;
+    }
+}
+</code></pre>
+<p>非公平信号量的tryAcquireShared()调用AQS中的nonfairTryAcquireShared()。而在nonfairTryAcquireShared()的for循环中，它都会直接判断当前剩余的信号量许可数是否足够；足够的话，则直接设置可以获得的信号量许可数，进而再获取信号量。<br>而公平信号量的tryAcquireShared()中，在获取信号量之前会通过if (hasQueuedPredecessors())来判断当前线程是不是在CLH队列的头部，是的话，则返回-1。 </p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Semaphore其实就是实现了AQS共享功能的同步器，对于Semaphore来说，资源就是许可证的数量：</p>
+<ul>
+<li>剩余许可证数（State值） - 尝试获取的许可数（acquire方法入参） ≥ 0：资源可用</li>
+<li>剩余许可证数（State值） - 尝试获取的许可数（acquire方法入参） &lt; 0：资源不可用<br>这里共享的含义是多个线程可以同时获取资源，当计算出的剩余资源不足时，线程就会阻塞。<br>注意：Semaphore不是锁，只能限制同时访问资源的线程数，至于对数据一致性的控制，Semaphore是不关心的。当前，如果是只有一个许可的Semaphore，可以当作锁使用。</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/b071530c/" rel="bookmark">java线程系列 JUC同步器 08 CountDownLatch</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c05d7ca/" rel="bookmark">java线程系列 JUC同步器09 CyclicBarrier</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/2313243/">java线程系列 JUC同步器 10 Semaphore</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月20日 - 14:51</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/2313243/" title="java线程系列 JUC同步器 10 Semaphore">java线程系列 JUC同步器 10 Semaphore</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/2313243/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/同步器/" rel="tag">  <i class="fa fa-tag"></i> 同步器</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/c05d7ca/" rel="next" title="java线程系列 JUC同步器09 CyclicBarrier">
+                <i class="fa fa-chevron-left"></i> java线程系列 JUC同步器09 CyclicBarrier
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/e9892254/" rel="prev" title="事务隔离性简介">
+                事务隔离性简介 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#示例"><span class="nav-text">示例</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析"><span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#构造函数"><span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公平信号量的获取"><span class="nav-text">公平信号量的获取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#公平信号量的释放"><span class="nav-text">公平信号量的释放</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非公平信号量获取和释放"><span class="nav-text">非公平信号量获取和释放</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/2313243/";
+        this.page.identifier = "posts/2313243/";
+        this.page.title = 'java线程系列 JUC同步器 10 Semaphore';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

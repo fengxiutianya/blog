@@ -1,0 +1,1822 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="正如每个Java文档所描述的那样，CountDownLatch是一个同步工具类，它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。在Java并发中，countdownlatch的概念是一个常见的面试题，所以一定要确保你很好的理解了它。 CountDownLatch是什么CountDownLatch是在java1.5被引入的，跟它一起被引入的并发工具类还有CyclicBarrier和S">
+<meta name="keywords" content="同步器">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程系列 JUC同步器 08 CountDownLatch">
+<meta property="og:url" content="http://fengxiutianya.top/posts/b071530c/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="正如每个Java文档所描述的那样，CountDownLatch是一个同步工具类，它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。在Java并发中，countdownlatch的概念是一个常见的面试题，所以一定要确保你很好的理解了它。 CountDownLatch是什么CountDownLatch是在java1.5被引入的，跟它一起被引入的并发工具类还有CyclicBarrier和S">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-302.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-304.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程系列 JUC同步器 08 CountDownLatch">
+<meta name="twitter:description" content="正如每个Java文档所描述的那样，CountDownLatch是一个同步工具类，它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。在Java并发中，countdownlatch的概念是一个常见的面试题，所以一定要确保你很好的理解了它。 CountDownLatch是什么CountDownLatch是在java1.5被引入的，跟它一起被引入的并发工具类还有CyclicBarrier和S">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-302.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/b071530c/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java线程系列 JUC同步器 08 CountDownLatch | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/b071530c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java线程系列 JUC同步器 08 CountDownLatch
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-19 10:34:00" itemprop="dateCreated datePublished" datetime="2019-03-19T10:34:00+08:00">2019-03-19</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/tools/" itemprop="url" rel="index"><span itemprop="name">tools</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/b071530c/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/b071530c/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/b071530c/" class="leancloud_visitors" data-flag-title="java线程系列 JUC同步器 08 CountDownLatch">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>正如每个Java文档所描述的那样，<a href="http://docs.oracle.com/javase/7/docs/api/java/util/concurrent/CountDownLatch.html" target="_blank" rel="noopener">CountDownLatch</a>是一个同步工具类，它允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行。在Java并发中，countdownlatch的概念是一个常见的面试题，所以一定要确保你很好的理解了它。</p>
+<h2 id="CountDownLatch是什么"><a href="#CountDownLatch是什么" class="headerlink" title="CountDownLatch是什么"></a>CountDownLatch是什么</h2><p>CountDownLatch是在java1.5被引入的，跟它一起被引入的并发工具类还有CyclicBarrier和Semaphore，它们都存在于java.util.concurrent包下，后面会讲解另外俩个。CountDownLatch这个类能够使一个线程等待其他线程完成各自的工作后再执行。例如，应用程序的主线程希望在负责启动框架服务的线程已经启动所有的框架服务之后再执行。</p>
+<p>CountDownLatch是通过一个计数器来实现的，计数器的初始值为线程的数量。每当一个线程完成了自己的任务后，计数器的值就会减1。当计数器值到达0时，它表示所有的线程已经完成了任务，然后在闭锁上等待的线程就可以恢复执行任务。</p>
+<p><img src="/images/pasted-302.png" alt="upload successful"></p>
+<p>如上图：TA主线程会一直等待，等待T1、T2和T3将计数器减为0，才继续执行。</p>
+<a id="more"></a>
+<h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2><p>在这个例子中，我模拟了一个应用程序启动类，它开始时启动了n个线程类，这些线程将检查外部系统并通知闭锁，并且启动类一直在闭锁上等待着。一旦验证和检查了所有外部服务，那么启动类恢复执行。</p>
+<p><strong>BaseHealthChecker.java：</strong>这个类是一个Runnable，负责所有特定的外部服务健康的检测。它删除了重复的代码和闭锁的中心控制代码。</p>
+<pre><code class="java">package JUC.tools.CountDownLathDemo;
+
+import java.util.concurrent.CountDownLatch;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-19 20:02
+ *      email  : 398757724@qq.com
+ *      Desc   : 这个类是一个Runnable，负责所有特定的外部服务健康的检测。
+ *               它删除了重复的代码和闭锁的中心控制代码。
+ ***************************************/
+public abstract class BaseHealthChecker implements Runnable {
+
+    private CountDownLatch _latch;
+
+    private String _serviceName;
+
+    private boolean _serviceUp;
+
+
+    public BaseHealthChecker(String serviceName, CountDownLatch latch) {
+        super();
+        this._latch = latch;
+        this._serviceName = serviceName;
+        this._serviceUp = false;
+    }
+
+
+    @Override
+    public void run() {
+        try {
+            verifyService();
+            _serviceUp = true;
+        } catch (Throwable t) {
+            t.printStackTrace(System.err);
+            _serviceUp = false;
+        } finally {
+            if (_latch != null) {
+                _latch.countDown();
+            }
+        }
+    }
+
+
+    public String getServiceName() {
+        return _serviceName;
+    }
+
+
+    public boolean isServiceUp() {
+        return _serviceUp;
+    }
+
+
+    //This methos needs to be implemented by all specific service checker
+    public abstract void verifyService();
+}
+
+</code></pre>
+<p><strong>NetworkHealthChecker.java：</strong>这个类继承了BaseHealthChecker，实现了verifyService()方法。<strong>DatabaseHealthChecker.java</strong>和<strong>CacheHealthChecker.java</strong>除了服务名和休眠时间外，与NetworkHealthChecker.java是一样的。</p>
+<pre><code class="java">package JUC.tools.CountDownLathDemo;
+
+import java.util.concurrent.CountDownLatch;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-19 20:06
+ *      email  : 398757724@qq.com
+ *      Desc   : 
+ ***************************************/
+public class CacheHealthChecker extends BaseHealthChecker {
+
+    public CacheHealthChecker(CountDownLatch latch) {
+        super(&quot;CacheHealthChecker&quot;, latch);
+    }
+
+
+    @Override
+    public void verifyService() {
+        System.out.println(&quot;Checking &quot; + this.getServiceName());
+        try {
+            Thread.sleep(7000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(this.getServiceName() + &quot; is UP&quot;);
+    }
+}
+
+</code></pre>
+<p><strong>ApplicationStartupUtil.java：</strong>这个类是一个主启动类，它负责初始化闭锁，然后等待，直到所有服务都被检测完。</p>
+<pre><code class="java">package JUC.tools.CountDownLathDemo;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-19 20:07
+ *      email  : 398757724@qq.com
+ *      Desc   : 应用启动类
+ ***************************************/
+public class ApplicationStartupUtil {
+
+    public static void main(String[] args) {
+        boolean result = false;
+        try {
+            result = ApplicationStartupUtil.checkExternalServices();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(&quot;External services validation completed !! Result was :: &quot; + result);
+    }
+
+
+    private static List&lt;BaseHealthChecker&gt; _services;
+
+    private static CountDownLatch _latch;
+
+
+    private ApplicationStartupUtil() {
+    }
+
+
+    private final static ApplicationStartupUtil INSTANCE = new ApplicationStartupUtil();
+
+
+    public static ApplicationStartupUtil getInstance() {
+        return INSTANCE;
+    }
+
+
+    public static boolean checkExternalServices() throws Exception {
+
+        _latch = new CountDownLatch(3);
+
+        _services = new ArrayList&lt;BaseHealthChecker&gt;();
+        _services.add(new NetworkHealthChecker(_latch));
+        _services.add(new CacheHealthChecker(_latch));
+        _services.add(new DatabaseHealthChecker(_latch));
+
+        Executor executor = Executors.newFixedThreadPool(_services.size());
+
+        for (final BaseHealthChecker v : _services) {
+            executor.execute(v);
+        }
+
+        _latch.await();
+        for (final BaseHealthChecker v : _services) {
+            if (!v.isServiceUp()) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+</code></pre>
+<p>运行结果</p>
+<pre><code>Checking networkService
+Checking CacheHealthChecker
+Checking DatabaseHealth
+networkService is UP
+CacheHealthChecker is UP
+DatabaseHealth is UP
+External services validation completed !! Result was :: true
+</code></pre><h2 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h2><p>CountDownLath的类图如下</p>
+<p><img src="/images/pasted-304.png" alt="upload successful"></p>
+<p>CountDownLatch是通过共享锁实现的。下面，我们分析CountDownLatch中3个核心函数: CountDownLatch(int count), await(), countDown()。</p>
+<p>首先看一下构造函数</p>
+<pre><code class="java">public CountDownLatch(int count) {
+    if (count &lt; 0) 
+        throw new IllegalArgumentException(&quot;count &lt; 0&quot;);
+    this.sync = new Sync(count);
+}
+</code></pre>
+<p>里面很简单，创建一个Sync对象，下面看看Sync类，这个类继承了AQS，源码如下</p>
+<pre><code class="java">private static final class Sync extends AbstractQueuedSynchronizer {
+    private static final long serialVersionUID = 4982264981922014374L;
+
+
+    Sync(int count) {
+        // 设置状态值
+        setState(count);
+    }
+
+    int getCount() {
+        return getState();
+    }
+
+    // 获取共享锁
+    protected int tryAcquireShared(int acquires) {
+        return (getState() == 0) ? 1 : -1;
+    }
+
+    protected boolean tryReleaseShared(int releases) {
+        // Decrement count; signal when transition to zero
+
+        for (;;) {
+            int c = getState();
+            //如果已经为0，值之间返回说明已经释放完，不需要在释放
+            if (c == 0)
+                return false;
+            // 状态值减1
+            int nextc = c-1;
+            //设置状态值，如果减小状态值之后，数字为0，则表示释放成功
+            if (compareAndSetState(c, nextc))
+                return nextc == 0;
+        }
+    }
+}
+</code></pre>
+<h3 id="await"><a href="#await" class="headerlink" title="await"></a>await</h3><p>这个函数想当我我们前面的lock函数，只是这里换了个名称而已，源码如下</p>
+<pre><code class="java">public void await() throws InterruptedException {
+    sync.acquireSharedInterruptibly(1);
+}
+public final void acquireSharedInterruptibly(int arg)
+    throws InterruptedException {
+    if (Thread.interrupted())
+        throw new InterruptedException();
+    // 尝试获取锁，如果成功直接返回
+    if (tryAcquireShared(arg) &lt; 0)
+        // 获取锁失败，调用下面获取锁
+        doAcquireSharedInterruptibly(arg);
+}
+
+</code></pre>
+<p>从上面可以看出，这里await功能是通过获取共享锁来实现的。在我们构造CountDownLath对象的时候，闯进来一个state值，因此默认情况下，这里是获取到不到锁，从而使得线程进入阻塞状态。tryAcquireShared函数比较简单，这里就不仔细说这个函数，可以看上米娜Sync对象中的定义。下面看看doAcquireSharedInterruptibly这个函数，源码如下</p>
+<pre><code class="java">private void doAcquireSharedInterruptibly(int arg)
+    throws InterruptedException {
+    // 插入获取共享锁的节点
+    final Node node = addWaiter(Node.SHARED);
+    boolean failed = true;
+    try {
+        for (;;) {
+            // 获取前继节点
+            final Node p = node.predecessor();
+            // 如果是头结点，尝试获取共享锁
+            if (p == head) {
+                // 大于0表示获取成功
+                int r = tryAcquireShared(arg);
+                // 获取成功唤醒后继节点，并返回
+                if (r &gt;= 0) {
+                    // 设置头结点然后唤醒后继节点
+                    setHeadAndPropagate(node, r);
+                    p.next = null; // help GC
+                    failed = false;
+                    return;
+                }
+            }
+            // 判断是否需要阻塞，并将节点插入到合适的位置，然后阻塞
+            // 阻塞如果是被中断唤醒的，则抛出异常
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                parkAndCheckInterrupt())
+                throw new InterruptedException();
+        }
+    } finally {
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+</code></pre>
+<p>上面流程还是比较简单，具体细节可以看上面的注释，主要的细节在前面的文章中已经解释过，下面重点解释一下setHeadAndPropagate这个函数。</p>
+<p>源码如下：</p>
+<pre><code class="java">private void setHeadAndPropagate(Node node, int propagate) {
+    // 记录头结点
+    Node h = head; // Record old head for check below
+    // 色红孩子当前节点为头结点
+    setHead(node);
+
+    // 有需要唤醒的后继节点，唤醒后继节点
+    if (propagate &gt; 0 || h == null || h.waitStatus &lt; 0 ||
+        (h = head) == null || h.waitStatus &lt; 0) {
+        Node s = node.next;
+        // 如果是共享锁，则唤醒
+        if (s == null || s.isShared())
+            doReleaseShared();
+    }
+}
+</code></pre>
+<p>主要流程就是判断当前队列中是否有后续需要唤醒获取共享锁的节点，如果有则调用doReleaseShared唤醒。</p>
+<pre><code class="java">private void doReleaseShared() {
+
+    for (;;) {
+        Node h = head;
+        // 等待队列不为空
+        if (h != null &amp;&amp; h != tail) {
+            int ws = h.waitStatus;
+            // 头结点的状态SIGNAL，则需要唤醒后继节点
+            if (ws == Node.SIGNAL) {
+                // 这只状态值，成功则执行后面唤醒后继节点的函数，否则继续循环知道成功
+                if (!compareAndSetWaitStatus(h, Node.SIGNAL, 0))
+                    continue;            // loop to recheck cases
+                // 释放后继节点，则会改变头结点，也就是会退出这个逊汗
+                unparkSuccessor(h);
+            }
+            //设置头结点为PROPAGATE状态，一直进行循环，知道头结点改变
+            // 这样可以防止后继节点一直等待而不被唤醒
+
+            else if (ws == 0 &amp;&amp;
+                     !compareAndSetWaitStatus(h, 0, Node.PROPAGATE))
+                continue;                // loop on failed CAS
+        }
+        // 头结点改变，退出循环
+        if (h == head)                   // loop if head changed
+            break;
+    }
+}
+
+</code></pre>
+<p>上面注释已经解释了整体的逻辑，这里重点解释<code>ws == 0 &amp;&amp;
+!compareAndSetWaitStatus(h, 0, Node.PROPAGATE)</code>这个条件，通常情况下，如果头结点释放，那么会唤醒后继节点，但是出现这里的情况是因为队列里面只有当前节点，没有需要唤醒的节点，但是如果我们在改变当前节点状态过程中如果有后继节点计入阻塞队列，因为我们已经释放了此节点，会造成后继节点没有唤醒而造成阻塞。因此这里循环判断，直到有新的节点入队。而新节点入队，就会改变当前节点状态，从而使得循环结束。不过出现这种情况很少，因为共享锁获取的时候，入队的节点都会通过shouldParkAfterFailedAcquire将前继节点值设置成为SIGNAL。所以一般情况先，在循环的第一步就会结束。</p>
+<h3 id="countDown"><a href="#countDown" class="headerlink" title="countDown()"></a><strong>countDown()</strong></h3><pre><code class="java">public void countDown() {
+    sync.releaseShared(1);
+}
+
+public final boolean releaseShared(int arg) {
+    if (tryReleaseShared(arg)) {
+        doReleaseShared();
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>该函数实际上调用releaseShared(1)释放共享锁，releaseShared()在AQS中实现。releaseShared()的目的是让当前线程释放它所持有的共享锁。它首先会通过tryReleaseShared()去尝试释放共享锁。尝试成功，则直接返回；尝试失败，则通过doReleaseShared()去释放共享锁，上面已经解释过这个函数。先买看看CountDownLath中实现的tryReleaseShared。源码如下：</p>
+<pre><code class="java">protected boolean tryReleaseShared(int releases) {
+    // Decrement count; signal when transition to zero
+    for (;;) {
+        // 获取“锁计数器”的状态
+        int c = getState();
+        if (c == 0)
+            return false;
+        // “锁计数器”-1
+        int nextc = c-1;
+        // 通过CAS函数进行赋值。
+        if (compareAndSetState(c, nextc))
+            return nextc == 0;
+    }
+}
+</code></pre>
+<p>tryReleaseShared()的作用是释放共享锁，将锁计数器的值减1。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CountDownLatch是通过共享锁实现的。在创建CountDownLatch中时，会传递一个int类型参数count，该参数是锁计数器的初始状态，表示该“享锁最多能被count给线程同时获取。当某线程调用该CountDownLatch对象的await()方法时，该线程会等待共享锁可用时，才能获取“共享锁进而继续运行。而共享锁可用的条件，就是锁计数器的值为0！而锁计数器的初始值为count，每当一个线程调用该CountDownLatch对象的countDown()方法时，才将锁计数器减1；通过这种方式，必须有count个线程调用countDown()之后，锁计数器才为0，而前面提到的等待线程才能继续运行！</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.cnblogs.com/skywang12345/p/3533887.html" target="_blank" rel="noopener">Java多线程系列–“JUC锁”09之 CountDownLatch原理和示例</a></li>
+<li><a href="http://www.importnew.com/15731.html" target="_blank" rel="noopener">什么时候使用CountDownLatch</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/2313243/" rel="bookmark">java线程系列 JUC同步器 10 Semaphore</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c05d7ca/" rel="bookmark">java线程系列 JUC同步器09 CyclicBarrier</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/b071530c/">java线程系列 JUC同步器 08 CountDownLatch</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月19日 - 10:34</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/b071530c/" title="java线程系列 JUC同步器 08 CountDownLatch">java线程系列 JUC同步器 08 CountDownLatch</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/b071530c/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/同步器/" rel="tag">  <i class="fa fa-tag"></i> 同步器</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/18178dca/" rel="next" title="java线程系列 JUC锁 07 ReentrantReadWriteLock">
+                <i class="fa fa-chevron-left"></i> java线程系列 JUC锁 07 ReentrantReadWriteLock
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/c05d7ca/" rel="prev" title="java线程系列 JUC同步器09 CyclicBarrier">
+                java线程系列 JUC同步器09 CyclicBarrier <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CountDownLatch是什么"><span class="nav-text">CountDownLatch是什么</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#例子"><span class="nav-text">例子</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码解析"><span class="nav-text">源码解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#await"><span class="nav-text">await</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#countDown"><span class="nav-text">countDown()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/b071530c/";
+        this.page.identifier = "posts/b071530c/";
+        this.page.title = 'java线程系列 JUC同步器 08 CountDownLatch';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

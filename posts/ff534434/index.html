@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="并发队列-有界阻塞队列LinkedBlockingQueue原理探究概述LinkedBlockingQueue是一个单向链表实现的阻塞队列。该队列按 FIFO（先进先出）排序元素，新元素插入到队列的尾部，并且队列获取操作会获得位于队列头部的元素。链接队列的吞吐量通常要高于基于数组的队列，但是在大多数并发应用程序中，其可预知的性能要低。此外，LinkedBlockingQueue还是可选容量的(防止">
+<meta name="keywords" content="并发队列,juc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="并发队列-有界阻塞队列LinkedBlockingQueue原理探究">
+<meta property="og:url" content="http://fengxiutianya.top/posts/ff534434/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="并发队列-有界阻塞队列LinkedBlockingQueue原理探究概述LinkedBlockingQueue是一个单向链表实现的阻塞队列。该队列按 FIFO（先进先出）排序元素，新元素插入到队列的尾部，并且队列获取操作会获得位于队列头部的元素。链接队列的吞吐量通常要高于基于数组的队列，但是在大多数并发应用程序中，其可预知的性能要低。此外，LinkedBlockingQueue还是可选容量的(防止">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-166.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="并发队列-有界阻塞队列LinkedBlockingQueue原理探究">
+<meta name="twitter:description" content="并发队列-有界阻塞队列LinkedBlockingQueue原理探究概述LinkedBlockingQueue是一个单向链表实现的阻塞队列。该队列按 FIFO（先进先出）排序元素，新元素插入到队列的尾部，并且队列获取操作会获得位于队列头部的元素。链接队列的吞吐量通常要高于基于数组的队列，但是在大多数并发应用程序中，其可预知的性能要低。此外，LinkedBlockingQueue还是可选容量的(防止">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-166.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/ff534434/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>并发队列-有界阻塞队列LinkedBlockingQueue原理探究 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/ff534434/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">并发队列-有界阻塞队列LinkedBlockingQueue原理探究
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-06 11:05:00" itemprop="dateCreated datePublished" datetime="2019-03-06T11:05:00+08:00">2019-03-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/collections/" itemprop="url" rel="index"><span itemprop="name">collections</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/ff534434/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/ff534434/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/ff534434/" class="leancloud_visitors" data-flag-title="并发队列-有界阻塞队列LinkedBlockingQueue原理探究">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="并发队列-有界阻塞队列LinkedBlockingQueue原理探究"><a href="#并发队列-有界阻塞队列LinkedBlockingQueue原理探究" class="headerlink" title="并发队列-有界阻塞队列LinkedBlockingQueue原理探究"></a>并发队列-有界阻塞队列LinkedBlockingQueue原理探究</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>LinkedBlockingQueue是一个单向链表实现的阻塞队列。该队列按 FIFO（先进先出）排序元素，新元素插入到队列的尾部，并且队列获取操作会获得位于队列头部的元素。链接队列的吞吐量通常要高于基于数组的队列，但是在大多数并发应用程序中，其可预知的性能要低。此外，LinkedBlockingQueue还是可选容量的(防止过度膨胀)，即可以指定队列的容量。如果不指定，默认容量大小等于Integer.MAX_VALUE。</p>
+<ol>
+<li>LinkedBlockingQueue简介</li>
+<li>LinkedBlockingQueue源码分析<a id="more"></a>
+</li>
+</ol>
+<h2 id="1-LinkedBlockingQueue简介"><a href="#1-LinkedBlockingQueue简介" class="headerlink" title="1. LinkedBlockingQueue简介"></a>1. LinkedBlockingQueue简介</h2><p>类图如下</p>
+<p><img src="/images/pasted-166.png" alt="upload successful"></p>
+<ol>
+<li>LinkedBlockingQueue继承于AbstractQueue，它本质上是一个FIFO(先进先出)的队列。</li>
+<li>LinkedBlockingQueue实现了BlockingQueue接口，它支持多线程并发。当多线程竞争同一个资源时，某线程获取到该资源之后，其它线程需要阻塞等待。</li>
+<li>LinkedBlockingQueue是通过单链表实现的,这个是和ArrayBlocking不同的地点。</li>
+<li>另外LinkedBlockingQueue使用的是非公平锁，这个不能修改。</li>
+</ol>
+<h2 id="2-LinkedBlockingQueue源码分析"><a href="#2-LinkedBlockingQueue源码分析" class="headerlink" title="2. LinkedBlockingQueue源码分析"></a>2. LinkedBlockingQueue源码分析</h2><p>首先，看一下后面解析重要方法时要用到的属性</p>
+<pre><code class="java">    // 链表节点定义
+    static class Node&lt;E&gt; {
+        E item;
+
+        /**
+         * 值为下面三个其中之一
+         * - 真是的后继节点
+         * - 指向当前节点，表示头结点
+         * - null，以为这空节点，
+         */
+        //
+        Node&lt;E&gt; next;
+
+        Node(E x) { item = x; }
+    }
+
+   // 当前队列最大长度，没有指定默认为Integer.MAX_VALUE
+    private final int capacity;
+
+    // 队列中元素的个数
+    private final AtomicInteger count = new AtomicInteger();
+
+    // 头结点
+    // head.item == null 保持不变
+    transient Node&lt;E&gt; head;
+
+
+    // 尾节点，last.next==null 保持不变
+    private transient Node&lt;E&gt; last;
+
+    // 出队时使用的互斥锁，默认使用非公平锁
+    private final ReentrantLock takeLock = new ReentrantLock();
+
+       // 等待出队使用的条件锁
+    private final Condition notEmpty = takeLock.newCondition();
+
+    // 入队时使用的互斥锁
+    private final ReentrantLock putLock = new ReentrantLock();
+
+    // 等待入队时使用的条件锁
+    private final Condition notFull = putLock.newCondition();
+</code></pre>
+<p>构造函数</p>
+<pre><code class="java">    public LinkedBlockingQueue(int capacity) {
+        if (capacity &lt;= 0) 
+            throw new IllegalArgumentException();
+        this.capacity = capacity;
+        last = head = new Node&lt;E&gt;(null);
+    }
+</code></pre>
+<p>逻辑比较简单，初始化队列长度，并初始化队列的头结点和尾节点，其中节点的数据为null</p>
+<h3 id="入队"><a href="#入队" class="headerlink" title="入队"></a>入队</h3><p>出队主要由以下方法</p>
+<pre><code class="java">public E put()
+public boolean offer(E e)   
+public boolean offer(E e, long timeout, TimeUnit unit)
+// 这个取出元素，但不会删除元素
+public E peek()    
+</code></pre>
+<p>插入大致相同，先获取插入锁，然后将元素入队，最后释放锁。这里拿<code>public boolean offer(E e, long timeout, TimeUnit unit)</code>来举例解释</p>
+<pre><code class="java">    public boolean offer(E e, long timeout, TimeUnit unit)
+        throws InterruptedException {
+
+        if (e == null) 
+            throw new NullPointerException();
+        long nanos = unit.toNanos(timeout);
+        int c = -1;
+        // 获取入队锁和队列的长度
+        final ReentrantLock putLock = this.putLock;
+        final AtomicInteger count = this.count;
+        // 加锁
+        putLock.lockInterruptibly();
+        try {
+            // 如果队列已满，则进入阻塞等待给定时间
+            // 如果在等待时间内还没有获取到插入节点的锁
+            // 则返回插入失败
+            // 否则进入下一步进行插入
+            while (count.get() == capacity) {
+                if (nanos &lt;= 0)
+                    return false;
+                nanos = notFull.awaitNanos(nanos);
+            }
+            // 入队操作
+            enqueue(new Node&lt;E&gt;(e));
+            // 队列数量加1，并发挥插入之前的数量长度
+            c = count.getAndIncrement();
+            // 如果队列未满，则发出信号，释放正在等待入队的线程
+            if (c + 1 &lt; capacity)
+                notFull.signal();
+        } finally {
+            // 释放锁
+            putLock.unlock();
+        }
+        // 如果在入队之前，队列的长度为0，则给等待获取节点的线程发出可以获取节点信号
+        if (c == 0)
+            signalNotEmpty();
+        return true;
+    }
+    // 入队操作
+    private void enqueue(Node&lt;E&gt; node) {
+        last = last.next = node;
+    }
+    // 发出队列非空信号
+    private void signalNotEmpty() {
+        // 注意这里是出队使用的锁，调用这个是在入队的操作中
+        final ReentrantLock takeLock = this.takeLock;
+        takeLock.lock();
+        try {
+            notEmpty.signal();
+        } finally {
+            takeLock.unlock();
+        }
+    }
+</code></pre>
+<p>这里逻辑还是很清楚，但是有一个疑问是，head和last在初始化的时候指向的是同一个节点，那么在进行入队的时候加锁并不会影响出队时的加锁，因为这俩个不是同一个互斥锁。那LinkedBlockingQueue是如何解决入队和出队共同操作同一个对象的呢。其实很简单，就是通过那个原子变量，当入队时，如果检测到队列数量已满，就进行阻塞，当出队时，如果获取到数量为0，则进行出队的阻塞。并且在最后都会有一个非空和未满的信号释放。</p>
+<p>下面看看出队你就会更加清楚这种操作。</p>
+<h2 id="出队"><a href="#出队" class="headerlink" title="出队"></a>出队</h2><p>主要由以下几个接口的实现：</p>
+<pre><code class="java">public E peek()
+public E poll()
+public E poll(long timeout, TimeUnit unit)
+public E take()
+</code></pre>
+<p>这里主要讲解<code>public E poll(long timeout, TimeUnit unit)</code>操作：</p>
+<pre><code class="java">    public E poll(long timeout, TimeUnit unit) throws InterruptedException {
+        E x = null;
+        int c = -1;
+        long nanos = unit.toNanos(timeout);
+        // 获取原子数量
+        final AtomicInteger count = this.count;
+        final ReentrantLock takeLock = this.takeLock;
+        // 获取加锁
+        takeLock.lockInterruptibly();
+        try {
+            // 首先判断队列是否为空，如果为空则进入阻塞等待
+            // 在等待指定的时间内还没获取到锁，则返回失败
+            while (count.get() == 0) {
+                if (nanos &lt;= 0)
+                    return null;
+                nanos = notEmpty.awaitNanos(nanos);
+            }
+            // 出队操作
+            x = dequeue();
+            // 数量减1
+            c = count.getAndDecrement();
+            // 发出非空
+            if (c &gt; 1)
+                notEmpty.signal();
+        } finally {
+            takeLock.unlock();
+        }
+        // 如果出队之前队列已满，这时可能有正在等待的队列，发出队列非满的信号
+        if (c == capacity)
+            signalNotFull();
+        return x;
+    }
+// 从下面可以看出，这里发出队列为满的信号，唤醒等待入队的操作线程
+private void signalNotFull() {
+        // 这里的的锁是入队锁
+        final ReentrantLock putLock = this.putLock;
+        putLock.lock();
+        try {
+            notFull.signal();
+        } finally {
+            putLock.unlock();
+        }
+    }
+</code></pre>
+<p>逻辑比较简单，具体的可以看源码中的解释。这里可以验证我们在入队时说的，为了防止入队和出队操作同一个对象也就是last=head这种情况，在入队和出队时，会先进行队列长度的检查，然后在进行操作。这样可以防止出队和入队同时操作同一个对象。</p>
+<h2 id="遍历操作"><a href="#遍历操作" class="headerlink" title="遍历操作"></a>遍历操作</h2><p>下面对LinkedBlockingQueue的遍历方法进行说明。</p>
+<pre><code>public Iterator&lt;E&gt; iterator() {
+  return new Itr();
+}
+</code></pre><p>iterator()实际上是返回一个Iter对象。</p>
+<p>Itr类的定义如下：</p>
+<pre><code>private class Itr implements Iterator&lt;E&gt; {
+    // 当前节点
+    private Node&lt;E&gt; current;
+    // 上一次返回的节点
+    private Node&lt;E&gt; lastRet;
+    // 当前节点对应的值
+    private E currentElement;
+
+    Itr() {
+        // 同时获取“插入锁putLock” 和 “取出锁takeLock”
+        fullyLock();
+        try {
+            // 设置“当前元素”为“队列表头的下一节点”，即为队列的第一个有效节点
+            current = head.next;
+            if (current != null)
+                currentElement = current.item;
+        } finally {
+            // 释放“插入锁putLock” 和 “取出锁takeLock”
+            fullyUnlock();
+        }
+    }
+
+    // 返回“下一个节点是否为null”
+    public boolean hasNext() {
+        return current != null;
+    }
+
+    private Node&lt;E&gt; nextNode(Node&lt;E&gt; p) {
+        for (;;) {
+            Node&lt;E&gt; s = p.next;
+            if (s == p)
+                return head.next;
+            if (s == null || s.item != null)
+                return s;
+            p = s;
+        }
+    }
+
+    // 返回下一个节点
+    public E next() {
+        fullyLock();
+        try {
+            if (current == null)
+                throw new NoSuchElementException();
+            E x = currentElement;
+            lastRet = current;
+            current = nextNode(current);
+            currentElement = (current == null) ? null : current.item;
+            return x;
+        } finally {
+            fullyUnlock();
+        }
+    }
+
+    // 删除下一个节点
+    public void remove() {
+        if (lastRet == null)
+            throw new IllegalStateException();
+        fullyLock();
+        try {
+            Node&lt;E&gt; node = lastRet;
+            lastRet = null;
+            for (Node&lt;E&gt; trail = head, p = trail.next;
+                 p != null;
+                 trail = p, p = p.next) {
+                if (p == node) {
+                    unlink(p, trail);
+                    break;
+                }
+            }
+        } finally {
+            fullyUnlock();
+        }
+    }
+}
+</code></pre><p>从上面可以看出，遍历操作，不一定是准确的反映队列的真实存储，这要看在获取到这个迭代器之后，队列是否发生变化，如果发生了变化，可能会影响遍历的结果。但是一般只是队列头不会如实反映，后面的节点还是会和队列保持一样。这个主要是因为队列的头是被保存下来的，而在遍历时是直接返回保存的节点值。</p>
+<h3 id="size"><a href="#size" class="headerlink" title="size"></a>size</h3><p>这个操会返回节点数量，是比较准的，所以说他是有界队列时没错的，因为可以精确知道队列的长度，那么就可以精确控制队列长度大小。</p>
+<pre><code>public int size() {
+    return count.get();
+}
+</code></pre><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>和ArrayBlockingQueue相比，不需要指定队列的长度，默认是整型的最大值，另外这个也是有界队列。只是他的界限可以很大。实现是通过单项链表来实现的。其他的和ArrayBlockQueue实现基本上差不多，不过这个性能比ArrayBlockingQueue要好。ArrayBlockingQueue通过使用全局独占锁实现同时只能有一个线程进行入队或者出队操作，这个锁的粒度比较大。LinkedBlockingQueue入队和出队使用不同的锁，锁的粒度相对于ArrayBlockingQueue来说相对较小。所以并发性上面会更好一点，性能也就更好。</p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/a75f3158/" rel="bookmark">并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/3dcf748d/" rel="bookmark">并发队列-无界阻塞队列PriorityBlockingQueue原理研究</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/5fda9009/" rel="bookmark">并发队列-有界阻塞队列ArrayBlockingQueue原理探究</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d095b5fe/" rel="bookmark">并发队列总结</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/b9225de/" rel="bookmark">并发队列-无界阻塞延时队列DelayQueue原理研究</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/ff534434/">并发队列-有界阻塞队列LinkedBlockingQueue原理探究</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月06日 - 11:05</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/ff534434/" title="并发队列-有界阻塞队列LinkedBlockingQueue原理探究">并发队列-有界阻塞队列LinkedBlockingQueue原理探究</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/ff534434/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/并发队列/" rel="tag">  <i class="fa fa-tag"></i> 并发队列</a>
+          
+            <a href="/tags/juc/" rel="tag">  <i class="fa fa-tag"></i> juc</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/8af04eac/" rel="next" title="Java 集合系列16之 Set架构">
+                <i class="fa fa-chevron-left"></i> Java 集合系列16之 Set架构
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/5fda9009/" rel="prev" title="并发队列-有界阻塞队列ArrayBlockingQueue原理探究">
+                并发队列-有界阻塞队列ArrayBlockingQueue原理探究 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#并发队列-有界阻塞队列LinkedBlockingQueue原理探究"><span class="nav-text">并发队列-有界阻塞队列LinkedBlockingQueue原理探究</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-LinkedBlockingQueue简介"><span class="nav-text">1. LinkedBlockingQueue简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-LinkedBlockingQueue源码分析"><span class="nav-text">2. LinkedBlockingQueue源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#入队"><span class="nav-text">入队</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#出队"><span class="nav-text">出队</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#遍历操作"><span class="nav-text">遍历操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#size"><span class="nav-text">size</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/ff534434/";
+        this.page.identifier = "posts/ff534434/";
+        this.page.title = '并发队列-有界阻塞队列LinkedBlockingQueue原理探究';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="JVM内存区域包括计数器、Java虚拟机栈、本地方法栈、堆、方法区。本文主要是介绍各个内存区域的作用性和特性，同时分别阐述各个区域发生内存溢出的可能性和异常类型。">
+<meta name="keywords" content="内存模型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM 内存区域简介">
+<meta property="og:url" content="http://fengxiutianya.top/posts/56bd0dd8/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="JVM内存区域包括计数器、Java虚拟机栈、本地方法栈、堆、方法区。本文主要是介绍各个内存区域的作用性和特性，同时分别阐述各个区域发生内存溢出的可能性和异常类型。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-282.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-283.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-334.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JVM 内存区域简介">
+<meta name="twitter:description" content="JVM内存区域包括计数器、Java虚拟机栈、本地方法栈、堆、方法区。本文主要是介绍各个内存区域的作用性和特性，同时分别阐述各个区域发生内存溢出的可能性和异常类型。">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-282.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/56bd0dd8/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>JVM 内存区域简介 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/56bd0dd8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">JVM 内存区域简介
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-23 08:01:51" itemprop="dateCreated datePublished" datetime="2019-03-23T08:01:51+08:00">2019-03-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/56bd0dd8/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/56bd0dd8/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/56bd0dd8/" class="leancloud_visitors" data-flag-title="JVM 内存区域简介">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>JVM内存区域包括计数器、Java虚拟机栈、本地方法栈、堆、方法区。本文主要是介绍各个内存区域的作用性和特性，同时分别阐述各个区域发生内存溢出的可能性和异常类型。</p>
+<a id="more"></a>
+<h2 id="JVM内存区域"><a href="#JVM内存区域" class="headerlink" title="JVM内存区域"></a>JVM内存区域</h2><p>Java虚拟机执行Java程序的过程中，会把所管理的内存划分为若干个不同的数据区域。这些内存区域各有各的用途，以及创建和销毁时间。有的区域随着虚拟机进程的启动而存在，有的区域伴随着线程的启动和结束而创建和销毁。</p>
+<p>JVM内存区域也成为Java运行时数据区域。其中包括:程序计数器、虚拟机栈、本地方法栈、堆和方法区。</p>
+<p><img src="/images/pasted-282.png" alt="upload successful"></p>
+<p>上图中，方法区和堆是线程共享，虚拟机栈、程序计数器和本地方法栈是线程私有。大概的结构如下图：</p>
+<p><img src="/images/pasted-283.png" alt="upload successful"></p>
+<p>下面分别介绍每部分的是用来做什么的</p>
+<h3 id="程序计数器"><a href="#程序计数器" class="headerlink" title="程序计数器"></a>程序计数器</h3><p>程序计数器是一块较小的内存空间，它的作用可以看做是当前线程所执行的字节码行号的指示器。字节码解释器在工作时就是通过改变这个计数器的值来选取下一条需要执行的字节码指令。这个内存区域是线程私有的内存。</p>
+<p>线程执行java方法时，这个区域记录横在执行的的虚拟机字节码指令地址，如果正在执行Native方法，计数器为空。此内存区域是唯一一个java虚拟机规范中没有规定任何OutOfMemoryError情况的区域。</p>
+<h3 id="Java虚拟机栈"><a href="#Java虚拟机栈" class="headerlink" title="Java虚拟机栈"></a>Java虚拟机栈</h3><p>线程私有内存空间，它的生命周期与线程相同。虚拟机栈描述的是<strong>Java方法执行</strong>的内存模型；每个方法在执行的同时都会创建一个栈帧用于存储局部变量表、操作数栈、动态链接和方法出口等消息。每个方法的调用直至执行完成，都对应一个栈帧在虚拟机栈中入栈和出栈的过程。</p>
+<p>这里简介一下虚拟机栈中的四中组成元素的功能：</p>
+<ol>
+<li>局部变量表：一组变量值的存储空间，用于存储参数和局部变量。</li>
+<li>操作数栈：也称操作栈，是一个后入先出栈。对应于java中每个函数中的每条指令。</li>
+<li>动态链接：每个栈帧都包含一个指向运行时常量池中所属的方法引用，持有这个引用是为了支持方法调用过程中的动态链接。</li>
+<li>方法返回地址：用于存储方法返回的地址，可以是正常返回，如果遇到异常，则是通过异常处理器来确定方法返回地址。</li>
+</ol>
+<p>在Java虚拟机规范中，对这个区域规定了两种异常。</p>
+<ul>
+<li>如果当前线程请求的栈深度大于虚拟机栈所允许的深度，将会抛出 <code>StackOverflowError</code> 异常（在虚拟机栈不允许动态扩展的情况下）；</li>
+<li>如果扩展时无法申请到足够的内存空间，就会抛出 <code>OutOfMemoryError</code> 异常。</li>
+</ul>
+<h3 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h3><p>本地方法栈与虚拟机栈所发挥的作用是非常相似的，他们之间的区别不过是虚拟机栈为虚拟机执行Java方法服务，而本地方法栈则为虚拟机使用到的Native方法服务。此外在虚拟机规范中并没有对本地方法栈中方法使用的语言、使用方法与数据结构做强制的规制，因此具体的虚拟机可以自由实现它。有些虚拟机发行版本(譬如<code>Sun HotSpot</code>虚拟机)直接将<strong>本地方法栈</strong>和<code>Java</code><strong>虚拟机</strong>栈合二为一。与虚拟机栈一样，本地方法栈也会抛出<code>StackOverflowError</code>和<code>OutOfMemoryError</code>异常。</p>
+<h3 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h3><p>Java堆是Java虚拟机所管理的内存中最大的一块。Java堆是被所有线程共享的一块内存区域，虚拟机启动时创建。此内存区域的唯一目的就是存放对象实例，几乎所有的对象实例都在这里分配内存。</p>
+<p>在<code>Java</code>中，堆被划分成两个不同的区域：<strong>新生代</strong> (<code>Young Generation</code>) 、<strong>老年代</strong> (<code>Old Generation</code>) 。<strong>新生代</strong> (<code>Young</code>) 又被划分为三个区域：<strong>一个</strong><code>Eden</code>区和<strong>两个</strong><code>Survivor</code>区 - <code>From Survivor</code>区和<code>To Survivor</code>区。</p>
+<p>如果在堆中没有内存完成实例分配，并且堆也无法再扩展时，将会抛出OutOfMemoryError异常。</p>
+<h3 id="方法区"><a href="#方法区" class="headerlink" title="方法区"></a>方法区</h3><p>方法区是各个线程共享的内存区域，它用于存储已被虚拟机加载的类信息、常量、静态变量、即时编译后的代码等数据。如果方法区无法申请到足够的内存空间，就会抛出 <code>OutOfMemoryError</code> 异常。</p>
+<h4 id="运行时常量池"><a href="#运行时常量池" class="headerlink" title="运行时常量池"></a>运行时常量池</h4><p>运行时常量池是方法区的一部分。Class文件除了有类的版本、字段、方法、接口等描述信息外，还有一项信息是常量池，用于存放编译期生成的各种字面量和符号引用，这部分内容将在类加载后，进入方法区的运行时常量池中存放。</p>
+<p>JVM 规范对 class 文件结构有着严格的规范，必须符合此规范的 class 文件才会被 JVM 认可和装载。运行时常量池 中保存着一些class文件中描述的符号引用，同时还会将这些符号引用所翻译出来的直接引用存储在运行时常量池 中。<br>运行时常量池相对于 class 常量池一大特征就是其具有动态性，Java规范并不要求常量只能在编译才能产生，也就是说运行时常量池中的内容并不全部来自 class 常量池，class 常量池并非运行时常量池的唯一数据输入口；在运行时可以通过代码生成常量并将其放入运行时常量池中，这种特性被开发人员利用比较多的便是String类的intern()方法。<br>同方法区一样，当运行时常量池无法申请到新的内存时，将抛出 OutOfMemoryError 异常。</p>
+<h3 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h3><p>这里补充一点，直接内存（Direct Memory）并不是虚拟机运行时数据区的一部分，也不是Java虚拟机规范中定义的内存区域。但是这部分内存也被频繁地使用，而且也可能导致OutOfMemoryError异常出现。</p>
+<p>在JDK1.4中新加入了NIO类，引入了一种基于通道(Channel)和缓冲区（buffer）的I/O方式，他可以使用Native函数库直接分配堆外内存，然后通过一个存储在Java堆中的DirectByteBuffer对象作为这块内存的引用进行操作。这样能在一些场景中显著提高性能，因为避免了在Java堆和Native堆中来回复制数据。具体的可以参考这篇文章<a href="https://taolove.top/2019/01/14/nio/JAVA%20NIO%E4%B9%8B%E6%B5%85%E8%B0%88%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84%E6%96%87%E4%BB%B6%E5%8E%9F%E7%90%86%E4%B8%8EDirectBuffer/" target="_blank" rel="noopener">直接内存</a></p>
+<h2 id="常见内存溢出异常"><a href="#常见内存溢出异常" class="headerlink" title="常见内存溢出异常"></a>常见内存溢出异常</h2><p>从上面可以看出，除了程序计数器外，Java虚拟机的其他运行区域都有可能发生OutOfMemoryError的异常。下面会分别给出例子。</p>
+<h3 id="java堆溢出"><a href="#java堆溢出" class="headerlink" title="java堆溢出"></a>java堆溢出</h3><p><code>Java</code>堆能够存储对象实例。通过不断地创建对象，并保证<code>GC Roots</code>到对象有可达路径来避免垃圾回收机制清除这些对象。 当对象数量到达最大堆的容量限制时就会产生<code>OutOfMemoryError</code>异常。</p>
+<p>设置<code>JVM</code>启动参数：<code>-Xms20M</code>设置堆的<strong>最小内存</strong>为<code>20M</code>，<code>-Xmx20M</code>设置堆的<strong>最大内存</strong>和<strong>最小内存</strong>一样，这样可以防止<code>Java</code>堆在内存不足时<strong>自动扩容</strong>。 <code>-XX:+HeapDumpOnOutOfMemoryError</code>参数可以让虚拟机在出现内存溢出异常时<code>Dump</code>出<strong>内存堆</strong>运行时快照。</p>
+<pre><code class="java">/**************************************
+ *      Author : zhangke
+ *      Date   : 2018/1/5 11:24
+ *      Desc   : java 堆溢出异常测试
+ *      VM Args :
+ *      -Xms20m -Xmx20m -XX:+HeapDumpOnOutOfMemoryError
+ *
+ ***************************************/
+public class HeapOOM {
+    static class OOMObject{
+
+    }
+    public static void main(String[] args) {
+        List&lt;OOMObject&gt; list = new ArrayList&lt;&gt;();
+        while (true){
+            list.add(new OOMObject());
+        }
+    }
+}
+
+</code></pre>
+<p>运行结果：</p>
+<pre><code class="java">java.lang.OutOfMemoryError: Java heap space
+Dumping heap to java_pid36748.hprof ...
+Heap dump file created [27649036 bytes in 0.126 secs]
+Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: Java heap space
+    at java.util.Arrays.copyOf(Arrays.java:3210)
+    at java.util.Arrays.copyOf(Arrays.java:3181)
+    at java.util.ArrayList.grow(ArrayList.java:261)
+    at java.util.ArrayList.ensureExplicitCapacity(ArrayList.java:235)
+    at java.util.ArrayList.ensureCapacityInternal(ArrayList.java:227)
+    at java.util.ArrayList.add(ArrayList.java:458)
+    at OutOfMemory.HeapOOM.main(HeapOOM.java:22)
+</code></pre>
+<p>你可以打开<code>VisualVM</code>导入<code>Heap</code>内存运行时的<code>dump</code>文件，就会出现类似下面这个图：</p>
+<p><img src="/images/pasted-334.png" alt="upload successful"></p>
+<p>静态类OOMObject的对象不停地被创建，堆内存使用达到99%。垃圾回收器不断地尝试回收但都以失败告终。</p>
+<p>分析：遇到这种情况，通常要考虑<strong>内存泄露</strong>和<strong>内存溢出</strong>两种可能性。</p>
+<ul>
+<li><p>如果是内存泄露：</p>
+<p>进一步使用<code>Java VisualVM</code>工具进行分析，查看<strong>泄露对象</strong>是通过怎样的<code>路径</code>与<code>GC Roots</code>关联而导致<strong>垃圾回收器</strong>无法回收的。</p>
+</li>
+<li><p>如果是内存溢出：</p>
+<p>通过<code>Java VisualVM</code>工具分析，不存在泄露对象，也就是说<strong>堆内存</strong>中的对象必须得存活着。就要考虑如下措施：</p>
+<ol>
+<li>从代码上检查是否存在某些对象<strong>生命周期过长</strong>、<strong>持续状态时间过长</strong>的情况，尝试减少程序运行期的内存。</li>
+<li>检查虚拟机的<strong>堆参数</strong>(<code>-Xmx</code>与<code>-Xms</code>)，对比机器的<strong>物理内存</strong>看是否还可以调大。</li>
+</ol>
+</li>
+</ul>
+<h3 id="虚拟机和本地方法栈溢出"><a href="#虚拟机和本地方法栈溢出" class="headerlink" title="虚拟机和本地方法栈溢出"></a>虚拟机和本地方法栈溢出</h3><p>关于虚拟机栈和本地方法栈，分析内存异常类型可能存在以下两种：</p>
+<ul>
+<li>如果现场请求的<strong>栈深度</strong>大于虚拟机所允许的<strong>最大深度</strong>，将抛出<code>StackOverflowError</code>异常。</li>
+<li>如果虚拟机在<strong>扩展栈</strong>时无法申请到足够的<strong>内存</strong>空间，可能会抛出<code>OutOfMemoryError</code>异常。</li>
+</ul>
+<p>可以划分为两类问题，当栈空间无法分配时，到底时栈内存<strong>太小</strong>，还是<strong>已使用</strong>的栈内存<strong>过大</strong>。</p>
+<h4 id="StackOverflowError异常"><a href="#StackOverflowError异常" class="headerlink" title="StackOverflowError异常"></a>StackOverflowError异常</h4><ul>
+<li>使用<code>-Xss</code>参数减少<strong>栈内存</strong>的容量，异常发生时打印<strong>栈</strong>的深度。</li>
+<li>定义大量的<strong>本地局部变量</strong>，以达到增大<strong>栈帧</strong>中的<strong>本地变量表</strong>的长度。</li>
+</ul>
+<p>测试代码如下：</p>
+<pre><code class="java">/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-23 16:29
+ *      email  : 398757724@qq.com
+ *      Desc   :  StackOverflowError
+ *       -Xss128k
+ ***************************************/
+public class JavaVMStackSOF {
+    private int stackLength = 1;
+
+    private void stackLeak() {
+        stackLength++;
+        stackLeak();
+    }
+
+    public static void main(String[] args) {
+        JavaVMStackSOF oom = new JavaVMStackSOF();
+        try {
+            oom.stackLeak();
+        } catch (Throwable e) {
+            System.out.println(&quot;Stack length: &quot; + oom.stackLength);
+            throw e;
+        }
+    }
+}
+</code></pre>
+<p>测试结果：</p>
+<pre><code class="java">Stack length: 18506
+Exception in thread &quot;main&quot; java.lang.StackOverflowError
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+    at OutOfMemory.JavaVMStackSOF.stackLeak(JavaVMStackSOF.java:15)
+</code></pre>
+<p>分析：在单个线程下，无论是<strong>栈帧太大</strong>还是<strong>虚拟机栈容量太小</strong>，当无法分配内存的时候，虚拟机抛出的都是<code>StackOverflowError</code>异常。</p>
+<h4 id="OutOfMemoryError异常"><a href="#OutOfMemoryError异常" class="headerlink" title="OutOfMemoryError异常"></a>OutOfMemoryError异常</h4><p>不停地创建<strong>线程</strong>并保持线程运行状态。测试代码如下</p>
+<pre><code class="java">/**
+ * VM Args: -Xss2M
+ */
+public class JavaVMStackOOM {
+    private void running() {
+        while (true) {
+        }
+    }
+
+    public void stackLeakByThread() {
+        while (true) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    running();
+                }
+            }).start();
+        }
+    }
+
+    public static void main(String[] args) {
+        JavaVMStackOOM oom = new JavaVMStackOOM();
+        oom.stackLeakByThread();
+    }
+}
+</code></pre>
+<p><strong>测试结果：</strong></p>
+<pre><code>Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: unable to create new native thread
+</code></pre><p>上述测试代码运行时存在较大的风险，可能会导致操作系统假死，这里就不亲自测试了，引用作者的测试结果。</p>
+<h3 id="方法区和运行时常量池溢出"><a href="#方法区和运行时常量池溢出" class="headerlink" title="方法区和运行时常量池溢出"></a>方法区和运行时常量池溢出</h3><h4 id="运行时常量池内存溢出测试"><a href="#运行时常量池内存溢出测试" class="headerlink" title="运行时常量池内存溢出测试"></a>运行时常量池内存溢出测试</h4><p><strong>运行时常量</strong>和<strong>字面量</strong>都存放于<strong>运行时常量池</strong>中，常量池又是方法区的一部分，因此两个区域的测试是一样的。 这里采用<code>String.intern()</code>进行测试：</p>
+<blockquote>
+<p>String.intern()是一个native方法，它的作用是：如果字符串常量池中存在一个String对象的字符串，那么直接返回常量池中的这个String对象； 否则，将此String对象包含的字符串放入常量池中，并且返回这个String对象的引用。</p>
+</blockquote>
+<p>设置<code>JVM</code>启动参数：通过<code>-XX:PermSize=10M</code>和<code>-XX:MaxPermSize=10M</code>限制<strong>方法区</strong>的大小为<code>10M</code>，从而间接的限制其中<strong>常量池</strong>的容量。测试代码如下：</p>
+<pre><code class="java">import java.util.ArrayList;
+import java.util.List;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-23 16:36
+ *      email  : 398757724@qq.com
+ *      Desc   : -XX:PermSize=10M -XX:MaxPermSize=10M
+ ***************************************/
+public class RuntimeConstantPoolOOM {
+    public static void main(String[] args) {
+        // 使用List保持着常量池的引用，避免Full GC回收常量池
+        List&lt;String&gt; list = new ArrayList&lt;&gt;();
+        // 10MB的PermSize在Integer范围内足够产生OOM了
+        int i = 0;
+        while (true) {
+            list.add(String.valueOf(i++).intern());
+        }
+    }
+}
+
+</code></pre>
+<p>我第一次在java8虚拟机上运行这份代码，抛出以下异常：</p>
+<pre><code>Java HotSpot(TM) 64-Bit Server VM warning: ignoring option PermSize=10M; support was removed in 8.0
+Java HotSpot(TM) 64-Bit Server VM warning: ignoring option MaxPermSize=10M; support was removed in 8.0
+</code></pre><p>这是因为java 8已经移除了永久代，所以上面俩个参数是没有用的。java8将运行时常量池放到堆中，所以我们转换下思路，设置堆的大小，就可以设置运行时常量池的大小,和上面一样，设置<code>JVM</code>启动参数：<code>-Xms20M</code>设置堆的<strong>最小内存</strong>为<code>20M</code>，<code>-Xmx20M</code>设置堆的<strong>最大内存</strong>和<strong>最小内存</strong>一样，这样可以防止<code>Java</code>堆在内存不足时<strong>自动扩容</strong>。 <code>-XX:+HeapDumpOnOutOfMemoryError</code>参数可以让虚拟机在出现内存溢出异常时<code>Dump</code>出<strong>内存堆</strong>运行时快照。</p>
+<p>运行结果如下</p>
+<pre><code class="java">java.lang.OutOfMemoryError: GC overhead limit exceeded
+Dumping heap to java_pid43631.hprof ...
+Heap dump file created [25098878 bytes in 0.231 secs]
+Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: GC overhead limit exceeded
+    at java.lang.Integer.toString(Integer.java:401)
+    at java.lang.String.valueOf(String.java:3099)
+    at OutOfMemory.RuntimeConstantPoolOOM.main(RuntimeConstantPoolOOM.java:19)
+</code></pre>
+<h4 id="方法去内存溢出测试"><a href="#方法去内存溢出测试" class="headerlink" title="方法去内存溢出测试"></a>方法去内存溢出测试</h4><p>方法区存放<code>Class</code>相关的信息，比如<strong>类名</strong>、<strong>访问修饰符</strong>、<strong>常量池</strong>、<strong>字段描述</strong>、<strong>方法描述</strong>等。 对于<strong>方法区的内存溢出</strong>的测试，基本思路是在运行时产生大量<strong>类字节码</strong>区填充<strong>方法区</strong>。</p>
+<p>这里引入<code>Spring</code>框架的<code>CGLib</code>动态代理的<strong>字节码技术</strong>，通过循环不断生成新的<strong>代理类</strong>，达到<strong>方法区</strong>内存溢出的效果。</p>
+<p>JavaMethodAreaOOM.java</p>
+<pre><code class="java">/**
+ * VM Args: -XX:PermSize=10M -XX:MaxPermSize=10M
+ */
+public class JavaMethodAreaOOM {
+
+    public static void main(String[] args) {
+        while (true) {
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(OOMObject.class);
+            enhancer.setUseCache(false);
+            enhancer.setCallback(new MethodInterceptor() {
+                @Override
+                public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+                    return proxy.invokeSuper(obj, args);
+                }
+            });
+
+            enhancer.create();
+        }
+    }
+
+    private static class OOMObject {
+        public OOMObject() {
+        }
+    }
+}
+复制代码
+</code></pre>
+<p><code>JDK1.6</code>版本运行结果：</p>
+<pre><code>Exception in thread &quot;main&quot; java.lang.OutOfMemoryError: PermGen space
+    at java.lang.ClassLoader.defineClass1(Native Method)
+    at java.lang.ClassLoader.defineClassCond(ClassLoader.java:632)
+    at java.lang.ClassLoader.defineClass(ClassLoader.java:616)
+复制代码
+</code></pre><p>测试结果分析：</p>
+<p><code>JDK1.6</code>版本运行结果显示<strong>常量池</strong>会溢出并抛出<strong>永久带</strong>的<code>OutOfMemoryError</code>异常。 而<code>JDK1.7</code>及以上的版本则不会得到相同的结果，它会一直循环下去。</p>
+<h3 id="直接内存溢出"><a href="#直接内存溢出" class="headerlink" title="直接内存溢出"></a>直接内存溢出</h3><p>本机<strong>直接内存</strong>的容量可通过<code>-XX:MaxDirectMemorySize</code>指定，如果不指定，则默认与<code>Java</code>堆<strong>最大值</strong>(-Xmx指定)一样。</p>
+<p><strong>测试场景：</strong>直接通过反射获取<code>Unsafe</code>实例，通过反射向操作系统申请分配内存：设置<code>JVM</code>启动参数：<code>-Xmx20M</code>指定<code>Java</code>堆的最大内存，<code>-XX:MaxDirectMemorySize=10M</code>指定<strong>直接内存</strong>的大小。</p>
+<pre><code class="java">/**
+ * VM Args: -Xmx20M -XX:MaxDirectMemorySize=10M
+ */
+public class DirectMemoryOOM {
+
+    private static final int _1MB = 1024 * 1024;
+
+    public static void main(String[] args) throws Exception {
+        Field unsafeField = Unsafe.class.getDeclaredFields()[0];
+        unsafeField.setAccessible(true);
+        Unsafe unsafe = (Unsafe) unsafeField.get(null);
+        while (true) {
+            unsafe.allocateMemory(_1MB);
+        }
+    }
+}
+
+</code></pre>
+<p>这个是我从作者那复制过来，因为我本机一直没有报错，这个我还没搞懂。等搞懂了会来补上。</p>
+<p>由<code>DirectMemory</code>导致的内存溢出，一个明显的特征是<code>Heap Dump</code>文件中不会看到明显的异常信息。 如果<code>OOM</code>发生后<code>Dump</code>文件很小，并且程序中直接或者间接地使用了<code>NIO</code>，那么就可以考虑一下这方面的问题。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本篇文章只是简单的介绍了一下JVM的内存区域划分和每一部分的作用，接着介绍了常见的内存溢出异常。后面会单独写几篇文章来详细介绍上面的内容。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://juejin.im/post/5b4de8cbe51d455f5f4cd187#heading-16" target="_blank" rel="noopener">JVM系列(二) - JVM内存区域</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/499b414/" rel="bookmark">java 内存模型</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/56bd0dd8/">JVM 内存区域简介</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月23日 - 08:01</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/56bd0dd8/" title="JVM 内存区域简介">JVM 内存区域简介</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/56bd0dd8/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/内存模型/" rel="tag">  <i class="fa fa-tag"></i> 内存模型</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/499b414/" rel="next" title="java 内存模型">
+                <i class="fa fa-chevron-left"></i> java 内存模型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/7fe71378/" rel="prev" title="JVM对象探秘">
+                JVM对象探秘 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM内存区域"><span class="nav-text">JVM内存区域</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#程序计数器"><span class="nav-text">程序计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Java虚拟机栈"><span class="nav-text">Java虚拟机栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#本地方法栈"><span class="nav-text">本地方法栈</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#堆"><span class="nav-text">堆</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区"><span class="nav-text">方法区</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#运行时常量池"><span class="nav-text">运行时常量池</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#直接内存"><span class="nav-text">直接内存</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#常见内存溢出异常"><span class="nav-text">常见内存溢出异常</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#java堆溢出"><span class="nav-text">java堆溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#虚拟机和本地方法栈溢出"><span class="nav-text">虚拟机和本地方法栈溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#StackOverflowError异常"><span class="nav-text">StackOverflowError异常</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#OutOfMemoryError异常"><span class="nav-text">OutOfMemoryError异常</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方法区和运行时常量池溢出"><span class="nav-text">方法区和运行时常量池溢出</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#运行时常量池内存溢出测试"><span class="nav-text">运行时常量池内存溢出测试</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#方法去内存溢出测试"><span class="nav-text">方法去内存溢出测试</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#直接内存溢出"><span class="nav-text">直接内存溢出</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/56bd0dd8/";
+        this.page.identifier = "posts/56bd0dd8/";
+        this.page.title = 'JVM 内存区域简介';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="spring源码解析之 09bean 标签：meta、lookup-method、replace-method概述 meta 子元素解析 lookup-method 子元素解析 replace-method子元素解析">
+<meta name="keywords" content="spring源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring源码解析之 09bean 标签：meta、lookup-method、replace-method">
+<meta property="og:url" content="http://fengxiutianya.top/posts/2b388fc7/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="spring源码解析之 09bean 标签：meta、lookup-method、replace-method概述 meta 子元素解析 lookup-method 子元素解析 replace-method子元素解析">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring源码解析之 09bean 标签：meta、lookup-method、replace-method">
+<meta name="twitter:description" content="spring源码解析之 09bean 标签：meta、lookup-method、replace-method概述 meta 子元素解析 lookup-method 子元素解析 replace-method子元素解析">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/2b388fc7/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>spring源码解析之 09bean 标签：meta、lookup-method、replace-method | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/2b388fc7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">spring源码解析之 09bean 标签：meta、lookup-method、replace-method
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-14 05:19:00" itemprop="dateCreated datePublished" datetime="2019-01-14T05:19:00+08:00">2019-01-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/2b388fc7/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/2b388fc7/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/2b388fc7/" class="leancloud_visitors" data-flag-title="spring源码解析之 09bean 标签：meta、lookup-method、replace-method">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="spring源码解析之-09bean-标签：meta、lookup-method、replace-method"><a href="#spring源码解析之-09bean-标签：meta、lookup-method、replace-method" class="headerlink" title="spring源码解析之 09bean 标签：meta、lookup-method、replace-method"></a>spring源码解析之 09bean 标签：meta、lookup-method、replace-method</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>meta 子元素解析</li>
+<li>lookup-method 子元素解析</li>
+<li>replace-method子元素解析<a id="more"></a>
+</li>
+</ol>
+<h3 id="meta-子元素解析"><a href="#meta-子元素解析" class="headerlink" title="meta 子元素解析"></a>meta 子元素解析</h3><p>在开始解析元素数据的分析前，我们先回顾下元数据meta属性的使用</p>
+<pre><code class="xml">&lt;bean id=&quot;&quot; class=&quot;&quot;&gt;
+    &lt;meta key=&quot;key1&quot; value=&quot;aaaaa&quot;/&gt;
+&lt;/bean&gt;
+</code></pre>
+<p><strong>meta</strong> ：元数据。当需要使用里面的信息时可以通过key获取</p>
+<p>meta 所声明的 key 并不会在 Bean 中体现，只是一个额外的声明，当我们需要使用里面的信息时，通过 BeanDefinition 的 <code>getAttribute()</code> 获取。该子元素的解析过程如下：</p>
+<pre><code class="java">public void parseMetaElements(Element ele, 
+                              BeanMetadataAttributeAccessor attributeAccessor) {
+    // 获取当前节点的所有子元素
+    NodeList nl = ele.getChildNodes();
+    for (int i = 0; i &lt; nl.getLength(); i++) {
+        Node node = nl.item(i);
+        // 提出meta
+        if (isCandidateElement(node) &amp;&amp; nodeNameEquals(node, META_ELEMENT)) {
+            Element metaElement = (Element) node;
+            String key = metaElement.getAttribute(KEY_ATTRIBUTE);
+            String value = metaElement.getAttribute(VALUE_ATTRIBUTE);
+            // 使用key、value构造BeanMetadataAttribute
+            BeanMetadataAttribute attribute = 
+                new BeanMetadataAttribute(key, value);
+            attribute.setSource(extractSource(metaElement));
+            // 记录信息
+            attributeAccessor.addMetadataAttribute(attribute);
+        }
+    }
+}
+</code></pre>
+<p>解析过程较为简单，获取相应的 key – value 构建 BeanMetadataAttribute 对象，然后通过 <code>addMetadataAttribute()</code>加入到 AbstractBeanDefinition 中。 “ 如下：</p>
+<pre><code class="java">public void addMetadataAttribute(BeanMetadataAttribute attribute) {
+    super.setAttribute(attribute.getName(), attribute);
+}
+</code></pre>
+<p>委托 AttributeAccessorSupport 实现，如下：</p>
+<pre><code class="java">public void setAttribute(String name, @Nullable Object value) {
+    Assert.notNull(name, &quot;Name must not be null&quot;);
+    if (value != null) {
+        this.attributes.put(name, value);
+    }
+    else {
+        removeAttribute(name);
+    }
+}
+</code></pre>
+<p>AttributeAccessorSupport 是接口 AttributeAccessor 的实现者。 AttributeAccessor 接口定义了与其他对象的元数据进行连接和访问的约定，可以通过该接口对属性进行获取、设置、删除操作。</p>
+<p>设置元数据后，则可以通过 <code>getAttribute()</code> 获取,如下：</p>
+<pre><code class="java">public Object getAttribute(String name) {
+    BeanMetadataAttribute attribute = (BeanMetadataAttribute) super.getAttribute(name);
+    return (attribute != null ? attribute.getValue() : null);
+}
+</code></pre>
+<h3 id="lookup-method-子元素解析"><a href="#lookup-method-子元素解析" class="headerlink" title="lookup-method 子元素解析"></a>lookup-method 子元素解析</h3><p><strong>lookup-method</strong> ：获取器注入，是把一个方法声明为返回某种类型的bean但实际要返回的bean是在配置文件里面配置的。该方法可以用于设计一些可插拔的功能上，解除程序依赖。</p>
+<p>看下面demo：</p>
+<pre><code class="java">public interface Car {
+    void display();
+}
+
+public class Bmw implements Car{
+    @Override
+    public void display() {
+        System.out.println(&quot;我是 BMW&quot;);
+    }
+}
+
+public class Hongqi implements Car{
+    @Override
+    public void display() {
+        System.out.println(&quot;我是 hongqi&quot;);
+    }
+}
+
+public abstract class Display {
+
+    public void display(){
+        getCar().display();
+    }
+
+    public abstract Car getCar();
+}
+
+public static void main(String[] args) {
+    ApplicationContext context = 
+        new ClassPathXmlApplicationContext(&quot;classpath:spring.xml&quot;);
+    Display display = (Display) context.getBean(&quot;display&quot;);
+    display.display();
+}
+}
+</code></pre>
+<p>配置内容如下：</p>
+<pre><code class="xml">&lt;bean id=&quot;hongqi&quot; class=&quot;org.springframework.core.test1.Hongqi&quot;&gt;&lt;/bean&gt;    
+&lt;bean id=&quot;bmw&quot; class=&quot;org.springframework.core.test1.Bmw&quot;&gt;&lt;/bean&gt;   
+&lt;bean id=&quot;display&quot; class=&quot;org.springframework.core.test1.Display&quot;&gt;
+        &lt;lookup-method name=&quot;getCar&quot; bean=&quot;hongqi&quot;/&gt;
+    &lt;/bean&gt;
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="null">我是 hongqi
+</code></pre>
+<p>如果将 <code>bean=&quot;hognqi&quot;</code> 替换为 <code>bean=&quot;bmw&quot;</code>，则运行结果变成：</p>
+<pre><code class="null">我是 BMW
+</code></pre>
+<p>看了这个示例，我们初步了解了 looku-method 子元素提供的功能了，其解析过程如下：</p>
+<pre><code class="java">public void parseLookupOverrideSubElements(Element beanEle, 
+                                           MethodOverrides overrides) {
+    NodeList nl = beanEle.getChildNodes();
+    for (int i = 0; i &lt; nl.getLength(); i++) {
+        Node node = nl.item(i);
+        // 当且仅当spring默认bean的子元素下切位lookup-method时有效
+        if (isCandidateElement(node) &amp;&amp; nodeNameEquals(node, 
+                                                       LOOKUP_METHOD_ELEMENT)) {
+            Element ele = (Element) node;
+            // 获取要修饰的方法
+            String methodName = ele.getAttribute(NAME_ATTRIBUTE);
+            // 获取配置返回的bean
+            String beanRef = ele.getAttribute(BEAN_ELEMENT);
+            // 封装成LookupOverride进行保存
+            LookupOverride override = new LookupOverride(methodName, beanRef);
+            override.setSource(extractSource(ele));
+            overrides.addOverride(override);
+        }
+    }
+}
+</code></pre>
+<p>解析过程和 meta 子元素没有多大区别，同样是解析 methodName、beanRef 构造一个 LookupOverride 对象，然后覆盖即可。在实例化 Bean 的时候，再详细阐述具体的实现过程，这里仅仅只是一个标记作用。</p>
+<h3 id="replaced-method子元素解析"><a href="#replaced-method子元素解析" class="headerlink" title="replaced-method子元素解析"></a>replaced-method子元素解析</h3><p><strong>replaced-method</strong> ：可以在运行时调用新的方法替换现有的方法，还能动态的更新原有方法的逻辑</p>
+<p>该标签使用方法和 lookup-method 标签差不多，只不过替代方法的类需要实现 MethodReplacer 接口。如下:</p>
+<pre><code class="java">public class Method {
+    public void display(){
+        System.out.println(&quot;我是原始方法&quot;);
+    }
+}
+
+public class MethodReplace implements MethodReplacer {
+
+    @Override
+    public Object reimplement(Object obj, Method method, Object[] args) 
+        throws Throwable {
+        System.out.println(&quot;我是替换方法&quot;);
+        return null;
+    }
+}
+
+public static void main(String[] args) {
+    ApplicationContext context =
+        new ClassPathXmlApplicationContext(&quot;classpath:spring.xml&quot;);
+    Method method = (Method) context.getBean(&quot;method&quot;);
+    method.display();
+}
+</code></pre>
+<p>如果 spring.xml 文件如下：</p>
+<pre><code class="xml">&lt;bean id=&quot;methodReplace&quot; class=&quot;org.springframework.core.test1.MethodReplace&quot;/&gt;
+&lt;bean id=&quot;method&quot; class=&quot;org.springframework.core.test1.Method&quot;/&gt;
+</code></pre>
+<p>则运行结果为：</p>
+<pre><code class="null">我是原始方法
+</code></pre>
+<p>增加 replaced-method 子元素：</p>
+<pre><code class="xml">&lt;bean id=&quot;methodReplace&quot; class=&quot;org.springframework.core.test1.MethodReplace&quot;/&gt;
+&lt;bean id=&quot;method&quot; class=&quot;org.springframework.core.test1.Method&quot;&gt;
+    &lt;replaced-method name=&quot;display&quot; replacer=&quot;methodReplace&quot;/&gt;
+&lt;/bean&gt;
+</code></pre>
+<p>运行结果为：</p>
+<pre><code class="null">我是替换方法
+</code></pre>
+<p>另外需要补充的一点是</p>
+<p>如果我们的<code>MethodReplacer</code>将要替换的方法在对应的<code>bean</code>中属于重载类型的方法，即存在多个方法名相同的方法时，我们还需要通过在<code>replaced-method</code>元素下通过<code>arg-type</code>元素来定义对应方法参数的类型，这样就可以区分需要替换的是哪一个方法。所以，针对上述示例，我们也可以如下定义：</p>
+<pre><code class="xml">&lt;bean id=&quot;beanAReplacer&quot; class=&quot;com.app.BeanAReplacer&quot;/&gt;
+&lt;bean id=&quot;beanA&quot; class=&quot;com.app.BeanA&quot;&gt;
+    &lt;replaced-method name=&quot;add&quot; replacer=&quot;beanAReplacer&quot;&gt;
+        &lt;arg-type match=&quot;int&quot;/&gt;
+        &lt;arg-type match=&quot;int&quot;/&gt;
+    &lt;/replaced-method&gt;
+&lt;/bean&gt;
+</code></pre>
+<p>对应方法名的方法只存在一个时，<code>arg-type</code>将不起作用，即<code>Spring</code>此时不会根据<code>arg-type</code>去取对应的方法进行替换，或者换句话说就是当<code>replaced-method</code>指定名称的方法只存在一个时，无论<code>arg-type</code>如何定义都是可以的。</p>
+<p>上面代码演示了 replaced-method 子元素的用法，下面再看看该子元素的解析过程。</p>
+<pre><code class="java">public void parseReplacedMethodSubElements(Element beanEle, 
+                                           MethodOverrides overrides) {
+    NodeList nl = beanEle.getChildNodes();
+    for (int i = 0; i &lt; nl.getLength(); i++) {
+        Node node = nl.item(i);
+        if (isCandidateElement(node) &amp;&amp; nodeNameEquals(node, 
+                                                       REPLACED_METHOD_ELEMENT)) {
+            Element replacedMethodEle = (Element) node;
+            // 获取要替换的就得方法
+            String name = replacedMethodEle.getAttribute(NAME_ATTRIBUTE);
+            // 获取对一个的新的替换方法
+            String callback = replacedMethodEle.getAttribute(REPLACER_ATTRIBUTE);
+            ReplaceOverride replaceOverride = new ReplaceOverride(name, callback);
+            // 获取参数类型列表
+            List&lt;Element&gt; argTypeEles = DomUtils
+                .getChildElementsByTagName(replacedMethodEle, ARG_TYPE_ELEMENT);
+            // 记录参数类型
+            for (Element argTypeEle : argTypeEles) {
+                String match = argTypeEle.getAttribute(ARG_TYPE_MATCH_ATTRIBUTE);
+                match = (StringUtils.hasText(match)
+                         ? match : DomUtils.getTextValue(argTypeEle));
+                if (StringUtils.hasText(match)) {
+                    replaceOverride.addTypeIdentifier(match);
+                }
+            }
+            replaceOverride.setSource(extractSource(replacedMethodEle));
+            overrides.addOverride(replaceOverride);
+        }
+    }
+}
+</code></pre>
+<p>该子元素和 lookup-method 资源的解析过程差不多，同样是提取 name 和 replacer 属性构建 ReplaceOverride 对象，然后记录到 AbstractBeanDefinition 中的 methodOverrides 属性中。</p>
+<p>对于 lookup-method 和 replaced-method 两个子元素是如何使用以完成他们所提供的功能，在后续实例化 Bean 的时候会做详细说明。</p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/48fb5eaf/" rel="bookmark">Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c51c4fa0/" rel="bookmark">Spring源码解析之 01环境搭建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e84d4767/" rel="bookmark">spring源码解析之 04（下）获取验证模型</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/20cd1d0c/" rel="bookmark">spring源码解析之 11bean标签：解析自定义标签</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/fa9db44e/" rel="bookmark">spring源码解析之 26深入分析Aware接口</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/2b388fc7/">spring源码解析之 09bean 标签：meta、lookup-method、replace-method</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月14日 - 05:19</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/2b388fc7/" title="spring源码解析之 09bean 标签：meta、lookup-method、replace-method">spring源码解析之 09bean 标签：meta、lookup-method、replace-method</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/2b388fc7/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring源码解析/" rel="tag">  <i class="fa fa-tag"></i> spring源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/48fb5eaf/" rel="next" title="Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析">
+                <i class="fa fa-chevron-left"></i> Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/1f68182f/" rel="prev" title="spring 源码解析之 10bean标签：constructor-arg、property子元素">
+                spring 源码解析之 10bean标签：constructor-arg、property子元素 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spring源码解析之-09bean-标签：meta、lookup-method、replace-method"><span class="nav-text">spring源码解析之 09bean 标签：meta、lookup-method、replace-method</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#meta-子元素解析"><span class="nav-text">meta 子元素解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lookup-method-子元素解析"><span class="nav-text">lookup-method 子元素解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#replaced-method子元素解析"><span class="nav-text">replaced-method子元素解析</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/2b388fc7/";
+        this.page.identifier = "posts/2b388fc7/";
+        this.page.title = 'spring源码解析之 09bean 标签：meta、lookup-method、replace-method';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

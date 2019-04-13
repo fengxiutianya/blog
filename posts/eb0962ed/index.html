@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="泛型中 &amp;lt; ? extends T &amp;gt; 和 &amp;lt; ? extends T &amp;gt; 的区别这俩个主要用于对参数的保护，如果你看过Java api 源码的话，你经常看到方法参数类似上面的写法。 概要  类型擦除 逆变与协变 ？ 的用法  extends 的用法 super的用法 PECS原则">
+<meta name="keywords" content="java,泛型">
+<meta property="og:type" content="article">
+<meta property="og:title" content="泛型中 &lt; ? extends T &gt; 和 &lt; ? extends T &gt; 的区别">
+<meta property="og:url" content="http://fengxiutianya.top/posts/eb0962ed/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="泛型中 &amp;lt; ? extends T &amp;gt; 和 &amp;lt; ? extends T &amp;gt; 的区别这俩个主要用于对参数的保护，如果你看过Java api 源码的话，你经常看到方法参数类似上面的写法。 概要  类型擦除 逆变与协变 ？ 的用法  extends 的用法 super的用法 PECS原则">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="泛型中 &lt; ? extends T &gt; 和 &lt; ? extends T &gt; 的区别">
+<meta name="twitter:description" content="泛型中 &amp;lt; ? extends T &amp;gt; 和 &amp;lt; ? extends T &amp;gt; 的区别这俩个主要用于对参数的保护，如果你看过Java api 源码的话，你经常看到方法参数类似上面的写法。 概要  类型擦除 逆变与协变 ？ 的用法  extends 的用法 super的用法 PECS原则">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/eb0962ed/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>泛型中 < ? extends T > 和 < ? extends T > 的区别 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/eb0962ed/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">泛型中 < ? extends T > 和 < ? extends T > 的区别
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-01-11 13:55:00" itemprop="dateCreated datePublished" datetime="2018-01-11T13:55:00+08:00">2018-01-11</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/eb0962ed/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/eb0962ed/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/eb0962ed/" class="leancloud_visitors" data-flag-title="泛型中 < ? extends T > 和 < ? extends T > 的区别">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.1k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="泛型中-lt-extends-T-gt-和-lt-extends-T-gt-的区别"><a href="#泛型中-lt-extends-T-gt-和-lt-extends-T-gt-的区别" class="headerlink" title="泛型中 &lt; ? extends T &gt; 和 &lt; ? extends T &gt; 的区别"></a>泛型中 &lt; ? extends T &gt; 和 &lt; ? extends T &gt; 的区别</h1><p>这俩个主要用于对参数的保护，如果你看过Java api 源码的话，你经常看到方法参数类似上面的写法。</p>
+<h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><blockquote>
+<ol>
+<li>类型擦除</li>
+<li>逆变与协变</li>
+<li>？ 的用法 </li>
+<li>extends 的用法</li>
+<li>super的用法</li>
+<li>PECS原则</li>
+</ol>
+</blockquote>
+<a id="more"></a>
+<h3 id="类型擦除"><a href="#类型擦除" class="headerlink" title="类型擦除"></a>类型擦除</h3><blockquote>
+<pre><code class="java">import java.util.*;
+public class main{
+ public static void main(String[] args){
+   Class c1 = new ArrayList&lt; String&gt;().getClass();
+   Class c2 = new ArrayList&lt; Integer&gt;().getClass();
+   System.out.println(c1 == c2);
+ }
+}
+</code></pre>
+<p>上面程序运行的结果是true。出现这个结果的原因正是类型擦除。</p>
+<p>在Java语言中，泛型是通过类型擦除来实现的，这意味着当你在使用泛型时，任何具体的类型都将被擦除，你唯一知道的就是你正在使用的是一个对象。因此上面List&lt; String&gt; 和List&lt; Integer&gt;在运行时事实上是同样的类型。（泛型类型只有在静态类型检查期间才出现，静态类型检查：基于程序的源代码来验证类型安全的过程；动态类型检查：在程序运行期间验证类型安全的过程；）</p>
+<h4 id="擦除带来的问题"><a href="#擦除带来的问题" class="headerlink" title="擦除带来的问题"></a>擦除带来的问题</h4><pre><code class="java">class HasF{
+ public void f(){
+   System.out.println(&quot;f&quot;);
+ }
+}
+class Manipulator&lt; T&gt;{
+ private T obj;
+ public Manipulator(T x){
+   obj = x;
+ }
+ public void manipulate(){
+   obj.f();
+ }
+}
+public class main{
+
+ public static  void main(String[] args){
+   HasF hasf = new HasF();
+   Manipulator&lt; HasF&gt; m = new Manipulator&lt; HasF&gt;(hasf);
+   m.manipulate()  // error
+ }
+}
+</code></pre>
+<p>上面这段代码会报错，正是由于类型擦除导致的。因为类型擦除，所以泛型内部无法知道类型的信息，当你调用object没有的方法时，就会报错。</p>
+<h3 id="补充一点：边界"><a href="#补充一点：边界" class="headerlink" title="补充一点：边界"></a>补充一点：边界</h3><blockquote>
+<p>因为擦除在方法体中移除了类型信息，所以运行时，你就需要辨别边界，边界是指：对象进入和离开方法的地点，这里是指泛型的方法体。</p>
+<pre><code class="java">public class ArrayMaker&lt; T&gt; {
+ private Class&lt; T&gt; kind;
+ public ArrayMaker(Class&lt;T&gt; kind) {
+   this.kind = kind;
+ }
+ @SuppressWarnings(&quot;unchecked&quot;)
+ T[] create(int size) {
+   return (T[])Array.newInstance(kind, size);
+ }
+ public static void main(String[] args) {
+   ArrayMaker&lt; String&gt; stringMaker =
+     new ArrayMaker&lt; String&gt;(String.class);
+   String[] stringArray = stringMaker.create(9);
+   System.out.println(Arrays.toString(stringArray));
+ }
+} /* Output:
+[null, null, null, null, null, null, null, null, null]
+*///:~
+</code></pre>
+<p>上面这段代码就是因为在泛型的方法体中初始化，所以就把所有的类型当成了Object类型，因此输出的结果都是null。如果是String对象的话，输出的是<strong>“  ”</strong></p>
+<p>仔细查看下面俩段代码：</p>
+<pre><code class="java">// 不存在泛型
+public class SimpleHolder {
+ private Object obj;
+ public void set(Object obj) { this.obj = obj; }
+ public Object get() { return obj; }
+ public static void main(String[] args) {
+   SimpleHolder holder = new SimpleHolder();
+   holder.set(&quot;Item&quot;);
+   String s = (String)holder.get();
+ }
+} ///:~
+</code></pre>
+<pre><code class="java">/// 存在泛型
+public class GenericHolder&lt;T&gt; {
+ private T obj;
+ public void set(T obj) { this.obj = obj; }
+ public T get() { return obj; }
+ public static void main(String[] args) {
+   GenericHolder&lt; String &gt; holder =
+     new GenericHolder&lt; String &gt;();
+   holder.set(&quot;Item&quot;);
+   String s = holder.get();
+ }
+} 
+</code></pre>
+<p>但是如果你仔细查看俩段代码的字节码，你会发现是相同的。并且你会发现泛型所有的动作都是发生在边界处，会对传进来的值进行额外的编译检查，并插入对传递出去的值的类型。所以，可以得出一个结论，边界就是发生动作的地方。</p>
+</blockquote>
+</blockquote>
+<h3 id="逆变与协变"><a href="#逆变与协变" class="headerlink" title="逆变与协变"></a>逆变与协变</h3><blockquote>
+<p>协变与逆变这来个术语是用来描述类型转换（type transformations）后的继承关系。定义如下：A,B表示类型<strong>≤ </strong>表示继承关系.(比如：A ≤B表示A是B派生出来的子类  )</p>
+<ul>
+<li>逆变（contravariant），当A≤B时，B可以转化成A。</li>
+<li>协变（covariant），A≤B时，A可以转换成B。</li>
+<li>不变（invariant），如果上述俩种均不能使用。</li>
+</ul>
+<p>先来看一个简单的例子：</p>
+<p>考虑List&lt; A &gt;是否是协变，逆变，不变？协变意味着List&lt; String &gt;是List&lt; Object&gt;的子类，逆变意味着List</p>
+<p>&lt; Object&gt;是List&lt; String&gt;的子类，不变意味着上面俩种都不是。在java中List&lt; String&gt;和List&lt; Object&gt;是不变的类型。下面的代码在java中是编译不过去的，验证了集合在java中是不变的。</p>
+<pre><code class="java">ArrayList&lt;String&gt; strings = new ArrayList&lt;Object&gt;();
+ArrayList&lt;Object&gt; objects = new ArrayList&lt;String&gt;();
+</code></pre>
+<p>在来看另外一个例子，数组 A[]，判断数组是逆变，协变，不变三个的哪一种？很容易可以证明，在java中数组是协变的</p>
+<pre><code class="java">Object[] objs = new String[3]
+</code></pre>
+<p>下面这个例子是来研究方法,直接通过一个例子来说明</p>
+<pre><code class="java">Number[] method(ArrayList&lt;Number&gt; list) {
+ ...
+}
+//下面三个没有一个能编译过
+Integer[] result = method(new ArrayList&lt;Integer&gt;());
+Number[] result = method(new ArrayList&lt;Integer&gt;());
+Object[] result = method(new ArrayList&lt;Object&gt;());
+//下面俩个能编译过
+Number[] result = method(new ArrayList&lt;Number&gt;());
+Object[] result = method(new ArrayList&lt;Number&gt;());
+
+</code></pre>
+<p>调用方法<code>result = method(n)</code>；传入形参的类型应为method形参的子类型，即<code>typeof(n)≤typeof(method&#39;s parameter)</code>；result应为method返回值的基类型，即<code>typeof(methods&#39;s return)≤typeof(result)</code>：</p>
+<p>在Java 1.4中，子类覆盖（override）父类方法时，形参与返回值的类型必须与父类保持一致：</p>
+<pre><code class="java">class Super {
+   Number method(Number n) { ... }
+}
+
+class Sub extends Super {
+   @Override 
+   Number method(Number n) { ... }
+}
+</code></pre>
+<p>从Java 1.5开始，子类覆盖父类方法时允许协变返回更为具体的类型：</p>
+<pre><code class="java">class Super {
+   Number method(Number n) { ... }
+}
+
+class Sub extends Super {
+   @Override 
+   Integer method(Number n) { ... }
+}
+</code></pre>
+</blockquote>
+<h3 id="？-的用法"><a href="#？-的用法" class="headerlink" title="？ 的用法"></a>？ 的用法</h3><blockquote>
+<p>下面是使用案例</p>
+<pre><code class="Java">public class UnboundedWildcardsl {
+   static List list1;
+   static List&lt;?&gt; list2;
+   static List&lt;? extends Object&gt; list3;
+//    @SuppressWarnings(&quot;unchecked&quot;)
+   static void assign1(List list){
+       list1 = list;
+       list2 = list;
+
+       list3 = list;     //未检查的转换
+   }
+   static void assign2(List&lt;?&gt; list){
+       list1 = list;
+       list2 = list;
+       list3 = list;
+   }
+   static void assign3(List&lt;? extends Object&gt; list){
+       list1 = list;
+       list2 = list;
+       list3 = list;
+   }
+
+   public static void main(String[] args) {
+       assign1(new ArrayList());
+       assign2(new ArrayList());
+       assign3(new ArrayList());
+
+       assign1(new ArrayList&lt;&gt;());
+       assign2(new ArrayList&lt;&gt;());
+       assign3(new ArrayList&lt;&gt;());
+
+       List&lt;?&gt; wildList = new ArrayList();
+       wildList = new ArrayList&lt;String&gt;();
+       assign1(wildList);
+       assign2(wildList);
+       assign3(wildList);
+   }
+}
+</code></pre>
+<p>在很多情况下你会看到和这个情况类似，编译器很少关心使用的是原生类型还是&lt; ?&gt;，这些情况&lt; ?&gt; 被认为是一种装饰，不过还是有价值的，即我想用java泛型来编写代码。我在这里并不是要使用原生的类型，但是这种情况下，泛型参数可以支持有任何类型。</p>
+</blockquote>
+<h3 id="extends-的用法"><a href="#extends-的用法" class="headerlink" title="extends 的用法"></a>extends 的用法</h3><blockquote>
+<p>extends表示的是上界通配符，下面展示的是如何使用:以 List&lt;? extends Number&gt; 为例来展示使用</p>
+<pre><code class="Java">//Number extends Number 
+List&lt;? extends Number&gt;  foo3 = new ArrayList&lt;? extends Number&gt;();
+
+//Integer extends Number
+List&lt;? extends Number&gt; foo3 = new ArrayList&lt;? extends Integer&gt;();
+
+//Double extends Number
+List&lt;? extends Number&gt; foo3 = new ArrayList&lt;? extends Double&gt;();
+
+//下面的是错误使用
+foo3.add(12);
+
+</code></pre>
+<ol>
+<li><p>读取操作通过以上给定的赋值语句，你一定能从foo3列表中读取到的元素的类型是什么呢？你可以读取到Number，因为以上的列表要么包含Number元素，要么包含Number的子类元素。</p>
+<p>你不能保证读取到Integer，因为foo3可能指向的是List&lt; Double&gt;。</p>
+<p>你不能保证读取到Double，因为foo3可能指向的是List&lt; Integer&gt;。</p>
+</li>
+<li><p>写入操作过以上给定的赋值语句，你能把一个什么类型的元素合法地插入到foo3中呢？</p>
+<p>你不能插入一个Integer元素，因为foo3可能指向List&lt; Double&gt;。</p>
+<p>你不能插入一个Double元素，因为foo3可能指向List&lt; Integer&gt;。</p>
+<p>你不能插入一个Number元素，因为foo3可能指向List&lt; Integer&gt;。</p>
+<p>你不能往List&lt; ? extends T&gt;中插入任何类型的对象，因为你不能保证列表实际指向的类型是什么，你并不能保证列表中实际存储什么类型的对象。唯一可以保证的是，你可以从中读取到T或者T的子类。这也验证了java集合是不变的，由于无法判断类型，所以你也无法进行插入。</p>
+</li>
+</ol>
+</blockquote>
+<h3 id="super-的用法"><a href="#super-的用法" class="headerlink" title="super 的用法"></a>super 的用法</h3><blockquote>
+<p>super下界通配符，下面以List\&lt;？ super Integer&gt;来展示super的用法</p>
+<pre><code class="java">//integer is a superClass of Integer 
+List&lt;? super Integer&gt;  foo3 = new ArrayList&lt;Integer&gt;()
+
+//Number is a superClass of Integer
+List&lt;? super Integer&gt; foo3 = new ArrayList&lt;Number&gt;();
+
+//Object is superClass of Integer
+List&lt;? super Integer&gt; foo3 = new ArrayList&lt;Object&gt;();
+
+//下面代码是错误的
+list.get(index);  //不能获取
+</code></pre>
+<ol>
+<li><p>foo3可能指向List&lt; Number&gt;或者List&lt; Object&gt;。</p>
+<p>你不能保证读取到Number，因为foo3可能指向List&lt; Object&gt;。</p>
+<p>唯一可以保证的是，你可以读取到Object或者Object子类的对象（你并不知道具体的子类是什么）。</p>
+</li>
+<li><p>写入操作通过以上给定的赋值语句，你能把一个什么类型的元素合法地插入到foo3中呢？你可以插入Integer对象，因为上述声明的列表都支持Integer。</p>
+<p>你可以插入Integer的子类的对象，因为Integer的子类同时也是Integer，原因同上。</p>
+<p>你不能插入Double对象，因为foo3可能指向ArrayList&lt; Integer&gt;。</p>
+<p>你不能插入Number对象，因为foo3可能指向ArrayList&lt; Integer&gt;。</p>
+<p>你不能插入Object对象，因为foo3可能指向ArrayList&lt; Integer&gt;。</p>
+</li>
+</ol>
+</blockquote>
+<h4 id="PECS-Pruducer-extends-Consumer-super"><a href="#PECS-Pruducer-extends-Consumer-super" class="headerlink" title="PECS(Pruducer extends,Consumer super)"></a>PECS(Pruducer extends,Consumer super)</h4><blockquote>
+<p>请记住PECS原则：生产者（Producer）使用extends，消费者（Consumer）使用super。</p>
+<ul>
+<li>生产者使用extends</li>
+</ul>
+<p>如果你需要一个列表提供T类型的元素（即你想从列表中读取T类型的元素），你需要把这个列表声明成\&lt;? extends T&gt;，比如List\&lt;? extends Integer&gt;，因此你不能往该列表中添加任何元素。</p>
+<ul>
+<li>消费者使用super</li>
+</ul>
+<p>如果需要一个列表使用T类型的元素（即你想把T类型的元素加入到列表中），你需要把这个列表声明成\&lt;? super T&gt;，比如List\&lt;? super Integer&gt;，因此你不能保证从中读取到的元素的类型。</p>
+<ul>
+<li>即是生产者，也是消费者</li>
+</ul>
+<p>如果一个列表即要生产，又要消费，你不能使用泛型通配符声明列表，比如List\<integer>。</integer></p>
+<p>请参考java.util.Collections里的copy方法(JDK1.7)：copy使用到了PECS原则，实现了对参数的保护。</p>
+<pre><code class="Java">/**
+    * Copies all of the elements from one list into another.  After the
+    * operation, the index of each copied element in the destination list
+    * will be identical to its index in the source list.  The destination
+    * list must be at least as long as the source list.  If it is longer, the
+    * remaining elements in the destination list are unaffected. &lt;p&gt;
+    *
+    * This method runs in linear time.
+    *
+    * @param  &lt;T&gt; the class of the objects in the lists
+    * @param  dest The destination list.
+    * @param  src The source list.
+    * @throws IndexOutOfBoundsException if the destination list is too small
+    *         to contain the entire source List.
+    * @throws UnsupportedOperationException if the destination list&#39;s
+    *         list-iterator does not support the &lt;tt&gt;set&lt;/tt&gt; operation.
+    */
+   public static &lt; T&gt; void copy(List&lt; ? super T&gt; dest, List&lt;? extends T&gt; src) {
+       int srcSize = src.size();
+       if (srcSize &gt; dest.size())
+           throw new IndexOutOfBoundsException(&quot;Source does not fit in dest&quot;);
+
+       if (srcSize &lt; COPY_THRESHOLD ||
+           (src instanceof RandomAccess &amp;&amp; dest instanceof RandomAccess)) {
+           for (int i=0; i&lt;srcSize; i++)
+               dest.set(i, src.get(i));
+       } else {
+           ListIterator&lt; ? super T&gt; di=dest.listIterator();
+           ListIterator&lt; ? extends T&gt; si=src.listIterator();
+           for (int i=0; i&lt;srcSize; i++) {
+               di.next();
+               di.set(si.next());
+           }
+       }
+   }
+</code></pre>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/190054bc/" rel="bookmark">String、StringBuffer和StringBuilder对比</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/80c76146/" rel="bookmark">Iterator和Iterable 区别</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/385b4be6/" rel="bookmark">java多线程系列 06  线程优先级和守护线程</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/1354fe55/" rel="bookmark">java多线程系列 08 ThreadLocal</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/9dbd6aed/" rel="bookmark">java多线程系列 04 线程让步和join</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/eb0962ed/">泛型中 < ? extends T > 和 < ? extends T > 的区别</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2018年01月11日 - 13:55</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/eb0962ed/" title="泛型中 < ? extends T > 和 < ? extends T > 的区别">泛型中 < ? extends T > 和 < ? extends T > 的区别</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/eb0962ed/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag">  <i class="fa fa-tag"></i> java</a>
+          
+            <a href="/tags/泛型/" rel="tag">  <i class="fa fa-tag"></i> 泛型</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/80c76146/" rel="next" title="Iterator和Iterable 区别">
+                <i class="fa fa-chevron-left"></i> Iterator和Iterable 区别
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/633a03ca/" rel="prev" title="枚举">
+                枚举 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#泛型中-lt-extends-T-gt-和-lt-extends-T-gt-的区别"><span class="nav-text">泛型中 &lt; ? extends T &gt; 和 &lt; ? extends T &gt; 的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类型擦除"><span class="nav-text">类型擦除</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#擦除带来的问题"><span class="nav-text">擦除带来的问题</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#补充一点：边界"><span class="nav-text">补充一点：边界</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#逆变与协变"><span class="nav-text">逆变与协变</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#？-的用法"><span class="nav-text">？ 的用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#extends-的用法"><span class="nav-text">extends 的用法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#super-的用法"><span class="nav-text">super 的用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PECS-Pruducer-extends-Consumer-super"><span class="nav-text">PECS(Pruducer extends,Consumer super)</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/eb0962ed/";
+        this.page.identifier = "posts/eb0962ed/";
+        this.page.title = '泛型中 < ? extends T > 和 < ? extends T > 的区别';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="java多线程系列 03 线程等待与唤醒，线程休眠概要  wait(), notify(), notifyAll()等方法介绍 wait()和notify()示例 wait(long timeout)和notify()示例 wait() 和 notifyAll() 为什么notify(), wait()等函数定义在Object中，而不是Thread中 sleep()介绍与使用 sleep() 与">
+<meta name="keywords" content="java,并发">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" java多线程系列 03 线程等待与唤醒，线程休眠">
+<meta property="og:url" content="http://fengxiutianya.top/posts/876c7808/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="java多线程系列 03 线程等待与唤醒，线程休眠概要  wait(), notify(), notifyAll()等方法介绍 wait()和notify()示例 wait(long timeout)和notify()示例 wait() 和 notifyAll() 为什么notify(), wait()等函数定义在Object中，而不是Thread中 sleep()介绍与使用 sleep() 与">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://images0.cnblogs.com/blog/497634/201312/18183712-f04899f92aaa43b6a33a85fecfa60a9d.png">
+<meta property="og:image" content="https://images0.cnblogs.com/blog/497634/201312/18183848-d4c16bf2760847afa4fede6a9d959083.png">
+<meta property="og:image" content="https://images0.cnblogs.com/blog/497634/201312/18183923-95275c066212410f96181704a681f453.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" java多线程系列 03 线程等待与唤醒，线程休眠">
+<meta name="twitter:description" content="java多线程系列 03 线程等待与唤醒，线程休眠概要  wait(), notify(), notifyAll()等方法介绍 wait()和notify()示例 wait(long timeout)和notify()示例 wait() 和 notifyAll() 为什么notify(), wait()等函数定义在Object中，而不是Thread中 sleep()介绍与使用 sleep() 与">
+<meta name="twitter:image" content="https://images0.cnblogs.com/blog/497634/201312/18183712-f04899f92aaa43b6a33a85fecfa60a9d.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/876c7808/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title> java多线程系列 03 线程等待与唤醒，线程休眠 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/876c7808/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline"> java多线程系列 03 线程等待与唤醒，线程休眠
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-13 11:08:00" itemprop="dateCreated datePublished" datetime="2018-07-13T11:08:00+08:00">2018-07-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/threads/" itemprop="url" rel="index"><span itemprop="name">threads</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/876c7808/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/876c7808/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/876c7808/" class="leancloud_visitors" data-flag-title=" java多线程系列 03 线程等待与唤醒，线程休眠">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">10k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">9 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="java多线程系列-03-线程等待与唤醒，线程休眠"><a href="#java多线程系列-03-线程等待与唤醒，线程休眠" class="headerlink" title="java多线程系列 03 线程等待与唤醒，线程休眠"></a>java多线程系列 03 线程等待与唤醒，线程休眠</h1><h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><blockquote>
+<ol>
+<li>wait(), notify(), notifyAll()等方法介绍</li>
+<li>wait()和notify()示例</li>
+<li>wait(long timeout)和notify()示例</li>
+<li>wait() 和 notifyAll()</li>
+<li>为什么notify(), wait()等函数定义在Object中，而不是Thread中</li>
+<li>sleep()介绍与使用</li>
+<li>sleep() 与 wait()的比较</li>
+</ol>
+</blockquote>
+<a id="more"></a>
+<h3 id="1-wait-notify-notifyAll-等方法介绍"><a href="#1-wait-notify-notifyAll-等方法介绍" class="headerlink" title="1. wait(), notify(), notifyAll()等方法介绍"></a>1. wait(), notify(), notifyAll()等方法介绍</h3><blockquote>
+<p>在Object类中，定义了wait(), notify()和notifyAll()等接口。</p>
+<p>wait()的作用是让当前线程进入等待状态，<strong>同时，wait()也会让当前线程释放它所持有的锁。</strong>而notify()和notifyAll()的作用，则是唤醒当前对象上的等待线程；notify()是唤醒单个线程，而notifyAll()是唤醒所有的线程。</p>
+<p>Object类中关于等待/唤醒的API详细信息如下：<br><strong>notify()</strong>        – 唤醒在此对象监视器上等待的单个线程。<br><strong>notifyAll()</strong>   – 唤醒在此对象监视器上等待的所有线程。<br><strong>wait()</strong>           – 让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法”，当前线程被唤醒(进入“就绪状态”)。<br><strong>wait(long timeout)</strong>   – 让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法，或者超过指定的时间量”，当前线程被唤醒(进入“就绪状态”)。<br><strong>wait(long timeout, int nanos)</strong>  – 让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法，或者其他某个线程中断当前线程，或者已超过某个实际时间量”，当前线程被唤醒(进入“就绪状态”)。</p>
+</blockquote>
+<h3 id="2-wait-和notify-示例"><a href="#2-wait-和notify-示例" class="headerlink" title="2. wait()和notify()示例"></a>2. wait()和notify()示例</h3><blockquote>
+<p>代码如下:</p>
+<pre><code class="java">class ThreadA extends Thread {
+
+   public ThreadA(String name) {
+       super(name);
+   }
+
+   public void run() {
+       synchronized (this) {
+           System.out.println(Thread.currentThread().getName() 
+                                      + &quot; call notify()&quot;);
+           // 唤醒当前的wait线程
+           notify();
+       }
+   }
+}
+
+public class WaitTest {
+
+   public static void main(String[] args) {
+
+       ThreadA t1 = new ThreadA(&quot;t1&quot;);
+       synchronized (t1) {
+           try {
+               // 启动“线程t1”
+               System.out.println(Thread.currentThread().getName() + &quot; start t1&quot;);
+               t1.start();
+
+               // 主线程等待t1通过notify()唤醒。
+               System.out.println(Thread.currentThread().getName() + &quot; wait()&quot;);
+               t1.wait();
+
+               System.out.println(Thread.currentThread().getName() + &quot; continue&quot;);
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+       }
+   }
+}
+</code></pre>
+<p><strong>运行结果</strong>:</p>
+<pre><code>main start t1
+main wait()
+t1 call notify()
+main continue
+</code></pre><p><strong>结果说明</strong>：<br>如下图，说明了“主线程”和“线程t1”的流程。</p>
+<p>(01) 注意，图中”主线程” 代表“主线程main”。”线程t1” 代表WaitTest中启动的“线程t1”。 而“锁” 代表“t1这个对象的同步锁”。<br>(02) “主线程”通过 new ThreadA(“t1”) 新建“线程t1”。随后通过synchronized(t1)获取“t1对象的同步锁”。然后调用t1.start()启动“线程t1”。<br>(03) “主线程”执行t1.wait() 释放“t1对象的锁”并且进入“等待(阻塞)状态”。等待t1对象上的线程通过notify() 或 notifyAll()将其唤醒。<br>(04) “线程t1”运行之后，通过synchronized(this)获取“当前对象的锁”；接着调用notify()唤醒“当前对象上的等待线程”，也就是唤醒“主线程”。<br>(05) “线程t1”运行完毕之后，释放“当前对象的锁”。紧接着，“主线程”获取“t1对象的锁”，然后接着运行。</p>
+<p><img src="https://images0.cnblogs.com/blog/497634/201312/18183712-f04899f92aaa43b6a33a85fecfa60a9d.png" alt="img"></p>
+<p>对于上面的代码？曾经有个朋友问到过：t1.wait()应该是让“线程t1”等待；但是，为什么却是让“主线程main”等待了呢？<br>在解答该问题前，我们先看看jdk文档中关于wait的一段介绍：</p>
+<pre><code>Causes the current thread to wait until another thread invokes the notify() method or the notifyAll() method for this object. 
+In other words, this method behaves exactly as if it simply performs the call wait(0).
+The current thread must own this object&#39;s monitor. The thread releases ownership of this monitor and waits until another thread notifies threads waiting on this object&#39;s monitor to wake up either through a call to the notify method or the notifyAll method. The thread then waits until it can re-obtain ownership of the monitor and resumes execution.
+</code></pre><p>中文意思大概是：</p>
+<pre><code>引起“当前线程”等待，直到另外一个线程调用notify()或notifyAll()唤醒该线程。换句话说，这个方法和wait(0)的效果一样！(补充，对于wait(long millis)方法，当millis为0时，表示无限等待，直到被notify()或notifyAll()唤醒)。“当前线程”在调用wait()时，必须拥有该对象的同步锁。该线程调用wait()之后，会释放该锁；然后一直等待直到“其它线程”调用对象的同步锁的notify()或notifyAll()方法。然后，该线程继续等待直到它重新获取“该对象的同步锁”，然后就可以接着运行。
+</code></pre><p>注意：jdk的解释中，说wait()的作用是让“当前线程”等待，而“当前线程”是指正在cpu上运行的线程！<br>这也意味着，虽然t1.wait()是通过“线程t1”调用的wait()方法，但是调用t1.wait()的地方是在“主线程main”中。而主线程必须是“当前线程”，也就是运行状态，才可以执行t1.wait()。所以，此时的“当前线程”是“主线程main”！因此，t1.wait()是让“主线程”等待，而不是“线程t1”！</p>
+</blockquote>
+<h3 id="3-wait-long-timeout-和notify"><a href="#3-wait-long-timeout-和notify" class="headerlink" title="3. wait(long timeout)和notify()"></a><strong>3. wait(long timeout)和notify()</strong></h3><blockquote>
+<p>wait(long timeout)会让当前线程处于“等待(阻塞)状态”，“直到其他线程调用此对象的 notify() 方法或 notifyAll() 方法，或者超过指定的时间量”，当前线程被唤醒(进入“就绪状态”)。 </p>
+<p>下面的示例就是演示wait(long timeout)在超时情况下，线程被唤醒的情况。</p>
+<pre><code>// WaitTimeoutTest.java的源码
+class ThreadA extends Thread{
+
+   public ThreadA(String name) {
+       super(name);
+   }
+
+   public void run() {
+       System.out.println(Thread.currentThread().getName() + &quot; run &quot;);
+       // 死循环，不断运行。
+       while(true)
+           ;
+   }
+}
+
+public class WaitTimeoutTest {
+
+   public static void main(String[] args) {
+
+       ThreadA t1 = new ThreadA(&quot;t1&quot;);
+
+       synchronized(t1) {
+           try {
+               // 启动“线程t1”
+               System.out.println(Thread.currentThread().getName() + &quot; start t1&quot;);
+               t1.start();
+
+      // 主线程等待t1通过notify()唤醒 或 notifyAll()唤醒，或超过3000ms延时；然后才被唤醒。
+        System.out.println(Thread.currentThread().getName() + &quot; call wait &quot;);
+               t1.wait(3000);
+
+               System.out.println(Thread.currentThread().getName() + &quot; continue&quot;);
+           } catch (InterruptedException e) {
+               e.printStackTrace();
+           }
+       }
+   }
+}
+</code></pre><p><strong>运行结果</strong>：</p>
+<pre><code>main start t1
+main call wait 
+t1 run                  // 大约3秒之后...输出“main continue”
+main continue
+</code></pre><p><strong>结果说明</strong>：<br>如下图，说明了“主线程”和“线程t1”的流程。<br>(01) 注意，图中”主线程” 代表WaitTimeoutTest主线程(即，线程main)。”线程t1” 代表WaitTest中启动的线程t1。 而“锁” 代表“t1这个对象的同步锁”。<br>(02) 主线程main执行t1.start()启动“线程t1”。<br>(03) 主线程main执行t1.wait(3000)，此时，主线程进入“阻塞状态”。需要“用于t1对象锁的线程通过notify() 或者 notifyAll()将其唤醒” 或者 “超时3000ms之后”，主线程main才进入到“就绪状态”，然后才可以运行。<br>(04) “线程t1”运行之后，进入了死循环，一直不断的运行。<br>(05) 超时3000ms之后，主线程main会进入到“就绪状态”，然后接着进入“运行状态”。</p>
+<p><img src="https://images0.cnblogs.com/blog/497634/201312/18183848-d4c16bf2760847afa4fede6a9d959083.png" alt="img"></p>
+</blockquote>
+<h3 id="4-wait-和-notifyAll"><a href="#4-wait-和-notifyAll" class="headerlink" title="4. wait() 和 notifyAll()"></a><strong>4. wait() 和 notifyAll()</strong></h3><blockquote>
+<p>通过前面的示例，我们知道 notify() 可以唤醒在此对象监视器上等待的单个线程。</p>
+<p>下面，我们通过示例演示notifyAll()的用法；它的作用是唤醒在此对象监视器上等待的所有线程。</p>
+<pre><code>public class NotifyAllTest {
+
+   private static Object obj = new Object();
+
+   public static void main(String[] args) {
+
+       ThreadA t1 = new ThreadA(&quot;t1&quot;);
+       ThreadA t2 = new ThreadA(&quot;t2&quot;);
+       ThreadA t3 = new ThreadA(&quot;t3&quot;);
+       t1.start();
+       t2.start();
+       t3.start();
+
+       try {
+           System.out.println(Thread.currentThread().getName() + &quot; sleep(3000)&quot;);
+           Thread.sleep(3000);
+       } catch (InterruptedException e) {
+           e.printStackTrace();
+       }
+
+       synchronized (obj) {
+           // 主线程等待唤醒。
+           System.out.println(Thread.currentThread().getName() + &quot; notifyAll()&quot;);
+           obj.notifyAll();
+       }
+   }
+
+   static class ThreadA extends Thread {
+
+       public ThreadA(String name) {
+           super(name);
+       }
+
+       public void run() {
+           synchronized (obj) {
+               try {
+                   // 打印输出结果
+                   System.out.println(Thread.currentThread().getName() + &quot; wait&quot;);
+
+                   // 唤醒当前的wait线程
+                   obj.wait();
+
+                   // 打印输出结果
+                   System.out.println(Thread.currentThread().getName() 
+                           + &quot; continue&quot;);
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
+       }
+   }
+}
+</code></pre><p>运行结果</p>
+<pre><code>t1 wait
+main sleep(3000)
+t3 wait
+t2 wait
+main notifyAll()
+t2 continue
+t3 continue
+t1 continue
+</code></pre><p><strong>结果说明</strong>：<br>参考下面的流程图。<br>(01) 主线程中新建并且启动了3个线程”t1”, “t2”和”t3”。<br>(02) 主线程通过sleep(3000)休眠3秒。在主线程休眠3秒的过程中，我们假设”t1”, “t2”和”t3”这3个线程都运行了。以”t1”为例，当它运行的时候，它会执行obj.wait()等待其它线程通过notify()或额nofityAll()来唤醒它；相同的道理，”t2”和”t3”也会等待其它线程通过nofity()或nofityAll()来唤醒它们。<br>(03) 主线程休眠3秒之后，接着运行。执行 obj.notifyAll() 唤醒obj上的等待线程，即唤醒”t1”, “t2”和”t3”这3个线程。 紧接着，主线程的synchronized(obj)运行完毕之后，主线程释放“obj锁”。这样，”t1”, “t2”和”t3”就可以获取“obj锁”而继续运行了！</p>
+<p><img src="https://images0.cnblogs.com/blog/497634/201312/18183923-95275c066212410f96181704a681f453.png" alt="img"></p>
+<p><strong>需要注意的一点是：notifyAll会唤醒所有等待获取此对象的线程，他们会彼此竞争，但是他们已经退出了等待，但是由于同步锁的原因，因此同一时刻只会有一个线程获取到锁，所以也只有一个线程会运行，但最终所有的线程都是依次获取到锁，接着运行</strong></p>
+</blockquote>
+<h3 id="5-为什么notify-wait-等函数定义在Object中，而不是Thread中"><a href="#5-为什么notify-wait-等函数定义在Object中，而不是Thread中" class="headerlink" title="5. 为什么notify(), wait()等函数定义在Object中，而不是Thread中"></a><strong>5. 为什么notify(), wait()等函数定义在Object中，而不是Thread中</strong></h3><blockquote>
+<p>Object中的wait(), notify()等函数，和synchronized一样，会对“对象的同步锁”进行操作。</p>
+<p>wait()会使“当前线程”等待，因为线程进入等待状态，所以线程应该释放它锁持有的“同步锁”，否则其它线程获取不到该“同步锁”而无法运行！<br>OK，线程调用wait()之后，会释放它锁持有的“同步锁”；而且，根据前面的介绍，我们知道：等待线程可以被notify()或notifyAll()唤醒。现在，请思考一个问题：notify()是依据什么唤醒等待线程的？或者说，wait()等待线程和notify()之间是通过什么关联起来的？答案是：依据“对象的同步锁”。</p>
+<p>负责唤醒等待线程的那个线程(我们称为“<strong>唤醒线程</strong>”)，它只有在获取“该对象的同步锁”(<strong>这里的同步锁必须和等待线程的同步锁是同一个</strong>)，并且调用notify()或notifyAll()方法之后，才能唤醒等待线程。虽然，等待线程被唤醒；但是，它不能立刻执行，因为唤醒线程还持有“该对象的同步锁”。必须等到唤醒线程释放了“对象的同步锁”之后，等待线程才能获取到“对象的同步锁”进而继续运行。</p>
+<p>总之，notify(), wait()依赖于“同步锁”，而“同步锁”是对象锁持有，并且每个对象有且仅有一个！这就是为什么notify(), wait()等函数定义在Object类，而不是Thread类中的原因。</p>
+</blockquote>
+<h3 id="6-sleep-介绍与使用"><a href="#6-sleep-介绍与使用" class="headerlink" title="6. sleep()介绍与使用"></a>6. sleep()介绍与使用</h3><blockquote>
+<p>sleep() 定义在Thread.java中。 sleep() 的作用是让当前线程休眠，即当前线程会从<strong>运行状态</strong>进入到<strong>休眠(阻塞)状态</strong>。sleep()会指定休眠时间，线程休眠的时间会大于/等于该休眠时间；在线程重新被唤醒时，它会由<strong>阻塞状态</strong>变成<strong>就绪状态</strong>，从而等待cpu的调度执行。</p>
+<p>下面是一个简单的demo</p>
+<pre><code>// SleepTest.java的源码
+class ThreadA extends Thread{
+   public ThreadA(String name){ 
+       super(name); 
+   } 
+   public synchronized void run() { 
+       try {
+           for(int i=0; i &lt;10; i++){ 
+               System.out.printf(&quot;%s: %d\n&quot;, this.getName(), i); 
+               // i能被4整除时，休眠100毫秒
+               if (i%4 == 0)
+                   Thread.sleep(100);
+           } 
+       } catch (InterruptedException e) {
+           e.printStackTrace();
+       }
+   } 
+} 
+
+public class SleepTest{ 
+   public static void main(String[] args){ 
+       ThreadA t1 = new ThreadA(&quot;t1&quot;); 
+       t1.start(); 
+   } 
+}
+</code></pre><p>运行结果:</p>
+<pre><code>t1: 0
+t1: 1
+t1: 2
+t1: 3
+t1: 4
+t1: 5
+t1: 6
+t1: 7
+t1: 8
+t1: 9
+</code></pre><p><strong>结果说明</strong>： 程序比较简单，在主线程main中启动线程t1。t1启动之后，当t1中的计算i能被4整除时，t1会通过Thread.sleep(100)休眠100毫秒。</p>
+</blockquote>
+<h3 id="7-sleep-与-wait-的比较"><a href="#7-sleep-与-wait-的比较" class="headerlink" title="7. sleep() 与 wait()的比较"></a><strong>7. sleep() 与 wait()的比较</strong></h3><blockquote>
+<p>我们知道，wait()的作用是让当前线程由“运行状态”进入“等待(阻塞)状态”的同时，也会释放同步锁。而sleep()的作用是也是让当前线程由“运行状态”进入到“休眠(阻塞)状态”。 但是，wait()会释放对象的同步锁，而sleep()则不会释放锁。</p>
+<p> 下面通过示例演示sleep()是不会释放锁的。</p>
+<pre><code>public class SleepLockTest {
+
+   private static Object obj = new Object();
+
+   public static void main(String[] args) {
+       ThreadA t1 = new ThreadA(&quot;t1&quot;);
+       ThreadA t2 = new ThreadA(&quot;t2&quot;);
+       t1.start();
+       t2.start();
+   }
+
+   static class ThreadA extends Thread {
+       public ThreadA(String name) {
+           super(name);
+       }
+
+       public void run() {
+           // 获取obj对象的同步锁
+           synchronized (obj) {
+               try {
+                   for (int i = 0; i &lt; 10; i++) {
+                       System.out.printf(&quot;%s: %d\n&quot;, this.getName(), i);
+                       // i能被4整除时，休眠100毫秒
+                       if (i % 4 == 0)
+                           Thread.sleep(100);
+                   }
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
+       }
+   }
+}
+</code></pre><p><strong>运行结果</strong>：</p>
+<pre><code>t1: 0
+t1: 1
+t1: 2
+t1: 3
+t1: 4
+t1: 5
+t1: 6
+t1: 7
+t1: 8
+t1: 9
+t2: 0
+t2: 1
+t2: 2
+t2: 3
+t2: 4
+t2: 5
+t2: 6
+t2: 7
+t2: 8
+t2: 9
+</code></pre><p><strong>结果说明</strong>： 主线程main中启动了两个线程t1和t2。t1和t2在run()会引用同一个对象的同步锁，即synchronized(obj)。在t1运行过程中，虽然它会调用Thread.sleep(100)；但是，t2是不会获取cpu执行权的。因为，t1并没有释放“obj所持有的同步锁”！ 注意，若我们注释掉synchronized (obj)后再次执行该程序，t1和t2是可以相互切换的。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/385b4be6/" rel="bookmark">java多线程系列 06  线程优先级和守护线程</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/1354fe55/" rel="bookmark">java多线程系列 08 ThreadLocal</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/9dbd6aed/" rel="bookmark">java多线程系列 04 线程让步和join</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d232e74d/" rel="bookmark">java多线程系列 07 ThreadGroup</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/400f00a6/" rel="bookmark">深入分析ThreadLocal</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/876c7808/"> java多线程系列 03 线程等待与唤醒，线程休眠</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2018年07月13日 - 11:08</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/876c7808/" title=" java多线程系列 03 线程等待与唤醒，线程休眠"> java多线程系列 03 线程等待与唤醒，线程休眠</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/876c7808/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag">  <i class="fa fa-tag"></i> java</a>
+          
+            <a href="/tags/并发/" rel="tag">  <i class="fa fa-tag"></i> 并发</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/aa8f827d/" rel="next" title="java多线程系列 02 sychronized关键字">
+                <i class="fa fa-chevron-left"></i> java多线程系列 02 sychronized关键字
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/9dbd6aed/" rel="prev" title="java多线程系列 04 线程让步和join">
+                java多线程系列 04 线程让步和join <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java多线程系列-03-线程等待与唤醒，线程休眠"><span class="nav-text">java多线程系列 03 线程等待与唤醒，线程休眠</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-wait-notify-notifyAll-等方法介绍"><span class="nav-text">1. wait(), notify(), notifyAll()等方法介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-wait-和notify-示例"><span class="nav-text">2. wait()和notify()示例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-wait-long-timeout-和notify"><span class="nav-text">3. wait(long timeout)和notify()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-wait-和-notifyAll"><span class="nav-text">4. wait() 和 notifyAll()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-为什么notify-wait-等函数定义在Object中，而不是Thread中"><span class="nav-text">5. 为什么notify(), wait()等函数定义在Object中，而不是Thread中</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-sleep-介绍与使用"><span class="nav-text">6. sleep()介绍与使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-sleep-与-wait-的比较"><span class="nav-text">7. sleep() 与 wait()的比较</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/876c7808/";
+        this.page.identifier = "posts/876c7808/";
+        this.page.title = ' java多线程系列 03 线程等待与唤醒，线程休眠';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="HTTP Keep-Alive是什么？如何工作？在http早期，每个http请求都要求打开一个tpc socket连接，并且使用一次之后就断开这个tcp连接。使用keep-alive可以改善这种状态，即在一次TCP连接中可以持续发送多份数据而不会断开连接。通过使用keep-alive机制，可以减少tcp连接建立次数，也意味着可以减少TIME_WAIT状态连接，以此提高性能和提高http服务器的吞吐">
+<meta name="keywords" content="http">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HTTP Keep-Alive">
+<meta property="og:url" content="http://fengxiutianya.top/posts/37f5aa4d/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="HTTP Keep-Alive是什么？如何工作？在http早期，每个http请求都要求打开一个tpc socket连接，并且使用一次之后就断开这个tcp连接。使用keep-alive可以改善这种状态，即在一次TCP连接中可以持续发送多份数据而不会断开连接。通过使用keep-alive机制，可以减少tcp连接建立次数，也意味着可以减少TIME_WAIT状态连接，以此提高性能和提高http服务器的吞吐">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://www.nowamagic.net/librarys/images/201312/2013_12_20_02.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.352Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="HTTP Keep-Alive">
+<meta name="twitter:description" content="HTTP Keep-Alive是什么？如何工作？在http早期，每个http请求都要求打开一个tpc socket连接，并且使用一次之后就断开这个tcp连接。使用keep-alive可以改善这种状态，即在一次TCP连接中可以持续发送多份数据而不会断开连接。通过使用keep-alive机制，可以减少tcp连接建立次数，也意味着可以减少TIME_WAIT状态连接，以此提高性能和提高http服务器的吞吐">
+<meta name="twitter:image" content="http://www.nowamagic.net/librarys/images/201312/2013_12_20_02.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/37f5aa4d/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>HTTP Keep-Alive | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/37f5aa4d/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">HTTP Keep-Alive
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-10 22:46:00" itemprop="dateCreated datePublished" datetime="2019-03-10T22:46:00+08:00">2019-03-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/" itemprop="url" rel="index"><span itemprop="name">网络</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/http/" itemprop="url" rel="index"><span itemprop="name">http</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/37f5aa4d/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/37f5aa4d/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/37f5aa4d/" class="leancloud_visitors" data-flag-title="HTTP Keep-Alive">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="HTTP-Keep-Alive是什么？如何工作？"><a href="#HTTP-Keep-Alive是什么？如何工作？" class="headerlink" title="HTTP Keep-Alive是什么？如何工作？"></a>HTTP Keep-Alive是什么？如何工作？</h1><p>在http早期，每个http请求都要求打开一个tpc socket连接，并且使用一次之后就断开这个tcp连接。使用keep-alive可以改善这种状态，即在一次TCP连接中可以持续发送多份数据而不会断开连接。通过使用keep-alive机制，可以减少tcp连接建立次数，也意味着可以减少TIME_WAIT状态连接，以此提高性能和提高http服务器的吞吐率(更少的tcp连接意味着更少的系统内核调用,socket的accept()和close()调用)。</p>
+<p>但是，<a href="http://www.nowamagic.net/academy/tag/keep-alive" target="_blank" rel="noopener">keep-alive</a>并不是免费的午餐,长时间的tcp连接容易导致系统资源无效占用。配置不当的keep-alive，有时比重复利用连接带来的损失还更大。所以，正确地设置keep-alive timeout时间非常重要。<br><a id="more"></a></p>
+<h4 id="keepalvie-timeout"><a href="#keepalvie-timeout" class="headerlink" title="keepalvie timeout"></a>keepalvie timeout</h4><p>Httpd守护进程，一般都提供了keep-alive timeout时间设置参数。比如nginx的keepalive_timeout，和Apache的KeepAliveTimeout。这个keepalive_timout时间值意味着：一个http产生的tcp连接在传送完最后一个响应后，还需要hold住keepalive_timeout秒后，才开始关闭这个连接。</p>
+<p>当httpd守护进程发送完一个响应后，理应马上主动关闭相应的tcp连接，设置 keepalive_timeout后，httpd守护进程会想说：”再等等吧，看看浏览器还有没有请求过来”，这一等，便是keepalive_timeout时间。如果守护进程在这个等待的时间里，一直没有收到浏览发过来http请求，则关闭这个http连接。</p>
+<p>下面写一个脚本，方便测试：</p>
+<pre><code>sleep(60);    //为了便于分析测试，会根据测试进行调整
+echo &quot;www.example.com&quot;;
+</code></pre><pre><code>#tcpdump -n host 218.1.57.236 and port 80
+20:36:50.792731 IP 218.1.57.236.43052 &gt; 222.73.211.215.http: S 1520902589:1520902589(0) win 65535
+20:36:50.792798 IP 222.73.211.215.http &gt; 218.1.57.236.43052: S 290378256:290378256(0) ack 1520902590 win 5840
+20:36:50.801629 IP 218.1.57.236.43052 &gt; 222.73.211.215.http: . ack 1 win 32768
+
+20:36:50.801838 IP 218.1.57.236.43052 &gt; 222.73.211.215.http: P 1:797(796) ack 1 win 32768
+20:36:50.801843 IP 222.73.211.215.http &gt; 218.1.57.236.43052: . ack 797 win 59
+
+20:37:50.803230 IP 222.73.211.215.http &gt; 218.1.57.236.43052: P 1:287(286) ack 797 win 59
+20:37:50.803289 IP 222.73.211.215.http &gt; 218.1.57.236.43052: F 287:287(0) ack 797 win 59
+20:37:50.893396 IP 218.1.57.236.43052 &gt; 222.73.211.215.http: . ack 288 win 32625
+20:37:50.894249 IP 218.1.57.236.43052 &gt; 222.73.211.215.http: F 797:797(0) ack 288 win 32625
+20:37:50.894252 IP 222.73.211.215.http &gt; 218.1.57.236.43052: . ack 798 win 59
+</code></pre><ul>
+<li>第1~3行建立tcp三次握手，建立连接。用时8898μs</li>
+<li>第4~5行通过建立的连接发送第一个http请求，服务端确认收到请求。用时5μs</li>
+<li>第5~6行，可以知道脚本执行用时60s1387μs,与php脚本相符。</li>
+<li>第6、8行服务端发送http响应。发送响应用时90166μs。</li>
+<li>第7行，表明由服务端守护进程主动关闭连接。结合第6、8行，说明http响应一旦发送完毕，服务端马上关闭这个tcp连接</li>
+<li>第7、9、10说明tcp连接顺序关闭,用时90963μs。需要注意,这里socket资源并没有立即释放，需要等待2MSL时间（60s）后才被真正释放。</li>
+</ul>
+<p>由此可见，在没有设置 keepalive_timeout 情况下，一个socket资源从建立到真正释放需要经过的时间是:建立tcp连接 + 传送http请求 + php脚本执行 + 传送http响应 + 关闭tcp连接 + 2MSL 。(注:这里的时间只能做参考，具体的时间主要由网络带宽，和响应大小而定)</p>
+<ol start="2">
+<li><p>keepalive_timeout时间大于0时，即启用Keep-Alive时，一个tcp连接的生命周期。为了便于分析，我们将keepalive_timeout设置为300s</p>
+<pre><code>#tcpdump -n host 218.1.57.236 and port 80
+21:38:05.471129 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: S 1669618600:1669618600(0) win 65535
+21:38:05.471140 IP 222.73.211.215.http &gt; 218.1.57.236.54049: S 4166993862:4166993862(0) ack 1669618601 win 5840
+21:38:05.481731 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: . ack 1 win 32768
+21:38:05.481976 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: P 1:797(796) ack 1 win 32768
+21:38:05.481985 IP 222.73.211.215.http &gt; 218.1.57.236.54049: . ack 797 win 59
+
+21:38:07.483626 IP 222.73.211.215.http &gt; 218.1.57.236.54049: P 1:326(325) ack 797 win 59
+21:38:07.747614 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: . ack 326 win 32605
+21:43:07.448454 IP 222.73.211.215.http &gt; 218.1.57.236.54049: F 326:326(0) ack 797 win 59
+21:43:07.560316 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: . ack 327 win 32605
+21:43:11.759102 IP 218.1.57.236.54049 &gt; 222.73.211.215.http: F 797:797(0) ack 327 win 32605
+21:43:11.759111 IP 222.73.211.215.http &gt; 218.1.57.236.54049: . ack 798 win 59
+</code></pre></li>
+</ol>
+<ul>
+<li>我们先看一下，第6~8行，跟上次示例不一样的是，服务端httpd守护进程发完响应后，没有立即主动关闭tcp连接。</li>
+<li>第8行，结合第6行，我们可以看到，5分钟(300s)后，服务端主动关闭这个tcp连接。这个时间，正是我们设置的keepalive_timeout的时间。</li>
+<li>由此可见，设置了keepalive_timout时间情况下，一个socket建立到释放需要的时间是多了keepalive_timeout时间。</li>
+</ul>
+<ol start="3">
+<li><p>当keepalive_timeout时间大于0，并且在同一个tcp连接发送多个http响应。这里为了便于分析，我们将keepalive_timeout设置为180s</p>
+<p>通过这个测试，我们想弄清楚,keepalive_timeout是从第一个响应结束开启计时，还是最后一个响应结束开启计时。测试结果证实是后者，这里，我们每隔120s发一次请求，通过一个tcp连接发送了3个请求。</p>
+<pre><code># tcpdump -n host 218.1.57.236 and port 80
+22:43:57.102448 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: S 4009392741:4009392741(0) win 65535
+22:43:57.102527 IP 222.73.211.215.http &gt; 218.1.57.236.49955: S 4036426778:4036426778(0) ack 4009392742 win 5840
+22:43:57.111337 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: . ack 1 win 32768
+
+22:43:57.111522 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: P 1:797(796) ack 1 win 32768
+22:43:57.111530 IP 222.73.211.215.http &gt; 218.1.57.236.49955: . ack 797 win 59
+22:43:59.114663 IP 222.73.211.215.http &gt; 218.1.57.236.49955: P 1:326(325) ack 797 win 59
+22:43:59.350143 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: . ack 326 win 32605
+
+22:45:59.226102 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: P 1593:2389(796) ack 650 win 32443
+22:45:59.226109 IP 222.73.211.215.http &gt; 218.1.57.236.49955: . ack 2389 win 83
+22:46:01.227187 IP 222.73.211.215.http &gt; 218.1.57.236.49955: P 650:974(324) ack 2389 win 83
+22:46:01.450364 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: . ack 974 win 32281
+
+22:47:57.377707 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: P 3185:3981(796) ack 1298 win 32119
+22:47:57.377714 IP 222.73.211.215.http &gt; 218.1.57.236.49955: . ack 3981 win 108
+22:47:59.379496 IP 222.73.211.215.http &gt; 218.1.57.236.49955: P 1298:1622(324) ack 3981 win 108
+22:47:59.628964 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: . ack 1622 win 32768
+
+22:50:59.358537 IP 222.73.211.215.http &gt; 218.1.57.236.49955: F 1622:1622(0) ack 3981 win 108
+22:50:59.367911 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: . ack 1623 win 32768
+22:50:59.686527 IP 218.1.57.236.49955 &gt; 222.73.211.215.http: F 3981:3981(0) ack 1623 win 32768
+22:50:59.686531 IP 222.73.211.215.http &gt; 218.1.57.236.49955: . ack 3982 win 108
+</code></pre></li>
+</ol>
+<ul>
+<li>第一组，三个ip包表示tcp三次握手建立连接，由浏览器建立。</li>
+<li>第二组，发送第一次http请求并且得到响应，服务端守护进程输出响应之后，并没马上主动关闭tcp连接。而是启动keepalive_timout计时。</li>
+<li>第三组，2分钟后，发送第二次http请求并且得到响应，同样服务端守护进程也没有马上主动关闭tcp连接，重新启动keepalive_timout计时。</li>
+<li>第四组，又2分钟后，发送了第三次http请求并且得到响应。服务器守护进程依然没有主动关地闭tcp连接（距第一次http响应有4分钟了,大于keepalive_timeout值），而是重新启动了keepalive_timout计时。</li>
+<li>第五组，跟最后一个响应keepalive_timeout(180s)内，守护进程再没有收到请求。计时结束，服务端守护进程主动关闭连接。4次挥手后，服务端进入TIME_WAIT状态。</li>
+</ul>
+<p>这说明，当设定了keepalive_timeout，一个socket由建立到释放，需要时间是：tcp建立 + (最后一个响应时间 – 第一个请求时间) + tcp关闭 + 2MSL。红色加粗表示每一次请求发送时间、每一次请求脚本执行时间、每一次响应发送时间，还有两两请求相隔时间。进一步测试，正在关闭或者TIME_WAIT状态的tcp连接，不能传输http请求和响应。即，当一个连接结束keepalive_timeout计时，服务端守护进程发送第一个FIN标志ip包后，该连接不能再使用了。</p>
+<h4 id="http-keep-alive与tcp-keep-alive"><a href="#http-keep-alive与tcp-keep-alive" class="headerlink" title="http keep-alive与tcp keep-alive"></a>http keep-alive与tcp keep-alive</h4><p>http keep-alive与tcp keep-alive，不是同一回事，意图不一样。http keep-alive是为了让tcp活得更久一点，以便在同一个连接上传送多个http，提高socket的效率。而tcp keep-alive是TCP的一种检测TCP<a href="http://www.nowamagic.net/academy/tag/%E8%BF%9E%E6%8E%A5" target="_blank" rel="noopener">连接</a>状况的保鲜机制。tcp keep-alive保鲜定时器，支持三个系统内核配置参数：</p>
+<pre><code>echo 1800 &gt; /proc/sys/net/ipv4/tcp_keepalive_time
+echo 15 &gt; /proc/sys/net/ipv4/tcp_keepalive_intvl
+echo 5 &gt; /proc/sys/net/ipv4/tcp_keepalive_probes
+</code></pre><p>keepalive是TCP保鲜定时器，当网络两端建立了TCP连接之后，闲置idle（双方没有任何数据流发送往来）了tcp_keepalive_time后，服务器内核就会尝试向客户端发送侦测包，来判断TCP连接状况(有可能客户端崩溃、强制关闭了应用、主机不可达等等)。如果没有收到对方的回答(ack包)，则会在 tcp_keepalive_intvl后再次尝试发送侦测包，直到收到对对方的ack,如果一直没有收到对方的ack,一共会尝试 tcp_keepalive_probes次，每次的间隔时间在这里分别是15s, 30s, 45s, 60s, 75s。如果尝试tcp_keepalive_probes,依然没有收到对方的ack包，则会丢弃该TCP连接。TCP连接默认闲置时间是2小时，一般设置为30分钟足够了。</p>
+<p>也就是说，仅当nginx的keepalive_timeout值设置高于tcp_keepalive_time，并且距此tcp连接传输的最后一个http响应，经过了tcp_keepalive_time时间之后，操作系统才会发送侦测包来决定是否要丢弃这个TCP连接。一般不会出现这种情况，除非你需要这样做。</p>
+<h4 id="keep-alive与TIME-WAIT"><a href="#keep-alive与TIME-WAIT" class="headerlink" title="keep-alive与TIME_WAIT"></a>keep-alive与TIME_WAIT</h4><p>使用http keep-alvie，可以减少服务端TIME_WAIT数量(因为由服务端httpd守护进程主动关闭连接)。道理很简单，相较而言，启用keep-alive，建立的tcp连接更少了，自然要被关闭的tcp连接也相应更少了。</p>
+<h4 id="最后"><a href="#最后" class="headerlink" title="最后"></a>最后</h4><p>我想用一张示意图片来说明使用启用keepalive的不同。另外，http keepalive是客户端浏览器与服务端httpd守护进程协作的结果，所以，我们另外安排篇幅介绍不同浏览器的各种情况对keepalive的利用。</p>
+<p><img src="http://www.nowamagic.net/librarys/images/201312/2013_12_20_02.png" alt="img"></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="http://www.nowamagic.net/academy/detail/23350305" target="_blank" rel="noopener">HTTP Keep-Alive是什么？如何工作？</a></p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/6fbc205f/" rel="bookmark">HTTP 管道化(pipeline)</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e3e09015/" rel="bookmark">Http的演进之路之一</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/9a3c28b1/" rel="bookmark">Http的演进之路之三</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d6ee44af/" rel="bookmark">Http的演进之路之四</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d860bebc/" rel="bookmark">Http的演进之路之二</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/37f5aa4d/">HTTP Keep-Alive</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月10日 - 22:46</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/37f5aa4d/" title="HTTP Keep-Alive">HTTP Keep-Alive</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/37f5aa4d/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/http/" rel="tag">  <i class="fa fa-tag"></i> http</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/6fbc205f/" rel="next" title="HTTP 管道化(pipeline)">
+                <i class="fa fa-chevron-left"></i> HTTP 管道化(pipeline)
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/5cd14851/" rel="prev" title="一致性hash">
+                一致性hash <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#HTTP-Keep-Alive是什么？如何工作？"><span class="nav-text">HTTP Keep-Alive是什么？如何工作？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#keepalvie-timeout"><span class="nav-text">keepalvie timeout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#http-keep-alive与tcp-keep-alive"><span class="nav-text">http keep-alive与tcp keep-alive</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#keep-alive与TIME-WAIT"><span class="nav-text">keep-alive与TIME_WAIT</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#最后"><span class="nav-text">最后</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/37f5aa4d/";
+        this.page.identifier = "posts/37f5aa4d/";
+        this.page.title = 'HTTP Keep-Alive';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

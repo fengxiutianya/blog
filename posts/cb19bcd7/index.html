@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="基本概念本章，我们会讲解线程获取和释放公平锁的原理；在讲解之前，需要了解几个基本概念。后面的内容，都是基于这些概念的；这些概念可能比较枯燥，但从这些概念中，能窥见java锁的一些架构，这对我们了解锁是有帮助的。  AQS – 指AbstractQueuedSynchronizer类。 AQS是JUC中所有锁内部具体实现依赖的的抽象类，锁的许多公共方法都是在这个类中实现。AQS是独占锁(例如，Ree">
+<meta name="keywords" content="lock">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程系列 JUC锁 03 ReentrantLock公平锁">
+<meta property="og:url" content="http://fengxiutianya.top/posts/cb19bcd7/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="基本概念本章，我们会讲解线程获取和释放公平锁的原理；在讲解之前，需要了解几个基本概念。后面的内容，都是基于这些概念的；这些概念可能比较枯燥，但从这些概念中，能窥见java锁的一些架构，这对我们了解锁是有帮助的。  AQS – 指AbstractQueuedSynchronizer类。 AQS是JUC中所有锁内部具体实现依赖的的抽象类，锁的许多公共方法都是在这个类中实现。AQS是独占锁(例如，Ree">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-299.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程系列 JUC锁 03 ReentrantLock公平锁">
+<meta name="twitter:description" content="基本概念本章，我们会讲解线程获取和释放公平锁的原理；在讲解之前，需要了解几个基本概念。后面的内容，都是基于这些概念的；这些概念可能比较枯燥，但从这些概念中，能窥见java锁的一些架构，这对我们了解锁是有帮助的。  AQS – 指AbstractQueuedSynchronizer类。 AQS是JUC中所有锁内部具体实现依赖的的抽象类，锁的许多公共方法都是在这个类中实现。AQS是独占锁(例如，Ree">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-299.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/cb19bcd7/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java线程系列 JUC锁 03 ReentrantLock公平锁 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/cb19bcd7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java线程系列 JUC锁 03 ReentrantLock公平锁
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 00:27:00" itemprop="dateCreated datePublished" datetime="2019-03-18T00:27:00+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/lock/" itemprop="url" rel="index"><span itemprop="name">lock</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/cb19bcd7/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/cb19bcd7/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/cb19bcd7/" class="leancloud_visitors" data-flag-title="java线程系列 JUC锁 03 ReentrantLock公平锁">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">17k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a><strong>基本概念</strong></h2><p>本章，我们会讲解线程获取和释放公平锁的原理；在讲解之前，需要了解几个基本概念。后面的内容，都是基于这些概念的；这些概念可能比较枯燥，但从这些概念中，能窥见java锁的一些架构，这对我们了解锁是有帮助的。</p>
+<ol>
+<li><p><strong>AQS</strong> – 指AbstractQueuedSynchronizer类。</p>
+<p>AQS是JUC中所有锁内部具体实现依赖的的抽象类，锁的许多公共方法都是在这个类中实现。AQS是独占锁(例如，ReentrantLock)和共享锁(例如，Semaphore)的公共父类。</p>
+<p>AQS需要下面三个基本组件的相互协作：</p>
+<ul>
+<li>同步状态的原子性管理；</li>
+<li>线程的阻塞与解除阻塞；</li>
+<li>队列的管理；</li>
+</ul>
+<p>创建一个框架分别实现这三个组件是有可能的。但是，这会让整个框架既难用又没效率。例如：存储在队列节点的信息必须与解除阻塞所需要的信息一致，而暴露出的方法的签名必须依赖于同步状态的特性。</p>
+<p>同步器框架的核心决策是为这三个组件选择一个具体实现，同时在使用方式上又有大量选项可用。这里有意地限制了其适用范围，但是提供了足够的效率，使得实际上没有理由在合适的情况下不用这个框架而去重新建造一个。</p>
+<a id="more"></a>
+</li>
+<li><p><strong>AQS</strong>锁的类别 – 分为“<strong>独占锁</strong>”和“<strong>共享锁</strong>”两种。</p>
+<ul>
+<li><strong>独占锁</strong> – 锁在一个时间点只能被一个线程锁占有。根据锁的获取机制，它又划分为“<strong>公平锁</strong>”和“<strong>非公平锁</strong>”。公平锁，是按照通过CLH等待线程按照先来先得的规则，公平的获取锁；而非公平锁，则当线程要获取锁时，它会无视CLH等待队列而直接获取锁。独占锁的典型实例子是ReentrantLock，此外，ReentrantReadWriteLock.WriteLock也是独占锁。</li>
+<li><strong>共享锁</strong> – 能被多个线程同时拥有，能被共享的锁。JUC包中的ReentrantReadWriteLock.ReadLock，CyclicBarrier、CountDownLatch和Semaphore都是共享锁。</li>
+</ul>
+</li>
+<li><p><strong>CLH队列</strong> – Craig, Landin, and Hagersten lock queue</p>
+<p>CLH是自旋锁实现方式的一种，如果你对这个还不是特别了解，可以看这篇文章<a href="http://fengxiutianya.top/posts/6d00129c/">自旋锁</a></p>
+<p>CLH队列是AQS中等待获取锁的线程队列。在多线程中，为了保护竞争资源不被多个线程同时操作而引起错误，我们常常需要通过锁来保护这些资源。在独占锁中，竞争资源在一个时间点只能被一个线程锁访问；而其它线程则需要等待。CLH就是管理这些“等待锁”的线程的队列。<br> CLH是一个非阻塞的FIFO列。也就是说往里面插入或移除一个节点的时候，在并发条件下不会阻塞，而是通过自旋锁和CAS保证节点插入和移除的原子性。</p>
+</li>
+<li><p><strong>CAS函数</strong> – Compare And Swap<br>CAS函数，是比较并交换函数，它是原子操作函数；通过CAS操作的数据都是以<strong>原子方式</strong>进行的。例如，compareAndSetHead(), compareAndSetTail(), compareAndSetNext()等函数。它们共同的特点是，这些函数所执行的动作是以原子的方式进行的。</p>
+</li>
+</ol>
+<h2 id="ReentrantLock数据结构"><a href="#ReentrantLock数据结构" class="headerlink" title="ReentrantLock数据结构"></a><strong>ReentrantLock数据结构</strong></h2><p>ReentrantLock的UML类图</p>
+<p><img src="/images/pasted-299.png" alt="upload successful"></p>
+<p>从图中可以看出：</p>
+<ul>
+<li>ReentrantLock实现了Lock接口。</li>
+<li>ReentrantLock与Sync是组合关系。ReentrantLock中，包含了Sync对象；而且，Sync是AQS的子类；更重要的是，Sync有两个子类FairSync(公平锁)和NonFairSync(非公平锁)。ReentrantLock是一个独占锁，至于它到底是公平锁还是非公平锁，就取决于Sync对象是”FairSync的实例”还是”NonFairSync的实例”。</li>
+</ul>
+<h2 id="ReentrantLock源码分析"><a href="#ReentrantLock源码分析" class="headerlink" title="ReentrantLock源码分析"></a>ReentrantLock源码分析</h2><p>在分析源码之前，首先介绍后面要用到的一些属性。</p>
+<pre><code class="java">// AQS 中的代码 
+static final class Node {
+
+         // 标记节点为共享节点类型
+        static final Node SHARED = new Node();
+        // 标记节点为独占节点类型
+        static final Node EXCLUSIVE = null;
+
+         // 下面四个显示当前节点的状态
+        // 表示当前节点已取消等待
+        static final int CANCELLED =  1;
+        // 表示当前节点释放时，需要唤醒后继节点
+        static final int SIGNAL    = -1;
+        // 表示当前节点是一个等待条件的节点
+        static final int CONDITION = -2;
+        // 这个是对共享节点的头结点在释放时，应该传播到其他共享的节点
+        static final int PROPAGATE = -3;
+
+         // 当前节点的状态，如果是大于0，则表示取消，小于表示等待，等于0什么都不代表
+        volatile int waitStatus;
+
+          // 前继节点
+        volatile Node prev;
+
+           // 后继及诶单
+        volatile Node next;
+
+        // 节点入队时的线程，入队时初始化，出队时为null
+        volatile Thread thread;
+        // nextWaiter是“区别当前CLH队列是 ‘独占锁’队列 还是 ‘共享锁’队列 的标记”
+        // 若nextWaiter=SHARED，则CLH队列是“独占锁”队列；
+        // 若nextWaiter=EXCLUSIVE，(即nextWaiter=null)，则CLH队列是“共享锁”队列。
+        Node nextWaiter;
+
+        。。。。省略了一些方法 
+    }
+
+    // 等待队列的头结点，头结点如果存在，则其状态不能是取消状态
+    private transient volatile Node head;
+
+    // 等待队列尾节点
+    private transient volatile Node tail;
+
+    // 同步队列的状态，如果是0表示未有线程获取锁，大于0已有线程获取锁
+    private volatile int state;
+</code></pre>
+<p>通过上面ReentrantLock的UML类图可以看出，ReentrantLock类中锁的主要实现是有内部类Sync以及其俩个子类FairSync和NonfairSync来实现的。其中Sync是AQS的子类，实现了其中大部分抽象方法，但是由于公平锁和非公平锁的获取方式不同，因此Sync中lock方法没有实现，这就是FairSync和NonfairSync不同的地点。</p>
+<p>这里先分析公平锁的获取与释放，并对ReentrantLock中的方法做简单介绍</p>
+<h3 id="公平锁的获取"><a href="#公平锁的获取" class="headerlink" title="公平锁的获取"></a>公平锁的获取</h3><p>公平锁的获取是通过lock来获取，源码如下</p>
+<pre><code class="java">public void lock() {
+    sync.lock();
+}
+ final void lock() {
+    acquire(1);
+}
+</code></pre>
+<p>上面代码可以看出当前线程实际上是通过acquire(1)获取锁的。这里说明一下“<strong>1</strong>”的含义，它是设置锁的状态的参数。对于“独占锁”而言，锁处于可获取状态时，它的状态值是0；锁被线程初次获取到，它的状态值就变成1。由于ReentrantLock(公平锁/非公平锁)是可重入锁，所以独占锁可以被同一个线程多此获取，每获取1次就将锁的状态+1。也就是说，初次获取锁时，通过acquire(1)将锁的状态值设为1；再次获取锁时，将锁的状态值设为2；依次类推，这就是为什么获取锁时，传入的参数是1的原因。</p>
+<p>另外<strong>可重入</strong>是指锁可以被单个线程多次获取。</p>
+<h3 id="acquire"><a href="#acquire" class="headerlink" title="acquire()"></a>acquire()</h3><p>acquire()是在AQS中实现，源码如下</p>
+<pre><code class="java">// AQS 中的代码
+public final void acquire(int arg) {
+    if (!tryAcquire(arg) &amp;&amp;
+        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+    selfInterrupt();
+}
+</code></pre>
+<p>代码看着没多少，但是这时获取锁的关键代码，解释上面的流程</p>
+<ol>
+<li>当前线程首先通过tryAcquire尝试获取锁，如果获取成功的话，直接返回，尝试失败，就要进入下一步。</li>
+<li>当前线程获取失败，通过addWaiter(Node.EXCLUSIVE)将当前线程插入到CLH队列末尾来等待获取锁。</li>
+<li>插入成功后，会使用acquireQueued来获取锁，这里获取锁只会等待当前等待节点的前继节点为head节点才会获取成功。没有获取锁，线程会进入休眠状态。如果当前线程在休眠等待过程中被打断，acquireQueue会返回true，此时当前线程会调用selfInterrupt来给自己产生一个中断。</li>
+</ol>
+<p>大体的流程如上面介绍，下面会具体的分析每一步。</p>
+<h3 id="tryAcquire"><a href="#tryAcquire" class="headerlink" title="tryAcquire"></a>tryAcquire</h3><p>这里说的是公平锁，源码如下</p>
+<pre><code class="java">protected final boolean tryAcquire(int acquires) {
+    // 获取当前线程
+    final Thread current = Thread.currentThread();
+    // 获取独占锁的状态
+    int c = getState();
+    // c=0意味着锁没有被任何线程锁拥有
+    if (c == 0) {
+        // 锁没有被任何线程拥有
+        // 则判断当前线程是否是队列中的第一个线程
+        // 如果是，则获取该锁，设置锁的状态
+        if (!hasQueuedPredecessors() &amp;&amp;
+            compareAndSetState(0, acquires)) {
+            // 设置锁的拥有者为当前线程
+            setExclusiveOwnerThread(current);
+            return true;
+        }
+    }
+    // 判断锁的拥有者是否是当前线程，如果是，则更新锁的状态值
+    else if (current == getExclusiveOwnerThread()) {
+        int nextc = c + acquires;
+        // 下面这个几乎不会出现，因为一个线程不会获取那么多次锁
+        if (nextc &lt; 0)
+            throw new Error(&quot;Maximum lock count exceeded&quot;);
+        setState(nextc);
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>总结上面的流程</p>
+<ol>
+<li>先判断锁的状态，如果没有被获取，则判断当前线程是否是队列的第一个线程，如果是，则设置锁的状态并更新锁的拥有者为当前线程。</li>
+<li>如果锁已经被获取，判断锁的拥有者是否为当前线程，如果是则设置锁的状态值，返回获取锁成功</li>
+<li>上面俩个都没有成功，返回获取锁失败。</li>
+</ol>
+<p>上面有几个函数，后面也会用到，这里先具体分析，分别是<code>hasQueuedPredecessors</code>、<code>compareAndSetState</code></p>
+<p><code>setExclusiveOwnerThread</code>,<code>getExclusiveOwnerThread</code>和<code>setState</code></p>
+<h4 id="hasQueuedPredecessors"><a href="#hasQueuedPredecessors" class="headerlink" title="hasQueuedPredecessors()"></a><strong>hasQueuedPredecessors()</strong></h4><p>这个函数用于判断当前线程是否是队列头结点</p>
+<pre><code class="java">// AQS 中的代码
+public final boolean hasQueuedPredecessors() {
+
+    Node t = tail; // Read fields in reverse initialization order
+    Node h = head;
+    Node s;
+    return h != t &amp;&amp;
+        ((s = h.next) == null || s.thread != Thread.currentThread());
+}
+</code></pre>
+<p>整体还是比较简单这里就不具体解释。</p>
+<h4 id="compareAndSetState-和setState-getState"><a href="#compareAndSetState-和setState-getState" class="headerlink" title="compareAndSetState()和setState(),getState()"></a><strong>compareAndSetState()和setState(),getState()</strong></h4><p>这俩个函数都是用来设置锁的装填值，源码如下</p>
+<pre><code class="java">// AQS 中的代码
+protected final boolean compareAndSetState(int expect, int update) {
+    return unsafe.compareAndSwapInt(this, stateOffset, expect, update);
+}
+
+protected final void setState(int newState) {
+    state = newState;
+}
+// 获取锁的状态
+protected final int getState() {
+    return state;
+}
+</code></pre>
+<p>上面俩个区别是，一个使用CAS来更新state值，一个是直接更新。产生这个区别是因为，setState是获取锁的线程才能够更新，而在一个线程中更新这个值肯定是线程安全的。另一个是在没有获取到锁的情况下更新，所以需要考虑多线程竞争，因此需要使用CAS来更新。而getState是用来获取锁的状态。此外，state是用voliate来修饰的，也就是保证所有线程都会看到最新的值。</p>
+<h4 id="setExclusiveOwnerThread-和-getExclusiveOwnerThread"><a href="#setExclusiveOwnerThread-和-getExclusiveOwnerThread" class="headerlink" title="setExclusiveOwnerThread 和 getExclusiveOwnerThread"></a>setExclusiveOwnerThread 和 getExclusiveOwnerThread</h4><p>这俩个是定义在AbstractOwnableSynchronizer这个抽象类中的，用于设置和获取获取当前锁的线程。但是我有点不明白为什么是抽象类，。源码如下</p>
+<pre><code class="java">private transient Thread exclusiveOwnerThread;
+
+protected final void setExclusiveOwnerThread(Thread thread) {
+    exclusiveOwnerThread = thread;
+}
+
+protected final Thread getExclusiveOwnerThread() {
+    return exclusiveOwnerThread;
+}
+</code></pre>
+<h3 id="addWaiter-Node-EXCLUSIVE"><a href="#addWaiter-Node-EXCLUSIVE" class="headerlink" title="addWaiter(Node.EXCLUSIVE)"></a><strong>addWaiter(Node.EXCLUSIVE)</strong></h3><p>addWaiter(Node.EXCLUSIVE)的作用是创建当前线程的Node节点，且Node中记录当前线程对应的锁是独占锁类型，并且将该节点添加到CLH队列的末尾。</p>
+<pre><code class="JAVA">// AQS 中的代码
+private Node addWaiter(Node mode) {
+    // 为当前线程新建一个节点，节点对象的线程为当前线程，节点对应的锁的类型为mode
+    Node node = new Node(Thread.currentThread(), mode);
+    // 若CLH队列不为空，则将当前及诶单插入到末尾，
+    Node pred = tail;
+    // 这里首先尝试一次，如果掺入成功，则直接返回节点，不成功使用enq来插入
+    if (pred != null) {
+        node.prev = pred;
+        if (compareAndSetTail(pred, node)) {
+            pred.next = node;
+            return node;
+        }
+    }
+    enq(node);
+    return node;
+}
+</code></pre>
+<p>compareAndSetTail就是使用CAS方式来更新队列末尾节点，和前面compareAndSetHead差不多，这里就不具体分析。下面看看enq函数</p>
+<pre><code class="java">// AQS 中的代码
+private Node enq(final Node node) {
+    for (;;) {
+        Node t = tail;
+        if (t == null) { // Must initialize
+            if (compareAndSetHead(new Node()))
+                tail = head;
+        } else {
+            node.prev = t;
+            if (compareAndSetTail(t, node)) {
+                t.next = node;
+                return t;
+            }
+        }
+    }
+}
+</code></pre>
+<p>enq()的作用很简单。如果CLH队列为空，则新建一个CLH表头；然后将node添加到CLH末尾。否则，直接将node添加到CLH末尾。</p>
+<h3 id="acquireQueued"><a href="#acquireQueued" class="headerlink" title="acquireQueued"></a><strong>acquireQueued</strong></h3><p>acquireQueued()的目的是从队列中获取锁，源码如下</p>
+<pre><code class="java">// AQS 中的代码
+final boolean acquireQueued(final Node node, int arg) {
+    // 获取锁是否失败
+    boolean failed = true;
+    try {
+        //线程的中断状态
+        boolean interrupted = false;
+        for (;;) {
+            // 获取前继节点
+            // node是当前线程对应的节点，这里意味着上一个等待
+            // 获取锁的节点
+            final Node p = node.predecessor();
+            // 如果p是头节点，并且获取锁成功
+            if (p == head &amp;&amp; tryAcquire(arg)) {
+                // 设置头结点
+                setHead(node);
+                p.next = null; // help GC
+                failed = false;
+                return interrupted;
+            }
+            // 上一步获取失败，这里会首先设置当前节点到合适的位置
+            // 然后阻塞当前节点直到被唤醒，然后返回中断状态。
+            if (shouldParkAfterFailedAcquire(p, node) &amp;&amp;
+                parkAndCheckInterrupt())
+                interrupted = true;
+        }
+    } finally {
+        // 如果获取失败，则取消当前节点
+        if (failed)
+            cancelAcquire(node);
+    }
+}
+</code></pre>
+<p>上面整体逻辑还是比较清晰，这里不过有几点需要注意。</p>
+<ol>
+<li>此函数不响应中断，后面会具体解释。</li>
+<li>一个线程要出队只有俩种可能，一是此线程是队列的第一个节点并且获取锁成功，二是出现异常，通过finally里面的代码设置当前节点为取消状态。</li>
+</ol>
+<p>下面分别来看里面的函数</p>
+<h4 id="shouldParkAfterFailedAcquire"><a href="#shouldParkAfterFailedAcquire" class="headerlink" title="shouldParkAfterFailedAcquire"></a>shouldParkAfterFailedAcquire</h4><pre><code class="java">// AQS 中的代码
+private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
+    // 获取前一个线程的状态
+    int ws = pred.waitStatus;
+    // 如果前继节点是SINGAL状态，则意味着当前下次呢很难过需要被
+    // unPark唤醒，此时返回true
+    if (ws == Node.SIGNAL)
+        return true;
+    // 如果前继节点是取消状态，则设置当前节点的前继节点为前继节点的前继节点
+    // 直到找到一个节点的状态不为取消状态。
+    if (ws &gt; 0) {
+        do {
+            node.prev = pred = pred.prev;
+        } while (pred.waitStatus &gt; 0);
+        pred.next = node;
+    } else {
+        // 如果前继节点的状态是0或者PROPAGATE，则设置前继节点状态为SIGNAL
+        // 此外调用者，需要一直尝试，确保在获取锁之前没有被暂停
+        compareAndSetWaitStatus(pred, ws, Node.SIGNAL);
+    }
+    return false;
+}
+</code></pre>
+<ol>
+<li><p>关于waitStatus请参考下表(中扩号内为waitStatus的值)，更多关于waitStatus的内容，可以参考前面的Node类的介绍。</p>
+<pre><code>CANCELLED[1]  -- 当前线程已被取消
+SIGNAL[-1]    -- “当前线程的后继线程需要被unpark(唤醒)”。
+                 一般发生情况是：当前线程的后继线程处于阻塞状态，
+                 而当前线程被release或cancel掉，因此需要唤醒当前线程的后继线程。
+CONDITION[-2] -- 当前线程(处在Condition休眠状态)在等待Condition唤醒
+PROPAGATE[-3] -- (共享锁)其它线程获取到“共享锁”
+[0]           -- 当前线程不属于上面的任何一种状态。
+</code></pre></li>
+<li><p>shouldParkAfterFailedAcquire()通过以下流程判断当前线程是否需要被阻塞。</p>
+<ol>
+<li>如果前继节点状态为SIGNAL，表明当前节点需要被unpark(唤醒)，此时则返回true。表明当前线程可以被阻塞</li>
+<li>如果前继节点状态为CANCELLED(ws&gt;0)，说明前继节点已经被取消，则通过先前回溯找到一个有效(非CANCELLED状态)的节点，并返回false。此时当前节点不能被阻塞，因为还没有保证此节点能够被前继节点唤醒</li>
+<li>如果前继节点状态为非SIGNAL、非CANCELLED，则设置前继的状态为SIGNAL，并返回false。这时前继节点在释放锁时有责任唤醒后继阻塞的节点。</li>
+</ol>
+</li>
+</ol>
+<p>如果上述的第一步发生，即前继节点是SIGNAL状态，则意味着当前线程需要被阻塞。接下来会调用parkAndCheckInterrupt()阻塞当前线程，直到当前先被唤醒才从parkAndCheckInterrupt()中返回。</p>
+<h4 id="parkAndCheckInterrupt"><a href="#parkAndCheckInterrupt" class="headerlink" title="parkAndCheckInterrupt"></a><strong>parkAndCheckInterrupt</strong></h4><p>源码如下：</p>
+<pre><code class="java">private final boolean parkAndCheckInterrupt() {
+    // 通过LockSupport的park()阻塞“当前线程”。
+    LockSupport.park(this);
+    // 返回线程的中断状态。
+    return Thread.interrupted();
+}
+</code></pre>
+<p>parkAndCheckInterrupt()的作用是阻塞当前线程，并且返回线程被唤醒之后的中断状态。<br>它会先通过LockSupport.park()阻塞当前线程，然后通过Thread.interrupted()返回线程的中断状态。</p>
+<p>这里介绍一下线程被阻塞之后如何唤醒。一般有2种情况：</p>
+<ol>
+<li><strong>unpark()唤醒</strong>：前继节点对应的线程使用完锁之后，通过unpark()方式唤醒当前线程。</li>
+<li><strong>中断唤醒</strong>：其它线程通过interrupt()中断当前线程。</li>
+</ol>
+<p><strong>补充</strong>：LockSupport()中的park(),unpark()的作用和Object中的wait(),notify()作用类似，是阻塞/唤醒。<br>它们的用法不同，park(),unpark()是轻量级的，而wait(),notify()是必须先通过Synchronized获取同步锁。</p>
+<p>上面俩个介绍了acquireQueued中的主要函数，下面我们来看看整体逻辑还剩下的部分</p>
+<pre><code class="java">// 获取前继节点
+// node是当前线程对应的节点，这里意味着上一个等待
+// 获取锁的节点
+final Node p = node.predecessor();
+// 如果p是头节点，并且获取锁成功
+if (p == head &amp;&amp; tryAcquire(arg)) {
+    // 设置头结点
+    setHead(node);
+    p.next = null; // help GC
+    failed = false;
+    return interrupted;
+}
+</code></pre>
+<p>来分析上面的主要流程</p>
+<ol>
+<li><p>通过node.predecessor()获取前继节点。predecessor()就是返回node的前继节点，若对此有疑惑可以查看下面关于Node类的介绍。</p>
+</li>
+<li><p>p == head &amp;&amp; tryAcquire(arg)</p>
+<p>首先，判断前继节点是不是CHL表头。如果是的话，则通过tryAcquire()尝试获取锁。 其实，这样做的目的是为了“让当前线程获取锁”，但是为什么需要先判断<code>p==head</code>呢？理解这个对理解公平锁的机制很重要，因为这么做的原因就是为了保证公平性！</p>
+<p>前面，我们在shouldParkAfterFailedAcquire()我们判断当前线程是否需要阻塞；当前线程阻塞的话，会调用parkAndCheckInterrupt()来阻塞线程。当线程被解除阻塞的时候，我们会返回线程的中断状态。而线程被阻唤醒，可能是由于线程被中断，也可能是由于其它线程调用了该线程的unpark()函数。</p>
+<p>再回到<code>p==head</code>这里。如果当前线程是因为其它线程调用了unpark()函数而被唤醒，那么唤醒它的线程，应该是它的前继节点所对应的线程(关于这一点，后面在释放锁的过程中会看到)。<br>此时，再来理解<code>p==head</code>就很简单了：当前继节点是CLH队列的头节点，并且它释放锁之后；就轮到当前节点获取锁。然后，当前节点通过tryAcquire()获取锁；获取成功的话，通过setHead(node)设置当前节点为头节点，并返回。<br>总之，如果前继节点调用unpark()唤醒了当前线程并且前继节点是CLH表头，此时就是满足<code>p==head</code>，也就是符合公平性原则的。否则，如果当前线程是因为线程被中断而唤醒，那么显然就不是公平了。这就是为什么说p==head就是保证公平性！</p>
+</li>
+</ol>
+<p>从上面可以看出公平锁保证，获取锁一定按照FIFO的序列来获取锁，而具体保证的获取的公平性是在这一步体现的。</p>
+<h4 id="cancelAcquire"><a href="#cancelAcquire" class="headerlink" title="cancelAcquire"></a>cancelAcquire</h4><p>上面已经说完了所有正常情况下锁的获取，但是如果出现异常，如何处理当前线程对应的节点还没有说，也就是对应上面acquireQueued中的这段代码</p>
+<pre><code class="java">finally {
+    // 如果获取失败，则取消当前节点锁的获取
+    if (failed)
+        cancelAcquire(node);
+}
+</code></pre>
+<p>下面是cancelAcquire的源码</p>
+<pre><code class="java">private void cancelAcquire(Node node) {
+    // 如果节点为空，则忽略处理
+    if (node == null)
+        return;
+
+    // 设置界定啊对应的线程为空
+    node.thread = null;
+
+    // 跳过所有取消的前继节点，找到第一个非取消的前继节点
+    Node pred = node.prev;
+    while (pred.waitStatus &gt; 0)
+        node.prev = pred = pred.prev;
+
+    // 获取pred节点的后继节点
+    Node predNext = pred.next;
+
+    // 设置当前节点的状态为取消状态，后面正在插入的节点可以看见，然后跳过当前节点
+    node.waitStatus = Node.CANCELLED;
+
+        // 如果节点为tail，则设置tail为pred
+    if (node == tail &amp;&amp; compareAndSetTail(node, pred)) {
+        // 设置pred的后继节点为null
+        compareAndSetNext(pred, predNext, null);
+    } else {
+        int ws;
+        //设置前继节点的状态为SIGNAL，表示在释放锁时需要唤醒后继节点
+        if (pred != head &amp;&amp;
+            ((ws = pred.waitStatus) == Node.SIGNAL ||
+             (ws &lt;= 0 &amp;&amp; compareAndSetWaitStatus(pred, ws, Node.SIGNAL))) &amp;&amp;
+            pred.thread != null) {
+            // 设置pred的后继节点为node.next节点
+            Node next = node.next;
+            if (next != null &amp;&amp; next.waitStatus &lt;= 0)
+                compareAndSetNext(pred, predNext, next);
+        } else {
+            // 上面操作失败，说明有竞争，则唤醒当前节点的后继节点
+            // 由后继节点来处理找到一个合适的前继节点，因为node节点的状态
+            // 为取消状态，所以后继节点被唤醒后，会跳过此节点找到合适的前继节点
+            unparkSuccessor(node);
+        }
+
+        // 消除节点的引用，
+        node.next = node; // help GC
+    }
+}
+</code></pre>
+<p>上面主要流程还是比较清晰，主要是用来处理线程的异常退出设置该线程在CLH等待队列中的节点。主要流程如下</p>
+<ol>
+<li>节点为空，忽略处理。</li>
+<li>找到node的没有被取消的前继节点。</li>
+<li>设置当前节点的状态为取消状态。</li>
+<li>如果node是tail节点，则直接替换tail为pred节点。然后设置pred的后继节点为空。</li>
+<li>如果不是，则设置pred的节点的状态为SIGNAL，如果设置成功，则设置pred节点的后继节点为node.next节点。</li>
+<li>如果上面操作失败，则唤醒node的后继节点，后继节点会自己找到一个合适的前继节点。同时会忽略当前节点，因为此节点的状态已经被设置成取消状态。</li>
+</ol>
+<p>从这不得不佩服Dou Lea大师，在取消时如果竞争，就唤醒后继节点，让后继节点来帮助取消此节点。</p>
+<h3 id="selfInterrupt"><a href="#selfInterrupt" class="headerlink" title="selfInterrupt()"></a>selfInterrupt()</h3><p>前面已经将获取锁的所有流程，现在就剩最后一步。如果获取锁的线程被中断过，则需要调用selfInterrupt使当前线程产生一个终端信号。</p>
+<pre><code class="java">private static void selfInterrupt() {
+    Thread.currentThread().interrupt();
+}
+</code></pre>
+<p>代码很简单，就是当前线程自己产生一个中断信号，但是为什么要这样做呢？</p>
+<p>这必须结合acquireQueued()进行分析。如果在acquireQueued()中，当前线程被中断过，则执行selfInterrupt()；否则不会执行。</p>
+<p>在acquireQueued()中，即使是线程在阻塞状态被中断唤醒而获取到cpu执行权利；但是，如果该线程的前面还有其它等待锁的线程，根据公平性原则，该线程依然无法获取到锁。它会再次阻塞！ 该线程再次阻塞，直到该线程被它的前面等待锁的线程锁唤醒；线程才会获取锁，然后真正执行起来！<br>也就是说，在该线程成功获取锁并真正执行起来之前，它的中断会被忽略并且中断标记会被清除！ 因为在parkAndCheckInterrupt()中，我们线程的中断状态时调用了Thread.interrupted()。该函数不同于Thread的isInterrupted()函数，isInterrupted()仅仅返回中断状态，而interrupted()在返回当前中断状态之后，还会清除中断状态。 正因为之前的中断状态被清除了，所以这里需要调用selfInterrupt()重新产生一个中断！</p>
+<p>还记得前面说过acquire函数是不响应中断，原因就是在这里。</p>
+<h3 id="获取公平锁总结"><a href="#获取公平锁总结" class="headerlink" title="获取公平锁总结"></a>获取公平锁总结</h3><p>再回过头看看acquire()函数，它最终的目的是获取锁！</p>
+<pre><code class="java">public final void acquire(int arg) {
+    if (!tryAcquire(arg) &amp;&amp;
+        acquireQueued(addWaiter(Node.EXCLUSIVE), arg))
+        selfInterrupt();
+}
+</code></pre>
+<ol>
+<li>先是通过tryAcquire()尝试获取锁。获取成功的话，直接返回；尝试失败的话，再通过acquireQueued()获取锁。</li>
+<li>尝试失败的情况下，会先通过addWaiter()来将当前线程加入到CLH队列末尾；然后调用acquireQueued()，在CLH队列中排序等待获取锁，在此过程中，线程处于休眠状态。直到获取锁了才返回。 如果在休眠等待过程中被中断过，则调用selfInterrupt()来自己产生一个中断。</li>
+</ol>
+<h2 id="公平锁的释放"><a href="#公平锁的释放" class="headerlink" title="公平锁的释放"></a>公平锁的释放</h2><p>是通过unlock函数来释放锁，源码如下：</p>
+<pre><code class="java">public void unlock() {
+    // 释放锁
+    sync.release(1);
+}
+
+// AQS 中的代码
+// 释放锁
+public final boolean release(int arg) {
+    // 尝试释放锁，如果释放成功
+    if (tryRelease(arg)) {
+        // 尝试唤醒后继节点
+        Node h = head;
+        if (h != null &amp;&amp; h.waitStatus != 0)
+            unparkSuccessor(h);
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>从上面可以看出，释放的主要流程是在release中，其中参数1表示的含义和获取锁函数acquire(1)是一样的。由于公平锁是可重入的，所以对于通过一个线程可能会获取多次锁，每一次锁的状态值都会加1，相应的释放时都需要减1。下面总结上面的流程</p>
+<ol>
+<li>尝试释放锁，如果释放成功，从当前节点的状态值来判断是否需要唤醒后继的节点，如果需要，则调用unparkSuccessor来唤醒。</li>
+<li>如果释放失败，则直接返回false。</li>
+</ol>
+<h4 id="tryRelease"><a href="#tryRelease" class="headerlink" title="tryRelease()"></a>tryRelease()</h4><p>这个函数的实现是在ReentrantLock中的Synch类中实现，源码如下：</p>
+<pre><code class="java">protected final boolean tryRelease(int releases) {
+    //c是本次释放之后的状态
+    int c = getState() - releases;
+    // 如果当前线程不是锁的持有者，抛出异常
+    if (Thread.currentThread() != getExclusiveOwnerThread())
+        throw new IllegalMonitorStateException();
+    // 判断是否释放成功
+    boolean free = false;
+    // 锁可以彻底释放，则设置锁的持有者为null，即锁是可获取状态
+    if (c == 0) {
+        free = true;
+        setExclusiveOwnerThread(null);
+    }
+    // 设置当前锁的状态
+    setState(c);
+    return free;
+}
+</code></pre>
+<p>tryRelease是尝试释放锁，主要流程如下：</p>
+<ol>
+<li>首先判断锁的持有者是否是当前线程，如果不是则抛出异常。</li>
+<li>如果当前线程在本次释放锁操作之后，对锁的拥有状态是0(即，当前线程彻底释放该锁)，则设置锁的持有者为null，即锁是可获取状态。同时，更新当前线程的锁的状态为0。</li>
+</ol>
+<h3 id="unparkSuccessor"><a href="#unparkSuccessor" class="headerlink" title="unparkSuccessor()"></a>unparkSuccessor()</h3><p>如果锁被成功释放之后，需要调用此函数来唤醒后继阻塞的线程。根据CLH队列的FIFO规则，当前线程(即已经获取锁的线程)肯定是head；如果CLH队列非空的话，则唤醒锁的下一个等待线程。</p>
+<pre><code class="java">private void unparkSuccessor(Node node) {
+        // 获取当前线程对应的状态值
+    int ws = node.waitStatus;
+    // 如果小于0，则设置状态值为0
+    if (ws &lt; 0)
+        compareAndSetWaitStatus(node, ws, 0);
+
+
+    // 获取后继节点，
+    Node s = node.next;
+    // 如果节点为空或者节点的状态值大于0，说明是被取消的节点，
+    // 则需要循环判断找到第一个小于0的节点
+    if (s == null || s.waitStatus &gt; 0) {
+        s = null;
+        // 这里是从尾往头来找，直到遍历完所有的节点，找到第一个非取消的节点
+        for (Node t = tail; t != null &amp;&amp; t != node; t = t.prev)
+            if (t.waitStatus &lt;= 0)
+                s = t;
+    }
+    // 如果s不为空，唤醒节点对应的线程。
+    if (s != null)
+        LockSupport.unpark(s.thread);
+}
+</code></pre>
+<p>释放锁的过程相对获取锁的过程比较简单。释放锁时，主要进行的操作，是更新当前线程对应的锁的状态。如果当前线程对锁已经彻底释放，则设置锁的持有线程为null，设置当前线程的状态为空，然后唤醒后继线程。</p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/4b320d61/" rel="bookmark"> java线程系列 JUC锁 02 互斥锁ReentrantLock</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/b95fbd38/" rel="bookmark">java线程系列 JUC锁 04 ReentrantLock 非公平锁</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/cb19bcd7/">java线程系列 JUC锁 03 ReentrantLock公平锁</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月18日 - 00:27</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/cb19bcd7/" title="java线程系列 JUC锁 03 ReentrantLock公平锁">java线程系列 JUC锁 03 ReentrantLock公平锁</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/cb19bcd7/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/lock/" rel="tag">  <i class="fa fa-tag"></i> lock</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/4b320d61/" rel="next" title=" java线程系列 JUC锁 02 互斥锁ReentrantLock">
+                <i class="fa fa-chevron-left"></i>  java线程系列 JUC锁 02 互斥锁ReentrantLock
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/b95fbd38/" rel="prev" title="java线程系列 JUC锁 04 ReentrantLock 非公平锁">
+                java线程系列 JUC锁 04 ReentrantLock 非公平锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#基本概念"><span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReentrantLock数据结构"><span class="nav-text">ReentrantLock数据结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ReentrantLock源码分析"><span class="nav-text">ReentrantLock源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#公平锁的获取"><span class="nav-text">公平锁的获取</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#acquire"><span class="nav-text">acquire()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#tryAcquire"><span class="nav-text">tryAcquire</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#hasQueuedPredecessors"><span class="nav-text">hasQueuedPredecessors()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#compareAndSetState-和setState-getState"><span class="nav-text">compareAndSetState()和setState(),getState()</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#setExclusiveOwnerThread-和-getExclusiveOwnerThread"><span class="nav-text">setExclusiveOwnerThread 和 getExclusiveOwnerThread</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#addWaiter-Node-EXCLUSIVE"><span class="nav-text">addWaiter(Node.EXCLUSIVE)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#acquireQueued"><span class="nav-text">acquireQueued</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#shouldParkAfterFailedAcquire"><span class="nav-text">shouldParkAfterFailedAcquire</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#parkAndCheckInterrupt"><span class="nav-text">parkAndCheckInterrupt</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#cancelAcquire"><span class="nav-text">cancelAcquire</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#selfInterrupt"><span class="nav-text">selfInterrupt()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取公平锁总结"><span class="nav-text">获取公平锁总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#公平锁的释放"><span class="nav-text">公平锁的释放</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#tryRelease"><span class="nav-text">tryRelease()</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unparkSuccessor"><span class="nav-text">unparkSuccessor()</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/cb19bcd7/";
+        this.page.identifier = "posts/cb19bcd7/";
+        this.page.title = 'java线程系列 JUC锁 03 ReentrantLock公平锁';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

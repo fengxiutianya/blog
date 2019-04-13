@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述 用法简介 源码分析 底层实现原理  1. 用法简介LockSupport是用来创建锁和其他同步器的基本线程阻塞原语。LockSupport 提供park()和unpark()方法实现阻塞线程和解除线程阻塞。每个使用LockSupport的线程都与一个许可(permit)关联，permit相当于开关，默认是0，调用一次unpark就加1变成1，调用一次park会消费permit, 也就是将1变">
+<meta name="keywords" content="阻塞原语,LockSupport">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程系列 JUC锁 06 阻塞原语LockSupport">
+<meta property="og:url" content="http://fengxiutianya.top/posts/ad8369f2/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述 用法简介 源码分析 底层实现原理  1. 用法简介LockSupport是用来创建锁和其他同步器的基本线程阻塞原语。LockSupport 提供park()和unpark()方法实现阻塞线程和解除线程阻塞。每个使用LockSupport的线程都与一个许可(permit)关联，permit相当于开关，默认是0，调用一次unpark就加1变成1，调用一次park会消费permit, 也就是将1变">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://segmentfault.com/img/bVJuIP?w=783&h=375">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程系列 JUC锁 06 阻塞原语LockSupport">
+<meta name="twitter:description" content="概述 用法简介 源码分析 底层实现原理  1. 用法简介LockSupport是用来创建锁和其他同步器的基本线程阻塞原语。LockSupport 提供park()和unpark()方法实现阻塞线程和解除线程阻塞。每个使用LockSupport的线程都与一个许可(permit)关联，permit相当于开关，默认是0，调用一次unpark就加1变成1，调用一次park会消费permit, 也就是将1变">
+<meta name="twitter:image" content="https://segmentfault.com/img/bVJuIP?w=783&h=375">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/ad8369f2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java线程系列 JUC锁 06 阻塞原语LockSupport | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/ad8369f2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java线程系列 JUC锁 06 阻塞原语LockSupport
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 12:56:00" itemprop="dateCreated datePublished" datetime="2019-03-18T12:56:00+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/lock/" itemprop="url" rel="index"><span itemprop="name">lock</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/ad8369f2/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/ad8369f2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/ad8369f2/" class="leancloud_visitors" data-flag-title="java线程系列 JUC锁 06 阻塞原语LockSupport">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>用法简介</li>
+<li>源码分析</li>
+<li>底层实现原理</li>
+</ol>
+<h3 id="1-用法简介"><a href="#1-用法简介" class="headerlink" title="1. 用法简介"></a>1. 用法简介</h3><p>LockSupport是用来创建锁和其他同步器的基本<strong>线程阻塞</strong>原语。LockSupport 提供park()和unpark()方法实现阻塞线程和解除线程阻塞。每个使用LockSupport的线程都与一个许可(permit)关联，permit相当于开关，默认是0，调用一次unpark就加1变成1，调用一次park会消费permit, 也就是将1变成0，同时park立即返回。再次调用park会变成block（因为permit为0，会阻塞在这里，直到permit变为1）, 这时调用unpark会把permit置为1。每个线程都有一个相关的permit, permit最多只有一个，重复调用unpark也不会积累。</p>
+<p>park()和unpark()不会有Thread.suspend和Thread.resume所可能引发的死锁问题。这个死锁问题的产生是由于Thread.resume在Thread.suspend之前调用，使得线程忽略了解除阻塞的信号，而使得线程一直被阻塞。而LockSupport由于许可的存在，调用park的线程和另一个试图将其unpark的线程之间的竞争将保持活性。不会因为前后调用的顺序而产生死锁</p>
+<p>如果调用线程被中断，则park方法会返回。同时park也拥有可以设置超时时间的版本。<br><a id="more"></a><br>需要特别注意的一点：<strong>park 方法还可以在其他任何时间毫无理由地返回，因此通常必须在重新检查返回条件的循环里调用此方法</strong>。至于为什么后面会说到。从这个意义上说，park 是忙碌等待的一种优化，它不会浪费这么多的时间进行自旋，但是必须将它与 unpark 配对使用才更高效。</p>
+<p>官方推介的使用方式如下</p>
+<pre><code class="java">while(!canprocess()){
+    ....
+    LockSupport.park(this);
+}
+</code></pre>
+<p>调用park，可以传入一个blocker对象参数。此对象在线程受阻塞时被记录，以允许监视工具和诊断工具确定线程受阻塞的原因。（这样的工具可以使用方法 getBlocker(java.lang.Thread) 访问 blocker。）建议最好使用这些形式，而不是不带此参数的原始形式。在锁实现中提供的作为blocker的普通参数是Thread.currentThread。<br>看下线程dump的结果来理解blocker的作用。</p>
+<p><img src="https://segmentfault.com/img/bVJuIP?w=783&amp;h=375" alt="线程dump结果对比"></p>
+<p>从线程dump结果可以看出：<br>有blocker的可以传递给开发人员更多的现场信息，可以查看到当前线程的阻塞对象，方便定位问题。所以java6新增加带blocker入参的系列park方法，替代原有的park方法。</p>
+<h4 id="demo1"><a href="#demo1" class="headerlink" title="demo1"></a>demo1</h4><p>看一个Java docs中的示例用法：一个先进先出非重入锁类的框架</p>
+<pre><code class="java">class FIFOMutex {
+    private final AtomicBoolean locked = new AtomicBoolean(false);
+    private final Queue&lt;Thread&gt; waiters
+      = new ConcurrentLinkedQueue&lt;Thread&gt;();
+
+    public void lock() {
+      boolean wasInterrupted = false;
+      Thread current = Thread.currentThread();
+      waiters.add(current);
+
+      // Block while not first in queue or cannot acquire lock
+      while (waiters.peek() != current ||
+             !locked.compareAndSet(false, true)) {
+        LockSupport.park(this);
+        if (Thread.interrupted()) // ignore interrupts while waiting
+          wasInterrupted = true;
+      }
+
+      waiters.remove();
+      if (wasInterrupted)          // reassert interrupt status on exit
+        current.interrupt();
+    }
+
+    public void unlock() {
+      locked.set(false);
+      LockSupport.unpark(waiters.peek());
+    }
+  }}
+
+  //具体使用
+  public class LockSupportDemo {
+    public static void main(String[] args) throws InterruptedException {
+        final FIFOMutex lock = new FIFOMutex();
+
+        for (int i = 0; i &lt; 10; i++) {
+            new Thread(generateTask(lock, String.valueOf(i), list)).start();
+        }
+        countDownLatch.await();
+        System.out.println(list);
+    }
+
+
+    static CountDownLatch countDownLatch = new CountDownLatch(10);
+
+    static List&lt;String&gt; list = new ArrayList&lt;&gt;();
+
+
+    private static Runnable generateTask(final FIFOMutex lock, 
+                    final String taskId, final List&lt;String&gt; list) {
+        return () -&gt; {
+            lock.lock();
+            try {
+                Thread.sleep(300);
+                list.add(taskId);
+
+            } catch (Exception e) {
+
+            }
+            String s = list.toString();
+            System.out.println(String.format(&quot;Thread %s Completed %s&quot;, taskId, s));
+            lock.unLock();
+            countDownLatch.countDown();
+        };
+    }
+}
+</code></pre>
+<p>运行结果</p>
+<pre><code>Thread 0 Completed [0]
+Thread 1 Completed [0, 1]
+Thread 2 Completed [0, 1, 2]
+Thread 3 Completed [0, 1, 2, 3]
+Thread 4 Completed [0, 1, 2, 3, 4]
+Thread 5 Completed [0, 1, 2, 3, 4, 5]
+Thread 6 Completed [0, 1, 2, 3, 4, 5, 6]
+Thread 7 Completed [0, 1, 2, 3, 4, 5, 6, 7]
+Thread 8 Completed [0, 1, 2, 3, 4, 5, 6, 7, 8]
+Thread 9 Completed [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+</code></pre><p>从结果可以看出，运行结果可以看出，确实是先进先出类型的锁，同时也验证了没有俩个线程同时获取修改list的时机，因为如果同时修改List回抛出异常，这里没有。从侧面验证了锁的正确性</p>
+<h4 id="demo2"><a href="#demo2" class="headerlink" title="demo2"></a>demo2</h4><p>验证一下，在park之前多次调用unpark，是否会累加</p>
+<pre><code>public class LockSupportStudy2 {
+
+    public static void main(String[] args) {
+        //在park之前不管有多少个unpark，都只能释放一个park
+        LockSupport.unpark(Thread.currentThread());
+        LockSupport.unpark(Thread.currentThread());
+        System.out.println(&quot;暂停线程&quot;);
+        LockSupport.park();
+        System.out.println(&quot;线程继续&quot;);
+        LockSupport.park();
+        System.out.println(&quot;线程继续&quot;);
+    }
+}
+</code></pre><p>运行结果</p>
+<pre><code>暂停线程
+线程继续
+。。。。。
+</code></pre><p>从实验结果可以看出，不管在park之前调用了多少次的unpark，只会唤醒一次相应的线程阻塞。</p>
+<p>另外这个实验可以看出park和unpark的先后顺序是不重要的，因此park()和unpark()不会有 “Thread.suspend和Thread.resume所可能引发的死锁” 问题，由于许可的存在，调用 park 的线程和另一个试图将其 unpark 的线程之间的竞争将保持活性。</p>
+<h3 id="2-源码分析"><a href="#2-源码分析" class="headerlink" title="2. 源码分析"></a>2. 源码分析</h3><p>LockSupport中主要的两个成员变量：</p>
+<pre><code class="java">private static final sun.misc.Unsafe UNSAFE;
+private static final long parkBlockerOffset;
+</code></pre>
+<p>unsafe:全名sun.misc.Unsafe可以直接操控内存，被JDK广泛用于自己的包中，如java.nio和java.util.concurrent。但是不建议在生产环境中使用这个类。因为这个API十分不安全、不轻便、而且不稳定。<br>LockSupport的方法底层都是调用Unsafe的方法实现。</p>
+<p>再来看parkBlockerOffset:<br>parkBlocker就是第一部分说到的用于记录线程被谁阻塞的，用于线程监控和分析工具来定位原因的，可以通过LockSupport的getBlocker获取到阻塞的对象。</p>
+<pre><code class="java">static {
+    try {
+        UNSAFE = sun.misc.Unsafe.getUnsafe();
+        Class&lt;?&gt; tk = Thread.class;
+        parkBlockerOffset = UNSAFE.objectFieldOffset
+            (tk.getDeclaredField(&quot;parkBlocker&quot;));
+    } catch (Exception ex) { throw new Error(ex); }
+}
+</code></pre>
+<p>从这个静态语句块可以看的出来，先是通过反射机制获取Thread类的parkBlocker字段对象。然后通过sun.misc.Unsafe对象的objectFieldOffset方法获取到parkBlocker在内存里的偏移量，parkBlockerOffset的值就是这么来的.</p>
+<p>JVM的实现可以自由选择如何实现Java对象的布局，也就是在内存里Java对象的各个部分放在哪里，包括对象的实例字段和一些元数据之类。 sun.misc.Unsafe里关于对象字段访问的方法把对象布局抽象出来，它提供了objectFieldOffset()方法用于获取某个字段相对 Java对象的起始地址的偏移量，也提供了getInt、getLong、getObject之类的方法可以使用前面获取的偏移量来访问某个Java 对象的某个字段。</p>
+<p><strong>为什么要用偏移量来获取对象？干吗不要直接写个get，set方法，多简单？</strong><br>仔细想想就能明白，这个parkBlocker就是在线程处于阻塞的情况下才会被赋值。线程都已经阻塞了，如果不通过这种内存的方法，而是直接调用线程内的方法，线程是不会回应调用的。</p>
+<p>LockSupport的方法：</p>
+<pre><code class="java">public static  Object getBlocker(Thread t)
+public static  void park()
+public static  void park(Object blocker)
+public static  void parkNanos(long nanos)
+public static  void parkNanos(Object blocker, long nanos)
+public static  void parkUntil(long deadline)
+public static  void parkUntil(Object blocker, long deadline)
+</code></pre>
+<p>可以看到，LockSupport中主要是park和unpark方法以及设置和读取parkBlocker方法。</p>
+<pre><code class="java"> private static void setBlocker(Thread t, Object arg) {
+        // Even though volatile, hotspot doesn&#39;t need a write barrier here.
+        UNSAFE.putObject(t, parkBlockerOffset, arg);
+  }
+</code></pre>
+<p>对给定线程t的parkBlocker赋值。</p>
+<pre><code class="java">public static Object getBlocker(Thread t) {
+    if (t == null)
+        throw new NullPointerException();
+    return UNSAFE.getObjectVolatile(t, parkBlockerOffset);
+}
+</code></pre>
+<p>从线程t中获取它的parkBlocker对象，即返回的是阻塞线程t的Blocker对象。</p>
+<p>接下来主查两类方法，一类是阻塞park方法，一类是解除阻塞unpark方法</p>
+<p><strong>阻塞线程</strong></p>
+<ul>
+<li>park()</li>
+</ul>
+<pre><code class="java">public static void park() {
+        UNSAFE.park(false, 0L);
+}
+</code></pre>
+<p>调用native方法阻塞当前线程。</p>
+<ul>
+<li>parkNanos(long nanos)</li>
+</ul>
+<pre><code class="java">public static void parkNanos(long nanos) {
+        if (nanos &gt; 0)
+            UNSAFE.park(false, nanos);
+}
+</code></pre>
+<p>阻塞当前线程，最长不超过nanos纳秒，返回条件在park()的基础上增加了超时返回。</p>
+<ul>
+<li>parkUntil(long deadline)</li>
+</ul>
+<pre><code class="java">public static void parkUntil(long deadline) {
+  UNSAFE.park(true, deadline);
+}
+</code></pre>
+<p>阻塞当前线程，直到deadline时间（deadline - 毫秒数）。</p>
+<p>JDK1.6引入这三个方法对应的拥有Blocker版本。</p>
+<ul>
+<li>park(Object blocker)</li>
+</ul>
+<pre><code class="java">public static void park(Object blocker) {
+  Thread t = Thread.currentThread();
+  setBlocker(t, blocker);
+  UNSAFE.park(false, 0L);
+  setBlocker(t, null);
+}
+</code></pre>
+<p>1) 记录当前线程等待的对象（阻塞对象）；<br>2) 阻塞当前线程；<br>3) 当前线程等待对象置为null。</p>
+<ul>
+<li>parkNanos(Object blocker, long nanos)</li>
+</ul>
+<pre><code class="java">public static void parkNanos(Object blocker, long nanos) {
+  if (nanos &gt; 0) {
+      Thread t = Thread.currentThread();
+      setBlocker(t, blocker);
+      UNSAFE.park(false, nanos);
+      setBlocker(t, null);
+  }
+}
+</code></pre>
+<p>阻塞当前线程，最长等待时间不超过nanos毫秒，同样，在阻塞当前线程的时候做了记录当前线程等待的对象操作。</p>
+<ul>
+<li>parkUntil(Object blocker, long deadline)</li>
+</ul>
+<pre><code class="java">public static void parkUntil(Object blocker, long deadline) {
+  Thread t = Thread.currentThread();
+  setBlocker(t, blocker);
+  UNSAFE.park(true, deadline);
+  setBlocker(t, null);
+}
+</code></pre>
+<p>阻塞当前线程直到deadline时间，相同的，也做了阻塞前记录当前线程等待对象的操作。</p>
+<p><strong>唤醒线程</strong></p>
+<ul>
+<li>unpark(Thread thread)</li>
+</ul>
+<pre><code class="java">public static void unpark(Thread thread) {
+  if (thread != null)
+      UNSAFE.unpark(thread);
+}
+</code></pre>
+<p>唤醒处于阻塞状态的线程Thread。</p>
+<h3 id="3-底层实现原理"><a href="#3-底层实现原理" class="headerlink" title="3. 底层实现原理"></a>3. 底层实现原理</h3><p>从LockSupport源码可以看出，park和unpark的实现都是调用Unsafe.park和Unsafe.unpark，因此只要找到这俩个的底层实现原理，就可以明白park和unpark的底层实现。</p>
+<h4 id="HotSpot-里-park-unpark-的实现"><a href="#HotSpot-里-park-unpark-的实现" class="headerlink" title="HotSpot 里 park/unpark 的实现"></a>HotSpot 里 park/unpark 的实现</h4><p>每个 java 线程都有一个 Parker 实例，Parker 类是这样定义的：</p>
+<pre><code class="c++">class Parker : public os::PlatformParker {
+private:
+  volatile int _counter ;
+  ...
+public:
+  void park(bool isAbsolute, jlong time);
+  void unpark();
+  ...
+}
+class PlatformParker : public CHeapObj&lt;mtInternal&gt; {
+  protected:
+    pthread_mutex_t _mutex [1] ;
+    pthread_cond_t  _cond  [1] ;
+    ...
+}
+</code></pre>
+<p>可以看到 Parker 类实际上用Posix的 mutex，condition来实现的。</p>
+<p>在Parker类里的_counter字段，就是用来记录所谓的 许可的。</p>
+<p>当调用park时，先尝试直接能否直接拿到许可，即_counter&gt;0 时，如果成功，则把_counter设置为 0, 并返回：</p>
+<pre><code class="c++">void Parker::park(bool isAbsolute, jlong time) {
+  // Ideally we&#39;d do something useful while spinning, such
+  // as calling unpackTime().
+  // Optional fast-path check:
+  // Return immediately if a permit is available.
+  // We depend on Atomic::xchg() having full barrier semantics
+  // since we are doing a lock-free update to _counter.
+  if (Atomic::xchg(0, &amp;_counter) &gt; 0) return;
+</code></pre>
+<p>如果不成功，则构造一个 ThreadBlockInVM，然后检查_counter 是不是 &gt; 0，如果是，则把_counter 设置为 0，unlock mutex 并返回：</p>
+<pre><code class="c++">  ThreadBlockInVM tbivm(jt);
+  if (_counter &gt; 0)  { // no wait needed
+    _counter = 0;
+    status = pthread_mutex_unlock(_mutex);
+</code></pre>
+<p>否则，再判断等待的时间，然后再调用 pthread_cond_wait 函数等待，如果等待返回，则把_counter 设置为 0，unlock mutex 并返回</p>
+<pre><code class="c++">  if (time == 0) {
+    status = pthread_cond_wait (_cond, _mutex) ;
+  }
+  _counter = 0 ;
+  status = pthread_mutex_unlock(_mutex) ;
+  assert_status(status == 0, status, &quot;invariant&quot;) ;
+  OrderAccess::fence();
+</code></pre>
+<p>当 unpark 时，则简单多了，直接设置_counter 为 1，再 unlock mutext 返回。如果_counter 之前的值是 0，则还要调用 pthread_cond_signal 唤醒在 park 中等待的线程</p>
+<pre><code class="c++">void Parker::unpark() {
+  int s, status ;
+  status = pthread_mutex_lock(_mutex);
+  assert (status == 0, &quot;invariant&quot;) ;
+  s = _counter;
+  _counter = 1;
+  if (s &lt; 1) {
+     if (WorkAroundNPTLTimedWaitHang) {
+        status = pthread_cond_signal (_cond) ;
+        assert (status == 0, &quot;invariant&quot;) ;
+        status = pthread_mutex_unlock(_mutex);
+        assert (status == 0, &quot;invariant&quot;) ;
+     } else {
+        status = pthread_mutex_unlock(_mutex);
+        assert (status == 0, &quot;invariant&quot;) ;
+        status = pthread_cond_signal (_cond) ;
+        assert (status == 0, &quot;invariant&quot;) 
+     }
+  } else {
+    pthread_mutex_unlock(_mutex);
+    assert (status == 0, &quot;invariant&quot;) ;
+  }
+}
+</code></pre>
+<p>简而言之，是用 mutex 和 condition 保护了一个_counter 的变量，当 park 时，这个变量置为了 0，当 unpark 时，这个变量置为 1。</p>
+<p>值得注意的是在 park 函数里，调用 pthread_cond_wait 时，并没有用while来判断，所以 posix condition 里的 “Spurious wakeup” （虚假唤醒）一样会传递到上层Java的代码里，这也是官方为什么推介使用while方式的原因。</p>
+<p>关于 “Spurious wakeup”，参考这篇文章：<a href="https://stackoverflow.com/questions/8594591/why-does-pthread-cond-wait-have-spurious-wakeups" target="_blank" rel="noopener">Why does pthread_cond_wait have spurious wakeups?</a></p>
+<p>不过在看这篇文章之前，最好看看《Unix环境高级编程》这本书第11章节</p>
+<pre><code class="java">if (time == 0) {
+    status = pthread_cond_wait (_cond, _mutex) ;
+}
+</code></pre>
+<p>这也就是为什么 Java dos 里提到，当下面三种情况下 park 函数会返回：</p>
+<ul>
+<li>Some other thread invokes unpark with the current thread as the target; or</li>
+<li>Some other thread interrupts the current thread; or</li>
+<li><strong>The call spuriously (that is, for no reason) returns.</strong></li>
+</ul>
+<p>相关的实现代码在：</p>
+<p><a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/share/vm/runtime/park.hpp" target="_blank" rel="noopener">http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/share/vm/runtime/park.hpp</a><br><a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/share/vm/runtime/park.cpp" target="_blank" rel="noopener">http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/share/vm/runtime/park.cpp</a><br><a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/os/linux/vm/os_linux.hpp" target="_blank" rel="noopener">http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/os/linux/vm/os_linux.hpp</a><br><a href="http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/os/linux/vm/os_linux.cp" target="_blank" rel="noopener">http://hg.openjdk.java.net/jdk7/jdk7/hotspot/file/81d815b05abb/src/os/linux/vm/os_linux.cp</a></p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://segmentfault.com/a/1190000008420938" target="_blank" rel="noopener">浅谈Java并发编程系列（八）—— LockSupport原理剖析</a></li>
+<li><a href="https://blog.csdn.net/hengyunabc/article/details/27969613" target="_blank" rel="noopener">并行编程之条件变量（posix condition variables）</a></li>
+<li><a href="https://blog.csdn.net/hengyunabc/article/details/28126139" target="_blank" rel="noopener">Java的LockSupport.park()实现分析</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/ad8369f2/">java线程系列 JUC锁 06 阻塞原语LockSupport</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月18日 - 12:56</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/ad8369f2/" title="java线程系列 JUC锁 06 阻塞原语LockSupport">java线程系列 JUC锁 06 阻塞原语LockSupport</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/ad8369f2/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/阻塞原语/" rel="tag">  <i class="fa fa-tag"></i> 阻塞原语</a>
+          
+            <a href="/tags/LockSupport/" rel="tag">  <i class="fa fa-tag"></i> LockSupport</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/e7f5c004/" rel="next" title="AbstractQueuedSynchronizer">
+                <i class="fa fa-chevron-left"></i> AbstractQueuedSynchronizer
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/18178dca/" rel="prev" title="java线程系列 JUC锁 07 ReentrantReadWriteLock">
+                java线程系列 JUC锁 07 ReentrantReadWriteLock <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-用法简介"><span class="nav-text">1. 用法简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#demo1"><span class="nav-text">demo1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#demo2"><span class="nav-text">demo2</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-源码分析"><span class="nav-text">2. 源码分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-底层实现原理"><span class="nav-text">3. 底层实现原理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#HotSpot-里-park-unpark-的实现"><span class="nav-text">HotSpot 里 park/unpark 的实现</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/ad8369f2/";
+        this.page.identifier = "posts/ad8369f2/";
+        this.page.title = 'java线程系列 JUC锁 06 阻塞原语LockSupport';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

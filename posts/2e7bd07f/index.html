@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。 除了强引用外，Java还引入了SoftReference，WeakReference，PhantomReference">
+<meta name="keywords" content="引用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java Reference详解">
+<meta property="og:url" content="http://fengxiutianya.top/posts/2e7bd07f/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。 除了强引用外，Java还引入了SoftReference，WeakReference，PhantomReference">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://static.oschina.net/uploads/img/201701/21153037_ubGO.png">
+<meta property="og:image" content="https://static.oschina.net/uploads/img/201701/21165610_kkb9.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java Reference详解">
+<meta name="twitter:description" content="概述Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。 除了强引用外，Java还引入了SoftReference，WeakReference，PhantomReference">
+<meta name="twitter:image" content="https://static.oschina.net/uploads/img/201701/21153037_ubGO.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/2e7bd07f/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java Reference详解 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/2e7bd07f/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java Reference详解
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-04 10:25:00" itemprop="dateCreated datePublished" datetime="2019-01-04T10:25:00+08:00">2019-01-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/jvm/引用/" itemprop="url" rel="index"><span itemprop="name">引用</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/2e7bd07f/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/2e7bd07f/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/2e7bd07f/" class="leancloud_visitors" data-flag-title="Java Reference详解">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">9 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>Java引用体系中我们最熟悉的就是强引用类型，如 A a= new A();这是我们经常说的强引用StrongReference，jvm gc时会检测对象是否存在强引用，如果存在由根对象对其有传递的强引用，则不会对其进行回收，即使内存不足抛出OutOfMemoryError。</p>
+<p>除了强引用外，Java还引入了SoftReference，WeakReference，PhantomReference，FinalReference ，这些类放在java.lang.ref包下，类的继承体系如下图。Java额外引入这个四种类型引用主要目的是在jvm 在gc时，按照引用类型的不同，在回收时采用不同的逻辑。可以把这些引用看作是对对象的一层包裹，jvm根据外层不同的包裹，对其包裹的对象采用不同的回收策略，或特殊逻辑处理。 这几种类型的引用主要在jvm内存缓存、资源释放、对象可达性事件处理等场景会用到。</p>
+<p><img src="https://static.oschina.net/uploads/img/201701/21153037_ubGO.png" alt="输入图片说明"></p>
+<p>本篇文章主要讲解前面三种SoftReference，WeakReference和PhantomReference的使用，以及ReferenceQueue的使用。至于FinalRefeence会在另一篇文章中讲解。<br><a id="more"></a><br>主要内容如下</p>
+<ol>
+<li>对象可达性判断</li>
+<li>ReferenceQueue 简介</li>
+<li>SoftReference简介及使用</li>
+<li>WeakReference简介及使用</li>
+<li>PhantomReference简介及使用</li>
+<li>总结</li>
+</ol>
+<p><strong>本文名称使用说明</strong>名称说明下：Reference指代引用对象本身，Referent指代被引用对象，下文介绍会以Reference，Referent形式出现。 </p>
+<h3 id="1-对象可达性判断"><a href="#1-对象可达性判断" class="headerlink" title="1. 对象可达性判断"></a>1. 对象可达性判断</h3><p>jvm gc时，判断一个对象是否存在引用时，都是从根结合引用(Root Set of References)开始去标识,往往到达一个对象的引用路径会存在多条，如下图。 <img src="https://static.oschina.net/uploads/img/201701/21165610_kkb9.png" alt="输入图片说明"></p>
+<p>那么 垃圾回收时会依据两个原则来判断对象的可达性：</p>
+<ul>
+<li>单一路径中，以最弱的引用为准</li>
+<li>多路径中，以最强的引用为准</li>
+</ul>
+<p>例如Obj4的引用，存在3个路径:1-&gt;6、2-&gt;5、3-&gt;4, 那么从根对象到Obj4最强的引用是2-&gt;5，因为它们都是强引用。如果仅仅存在一个路径对Obj4有引用时，比如现在只剩1-&gt;6,那么根对象到Obj4的引用就是以最弱的为准，就是SoftReference引用,Obj4就是softly-reachable对象。如果是WeakReference引用，就称作weakly-reachable对象。只要一个对象是强引用可达，那么这个对象就不会被gc，即使发生OOM也不会回收这个对象。</p>
+<h3 id="2-ReferenceQueue-简介"><a href="#2-ReferenceQueue-简介" class="headerlink" title="2. ReferenceQueue 简介"></a>2. ReferenceQueue 简介</h3><p>引用队列，在检测到适当的可到达性更改后，即Referent对象的可达性发生适当的改变时，垃圾回收器将已注册的引用对象reference添加到该队列中。</p>
+<p>简单用下面代码来说明</p>
+<pre><code class="java">Object object = new Object();
+ReferenceQueue  queue = new ReferenceQueue();
+SoftReference&lt;Objecct&gt; soft = new SoftReference&lt;&gt;(object,queue);
+object = null;
+Systen.gc();
+//休眠一会，等待gc完成
+Thread.sleep(100);
+System.out.println(queue.poll() == soft);
+System.out.println(soft.get() == null)
+</code></pre>
+<p>输出结果：</p>
+<pre><code class="java">true
+true
+</code></pre>
+<p>结果分析：</p>
+<p>对应上面第一句话，就是说当soft引用对象包含的object对象被gc之后，其可达性就会发生改变，同时会将soft对象注册到queue这个引用队列中。可以使用poll()这个方法取出被所有可达性改变的引用对象。</p>
+<p>ReferenceQueue实现了一个队列的入队(enqueue)和出队(poll,remove)操作，内部元素就是泛型的Reference，并且Queue的实现，是由Reference自身的链表结构( 单向循环链表 )所实现的。</p>
+<p>ReferenceQueue名义上是一个队列，但实际内部并非有实际的存储结构，它的存储是依赖于内部节点之间的关系来表达。可以理解为queue是一个类似于链表的结构，这里的节点其实就是reference本身。可以理解为queue为一个链表的容器，其自己仅存储当前的head节点，而后面的节点由每个reference节点自己通过next来保持即可。</p>
+<p>具体源码分析可以参考这个网站：<a href="http://www.importnew.com/26250.html" target="_blank" rel="noopener">ReferenceQueue源码分析参考</a></p>
+<p>因此可以看出，当reference与referenQueue联合使用的主要作用就是当reference指向的referent回收时，提供一种通知机制，通过queue取到这些reference，来做额外的处理工作。当然，如果我们不需要这种通知机制，在创建Reference对象时不传入queue对象即可。</p>
+<h3 id="3-SoftReference简介及使用"><a href="#3-SoftReference简介及使用" class="headerlink" title="3. SoftReference简介及使用"></a>3. SoftReference简介及使用</h3><p>根据上面我们讲的对象可达性原理，我们把一个对象存在根对象对其有直接或间接的SoftReference，并没有其他强引用路径，我们把该对象成为softly-reachable对象。JVM保证在抛出OutOfMemoryError前会回收这些softly-reachable对象。JVM会根据当前内存的情况来决定是否回收softly-reachable对象，但只要referent有强引用存在，该referent就一定不会被清理，因此SoftReference适合用来实现memory-sensitive caches。</p>
+<p>可见，SoftReference在一定程度上会影响JVM GC的，例如softly-reachable对应的referent多次垃圾回收仍然不满足释放条件，那么它会停留在heap old区，占据很大部分空间，在JVM没有抛出OutOfMemoryError前，它有可能会导致频繁的Full GC。</p>
+<p>下面是我使用SoftReference做的一个简单的缓存图片的测试</p>
+<pre><code class="java">public class SoftReferenceImageTest {
+    public static void main(String[] args) throws IOException {
+        testImageLoad();
+    }
+
+    public static void testImageLoad() throws IOException {
+        String s = &quot;xmind.png&quot;;
+        HashMap&lt;String, SoftReference&lt;byte[]&gt;&gt; map = new HashMap&lt;&gt;(100);
+        for (int i = 0; i &lt; 100; i++) {
+            FileInputStream inputStream = new FileInputStream(s);
+            byte[] bytes = new byte[(int) inputStream.getChannel().size()];
+            while (inputStream.read(bytes) &gt; 0) ;
+            inputStream.close();
+            map.put(s + i, new SoftReference&lt;byte[]&gt;(bytes));
+        }
+        for (int i = 0; i &lt; map.size(); i++) {
+
+            Optional.ofNullable(map.get(s + i))
+                    .filter(softReference -&gt; softReference.get() != null)
+                    .ifPresent(softReference -&gt; {
+                        System.out.println(&quot;ok&quot;);
+                    });
+        }
+
+    }
+}
+</code></pre>
+<p>运行这段代码时，加上jvm参数(<strong>-Xms10M -Xmx10M -Xmn5M -XX:+PrintGCDetails</strong>)</p>
+<p>运行结果为空，因为我加载的图片是5M，而分配给运行时的jvm是10M,所以每次加载完一张图片之后，在下一次加载就会清理这个SoftReference对象，因此最后得到的结果为空。</p>
+<h3 id="4-WeakReference简介及使用"><a href="#4-WeakReference简介及使用" class="headerlink" title="4. WeakReference简介及使用"></a>4. WeakReference简介及使用</h3><p>当一个对象被WeakReference引用时，处于weakly-reachable状态时，只要发生GC时，就会被清除，同时会把WeakReference注册到引用队列中(如果存在的话)。 WeakReference不阻碍或影响它们对应的referent被终结(finalized)和回收(reclaimed)，因此，WeakReference经常被用作实现规范映射(canonicalizing mappings)。相比SoftReference来说，WeakReference对JVM GC几乎是没有影响的。</p>
+<p>下面是一个简单的demo</p>
+<pre><code class="java">public class WeakReferenceTest {
+    public static void main(String[] args) {
+        weak();
+    }
+
+    public static void weak() {
+        ReferenceQueue&lt;Integer&gt; referenceQueue = new ReferenceQueue&lt;&gt;();
+        WeakReference&lt;Integer&gt; weak = new WeakReference&lt;Integer&gt;(new Integer(100), 
+                                                                 referenceQueue);
+        System.out.println(&quot;GC 前===&gt;&quot; + weak.get());
+        System.gc();
+        System.out.println(&quot;GC 后===&gt;&quot; + weak.get());
+
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(referenceQueue.poll() == weak);
+    }
+}
+</code></pre>
+<p>运行结果</p>
+<pre><code class="java">GC 前===&gt;100
+GC 后===&gt;null
+true
+</code></pre>
+<p>结果分析：</p>
+<p>从上面我么可以看到，WeakReference所对应的Referent对象被回收了，因此验证了只要发生gc，weakly-reachable对象就会被gc回收。</p>
+<p>另外可以查看这篇文章，仔细说明jdk中WeakHashMap在Tomact中使用的场景<a href="https://blog.csdn.net/kaka0509/article/details/73459419" target="_blank" rel="noopener">WeakHashMap使用场景</a></p>
+<h3 id="5-PhantomReference简介及使用"><a href="#5-PhantomReference简介及使用" class="headerlink" title="5. PhantomReference简介及使用"></a>5. PhantomReference简介及使用</h3><p> PhantomReference 不同于WeakReference、SoftReference，它存在的意义不是为了获取referent,因为你也永远获取不到，因为它的get如下</p>
+<pre><code class="java"> public T get() {
+        return null;
+ }
+</code></pre>
+<p>PhantomReference主要作为其指向的referent被回收时的一种通知机制,它就是利用上文讲到的ReferenceQueue实现的。当referent被gc回收时，JVM自动把PhantomReference对象(reference)本身加入到ReferenceQueue中，像发出信号通知一样，表明该reference指向的referent被回收。然后可以通过去queue中取到reference，此时说明其指向的referent已经被回收，可以通过这个通知机制来做额外的清场工作。 因此有些情况可以用PhantomReference 代替finalize()，做资源释放更明智。</p>
+<p>下面举个例子，用PhantomReference来自动关闭文件流。</p>
+<pre><code class="java">public class ResourcePhantomReference&lt;T&gt; extends PhantomReference&lt;T&gt; {
+
+    private List&lt;Closeable&gt; closeables;
+
+    public ResourcePhantomReference(T referent, ReferenceQueue&lt;? super T&gt; q, List&lt;Closeable&gt; resource) {
+        super(referent, q);
+        closeables = resource;
+    }
+
+    public void cleanUp() {
+        if (closeables == null || closeables.size() == 0)
+            return;
+        for (Closeable closeable : closeables) {
+            try {
+                closeable.close();
+                System.out.println(&quot;clean up:&quot;+closeable);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+</code></pre>
+<pre><code class="java">public class ResourceCloseDeamon extends Thread {
+
+    private static ReferenceQueue QUEUE = new ReferenceQueue();
+
+    //保持对reference的引用,防止reference本身被回收
+    private static List&lt;Reference&gt; references=new ArrayList&lt;&gt;();
+    @Override
+    public void run() {
+        this.setName(&quot;ResourceCloseDeamon&quot;);
+        while (true) {
+            try {
+                ResourcePhantomReference reference = (ResourcePhantomReference) QUEUE.remove();
+                reference.cleanUp();
+                references.remove(reference);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public static void register(Object referent, List&lt;Closeable&gt; closeables) {
+        references.add(new ResourcePhantomReference(referent,QUEUE,closeables));
+    }
+
+
+}
+</code></pre>
+<pre><code class="java">public class FileOperation {
+
+    private FileOutputStream outputStream;
+
+    private FileInputStream inputStream;
+
+    public FileOperation(FileInputStream inputStream, FileOutputStream outputStream) {
+        this.outputStream = outputStream;
+        this.inputStream = inputStream;
+    }
+
+    public void operate() {
+        try {
+            inputStream.getChannel().transferTo(0, inputStream.getChannel().size(), outputStream.getChannel());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+}
+</code></pre>
+<p>测试代码：</p>
+<pre><code class="java">public class PhantomTest {
+
+    public static void main(String[] args) throws Exception {
+        //打开回收
+        ResourceCloseDeamon deamon = new ResourceCloseDeamon();
+        deamon.setDaemon(true);
+        deamon.start();
+
+        // touch a.txt b.txt
+        // echo &quot;hello&quot; &gt; a.txt
+
+        //保留对象,防止gc把stream回收掉,其不到演示效果
+        List&lt;Closeable&gt; all=new ArrayList&lt;&gt;();
+        FileInputStream inputStream;
+        FileOutputStream outputStream;
+
+        for (int i = 0; i &lt; 100000; i++) {
+            inputStream = new FileInputStream(&quot;/Users/robin/a.txt&quot;);
+            outputStream = new FileOutputStream(&quot;/Users/robin/b.txt&quot;);
+            FileOperation operation = new FileOperation(inputStream, outputStream);
+            operation.operate();
+            TimeUnit.MILLISECONDS.sleep(100);
+
+            List&lt;Closeable&gt;closeables=new ArrayList&lt;&gt;();
+            closeables.add(inputStream);
+            closeables.add(outputStream);
+            all.addAll(closeables);
+            ResourceCloseDeamon.register(operation,closeables);
+            //用下面命令查看文件句柄,如果把上面register注释掉,就会发现句柄数量不断上升
+            //jps | grep PhantomTest | awk &#39;{print $1}&#39; |head -1 | xargs  lsof -p  | grep /User/robin
+            System.gc();
+
+        }
+
+
+    }
+}
+</code></pre>
+<p>运行上面的代码，通过jps | grep PhantomTest | awk ‘{print $1}’ |head -1 | xargs lsof -p | grep /User/robin ｜ wc -l 可以看到句柄没有上升，而去掉ResourceCloseDeamon.register(operation,closeables);时，句柄就不会被释放。</p>
+<p>PhantomReference使用时一定要传一个referenceQueue,当然也可以传null,但是这样就毫无意义了。因为PhantomReference的get结果为null,如果在把queue设为null,那么在其指向的referent被回收时，reference本身将永远不会可能被加入队列中，这里我们可以看ReferenceQueue的源码。</p>
+<h3 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h3><h4 id="引用类型对比"><a href="#引用类型对比" class="headerlink" title="引用类型对比"></a>引用类型对比</h4><table>
+<thead>
+<tr>
+<th>序号</th>
+<th>引用类型</th>
+<th>取得目标对象方式</th>
+<th>垃圾回收条件</th>
+<th>是否可能内存泄漏</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>强引用</td>
+<td>直接调用</td>
+<td>不回收</td>
+<td>可能</td>
+</tr>
+<tr>
+<td>2</td>
+<td>软引用</td>
+<td>通过 get()方法</td>
+<td>视内存情况回收</td>
+<td>不可能</td>
+</tr>
+<tr>
+<td>3</td>
+<td>弱引用</td>
+<td>通过 get()方法</td>
+<td>永远回收</td>
+<td>不可能</td>
+</tr>
+<tr>
+<td>4</td>
+<td>虚引用</td>
+<td>无法取得</td>
+<td>不回收</td>
+<td>可能</td>
+</tr>
+</tbody>
+</table>
+<p>通过对SoftReference，WeakReference，PhantomReference 的介绍，可以看出JDK提供这些类型的reference 主要是用来和GC交互的，根据reference的不同，让JVM采用不同策略来进行对对象的回收(reclaim)。softly-reachable的referent在保证在OutOfMemoryError之前回收对象，weakly-reachable的referent在发生GC时就会被回收,同时这些reference和referenceQueue在一起提供通知机制，PhantomReference的作用就是仅仅就是提供对象回收通知机制，Finalizer借助这种机制实现referent的finalize执行，SoftReference、WeakReference也可以配合referenceQueue使用，实现对象回收通知机制。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.jianshu.com/p/147793693edc" target="_blank" rel="noopener">Java中的四种引用类型</a></p>
+<p><a href="https://my.oschina.net/robinyao/blog/829983" target="_blank" rel="noopener">Java Reference详解</a></p>
+<p><a href="http://www.importnew.com/26250.html" target="_blank" rel="noopener">Reference、ReferenceQueue 详解</a></p>
+<p><a href="https://www.ibm.com/developerworks/cn/java/j-jtp11225/" target="_blank" rel="noopener">用弱引用堵住内存泄漏</a></p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/53c15109/" rel="bookmark">JVM源码分析之 FinalReference 完全解读</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/2e7bd07f/">Java Reference详解</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月04日 - 10:25</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/2e7bd07f/" title="Java Reference详解">Java Reference详解</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/2e7bd07f/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/引用/" rel="tag">  <i class="fa fa-tag"></i> 引用</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/53c15109/" rel="next" title="JVM源码分析之 FinalReference 完全解读">
+                <i class="fa fa-chevron-left"></i> JVM源码分析之 FinalReference 完全解读
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/931a340/" rel="prev" title="Java CompletableFuture 详解">
+                Java CompletableFuture 详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-对象可达性判断"><span class="nav-text">1. 对象可达性判断</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-ReferenceQueue-简介"><span class="nav-text">2. ReferenceQueue 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-SoftReference简介及使用"><span class="nav-text">3. SoftReference简介及使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-WeakReference简介及使用"><span class="nav-text">4. WeakReference简介及使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-PhantomReference简介及使用"><span class="nav-text">5. PhantomReference简介及使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-总结"><span class="nav-text">6. 总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#引用类型对比"><span class="nav-text">引用类型对比</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/2e7bd07f/";
+        this.page.identifier = "posts/2e7bd07f/";
+        this.page.title = 'Java Reference详解';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

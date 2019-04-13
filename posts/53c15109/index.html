@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述Java对象引用体系除了强引用之外，出于对性能、可扩展性等方面考虑还特地实现了4种其他引用：SoftReference、WeakReference、PhantomReference、FinalReference，本文主要想讲的是FinalReference，因为当使用内存分析工具，比如zprofiler、mat等，分析一些oom的heap时，经常能看到 java.lang.ref.Finali">
+<meta name="keywords" content="引用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM源码分析之 FinalReference 完全解读">
+<meta property="og:url" content="http://fengxiutianya.top/posts/53c15109/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述Java对象引用体系除了强引用之外，出于对性能、可扩展性等方面考虑还特地实现了4种其他引用：SoftReference、WeakReference、PhantomReference、FinalReference，本文主要想讲的是FinalReference，因为当使用内存分析工具，比如zprofiler、mat等，分析一些oom的heap时，经常能看到 java.lang.ref.Finali">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JVM源码分析之 FinalReference 完全解读">
+<meta name="twitter:description" content="概述Java对象引用体系除了强引用之外，出于对性能、可扩展性等方面考虑还特地实现了4种其他引用：SoftReference、WeakReference、PhantomReference、FinalReference，本文主要想讲的是FinalReference，因为当使用内存分析工具，比如zprofiler、mat等，分析一些oom的heap时，经常能看到 java.lang.ref.Finali">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/53c15109/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>JVM源码分析之 FinalReference 完全解读 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/53c15109/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">JVM源码分析之 FinalReference 完全解读
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-04 10:24:00" itemprop="dateCreated datePublished" datetime="2019-01-04T10:24:00+08:00">2019-01-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/jvm/" itemprop="url" rel="index"><span itemprop="name">jvm</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/jvm/引用/" itemprop="url" rel="index"><span itemprop="name">引用</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/53c15109/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/53c15109/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/53c15109/" class="leancloud_visitors" data-flag-title="JVM源码分析之 FinalReference 完全解读">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>Java对象引用体系除了强引用之外，出于对性能、可扩展性等方面考虑还特地实现了4种其他引用：<code>SoftReference</code>、<code>WeakReference</code>、<code>PhantomReference</code>、<code>FinalReference</code>，本文主要想讲的是<code>FinalReference</code>，因为当使用内存分析工具，比如zprofiler、mat等，分析一些oom的heap时，经常能看到 <code>java.lang.ref.Finalizer</code>占用的内存大小远远排在前面，而这个类占用的内存大小又和我们这次的主角<code>FinalReference</code>有着密不可分的关系。</p>
+<p><code>FinalReference</code>及关联的内容可能给我们留下如下印象：</p>
+<ul>
+<li>自己代码里从没有使用过；</li>
+<li>线程dump之后，会看到一个叫做<code>Finalizer</code>的Java线程；</li>
+<li>偶尔能注意到<code>java.lang.ref.Finalizer</code>的存在；</li>
+<li>在类里可能会写<code>finalize</code>方法。</li>
+</ul>
+<p>那<code>FinalReference</code>到底存在的意义是什么，以怎样的形式和我们的代码相关联呢？这是本文要理清的问题。<br><a id="more"></a></p>
+<h2 id="JDK中的FinalReference"><a href="#JDK中的FinalReference" class="headerlink" title="JDK中的FinalReference"></a>JDK中的FinalReference</h2><p>首先我们看看<code>FinalReference</code>在JDK里的实现：</p>
+<pre><code>class FinalReference&amp;lt;T&amp;gt; extends Reference&amp;lt;T&amp;gt; {
+
+    public FinalReference(T referent, ReferenceQueue&amp;lt;? super T&amp;gt; q) {
+        super(referent, q);
+    }
+
+}
+</code></pre><p>大家应该注意到了类访问权限是package的，这也就意味着我们不能直接去对其进行扩展，但是JDK里对此类进行了扩展实现<code>java.lang.ref.Finalizer</code>，这个类在概述里提到的过，而此类的访问权限也是package的，并且是final的，意味着它不能再被扩展了，接下来的重点我们围绕<code>java.lang.ref.Finalizer</code>展开。(PS：后续讲的<code>Finalizer</code>其实也是在说<code>FinalReference</code>。)</p>
+<pre><code>final class Finalizer extends FinalReference { 
+   /* Package-private; must be in same package as the 
+   Referenceclass */
+
+   /* A native method that invokes an arbitrary object&#39;s  
+   finalize method is  required since the finalize method is 
+   protected*/
+    static native void invokeFinalizeMethod(Object o) throws Throwable;
+
+    private static ReferenceQueue queue = new ReferenceQueue();
+    private static Finalizer unfinalized = null;
+    private static final Object lock = new Object();
+
+    private Finalizer
+        next = null,
+        prev = null;
+
+    private Finalizer(Object finalizee) {
+        super(finalizee, queue);
+        add();
+    }
+
+    /* Invoked by VM */
+    static void register(Object finalizee) {
+        new Finalizer(finalizee);
+    }  
+
+    private void add() {
+        synchronized (lock) {
+            if (unfinalized != null) {
+                this.next = unfinalized;
+                unfinalized.prev = this;
+            }
+            unfinalized = this;
+        }
+    }
+
+    ...
+
+   }    
+</code></pre><h3 id="Finalizer的构造函数"><a href="#Finalizer的构造函数" class="headerlink" title="Finalizer的构造函数"></a>Finalizer的构造函数</h3><p><code>Finalizer</code>的构造函数提供了以下几个关键信息：</p>
+<ul>
+<li><code>private</code>：意味着我们无法在当前类之外构建这类的对象；</li>
+<li><code>finalizee</code>参数：<code>FinalReference</code>指向的对象引用；</li>
+<li>调用<code>add</code>方法：将当前对象插入到<code>Finalizer</code>对象链里，链里的对象和<code>Finalizer</code>类静态关联。言外之意是在这个链里的对象都无法被GC掉，除非将这种引用关系剥离（因为<code>Finalizer</code>类无法被unload）。</li>
+</ul>
+<p>虽然外面无法创建<code>Finalizer</code>对象，但是它有一个名为<code>register</code>的静态方法，该方法可以创建这种对象，同时将这个对象加入到<code>Finalizer</code>对象链里，这个方法是被vm调用的，那么问题来了，vm在什么情况下会调用这个方法呢？</p>
+<h2 id="Finalizer对象何时被注册到Finalizer对象链里"><a href="#Finalizer对象何时被注册到Finalizer对象链里" class="headerlink" title="Finalizer对象何时被注册到Finalizer对象链里"></a>Finalizer对象何时被注册到Finalizer对象链里</h2><p>类的修饰有很多，比如final，abstract，public等，如果某个类用final修饰，我们就说这个类是final类，上面列的都是语法层面我们可以显式指定的，在JVM里其实还会给类标记一些其他符号，比如<code>finalizer</code>，表示这个类是一个<code>finalizer</code>类（为了和<code>java.lang.ref.Fianlizer</code>类区分，下文在提到的<code>finalizer</code>类时会简称为f类），GC在处理这种类的对象时要做一些特殊的处理，如在这个对象被回收之前会调用它的<code>finalize</code>方法。</p>
+<h4 id="如何判断一个类是不是一个final类"><a href="#如何判断一个类是不是一个final类" class="headerlink" title="如何判断一个类是不是一个final类"></a>如何判断一个类是不是一个final类</h4><p>在讲这个问题之前，我们先来看下<code>java.lang.Object</code>里的一个方法</p>
+<pre><code>    protected void finalize() throws Throwable { }
+</code></pre><p>在<code>Object</code>类里定义了一个名为<code>finalize</code>的空方法，这意味着Java里的所有类都会继承这个方法，甚至可以覆写该方法，并且根据方法覆写原则，如果子类覆盖此方法，方法访问权限至少protected级别的，这样其子类就算没有覆写此方法也会继承此方法。</p>
+<p>而判断当前类是否是f类的标准并不仅仅是当前类是否含有一个参数为空，返回值为void的<code>finalize</code>方法，还要求<code>finalize方法必须非空</code>，因此Object类虽然含有一个<code>finalize</code>方法，但它并不是f类，Object的对象在被GC回收时其实并不会调用它的<code>finalize</code>方法。</p>
+<p>需要注意的是，类在加载过程中其实就已经被标记为是否为f类了。（JVM在类加载的时候会遍历当前类的所有方法，包括父类的方法，只要有一个参数为空且返回void的非空<code>finalize</code>方法就认为这个类是f类。）</p>
+<h3 id="f类的对象何时传到Finalizer-register方法"><a href="#f类的对象何时传到Finalizer-register方法" class="headerlink" title="f类的对象何时传到Finalizer.register方法"></a>f类的对象何时传到Finalizer.register方法</h3><p>对象的创建其实是被拆分成多个步骤的，比如<code>A a=new A(2)</code>这样一条语句对应的字节码如下：</p>
+<pre><code>0: new           #1                  // class A
+3: dup
+4: iconst_2
+5: invokespecial #11                 // Method &quot;&amp;lt;init&amp;gt;&quot;:(I)V
+</code></pre><p>先执行new分配好对象空间，然后再执行invokespecial调用构造函数，JVM里其实可以让用户在这两个时机中选择一个，将当前对象传递给<code>Finalizer.register</code>方法来注册到<code>Finalizer</code>对象链里，这个选择取决于是否设置了<code>RegisterFinalizersAtInit</code>这个vm参数，默认值为true，也就是在构造函数返回之前调用<code>Finalizer.register</code>方法，如果通过<code>-XX:-RegisterFinalizersAtInit</code>关闭了该参数，那将在对象空间分配好之后将这个对象注册进去。</p>
+<p>另外需要提醒的是，当我们通过clone的方式复制一个对象时，如果当前类是一个f类，那么在clone完成时将调用<code>Finalizer.register</code>方法进行注册。</p>
+<h3 id="hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer-register"><a href="#hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer-register" class="headerlink" title="hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer.register"></a>hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer.register</h3><p>这个实现比较有意思，在这简单提一下，我们知道执行一个构造函数时，会去调用父类的构造函数，主要是为了初始化继承自父类的属性，那么任何一个对象的初始化最终都会调用到<code>Object</code>的空构造函数里（任何空的构造函数其实并不空，会含有三条字节码指令，如下代码所示），为了不对所有类的构造函数都埋点调用<code>Finalizer.register</code>方法，hotspot的实现是，在初始化<code>Object</code>类时将构造函数里的<code>return</code>指令替换为<code>_return_register_finalizer</code>指令，该指令并不是标准的字节码指令，是hotspot扩展的指令，这样在处理该指令时调用<code>Finalizer.register</code>方法，以很小的侵入性代价完美地解决了这个问题。</p>
+<pre><code>0: aload_0
+1: invokespecial #21                 // Method java/lang/Object.&quot;&amp;lt;init&amp;gt;&quot;:()V
+4: return
+</code></pre><h2 id="f类对象的GC回收"><a href="#f类对象的GC回收" class="headerlink" title="f类对象的GC回收"></a>f类对象的GC回收</h2><h3 id="FinalizerThread线程"><a href="#FinalizerThread线程" class="headerlink" title="FinalizerThread线程"></a>FinalizerThread线程</h3><p>在<code>Finalizer</code>类的<code>clinit</code>方法（静态块）里，我们看到它会创建一个<code>FinalizerThread</code>守护线程，这个线程的优先级并不是最高的，意味着在CPU很紧张的情况下其被调度的优先级可能会受到影响</p>
+<pre><code>  private static class FinalizerThread extends Thread {
+        private volatile boolean running;
+        FinalizerThread(ThreadGroup g) {
+            super(g, &quot;Finalizer&quot;);
+        }
+        public void run() {
+            if (running)
+                return;
+            running = true;
+            for (;;) {
+                try {
+                    Finalizer f = (Finalizer)queue.remove();
+                    f.runFinalizer();
+                } catch (InterruptedException x) {
+                    continue;
+                }
+            }
+        }
+    }
+
+    static {
+        ThreadGroup tg = Thread.currentThread().getThreadGroup();
+        for (ThreadGroup tgn = tg;
+             tgn != null;
+             tg = tgn, tgn = tg.getParent());
+        Thread finalizer = new FinalizerThread(tg);
+        finalizer.setPriority(Thread.MAX_PRIORITY - 2);
+        finalizer.setDaemon(true);
+        finalizer.start();
+    }
+</code></pre><p>这个线程用来从queue里获取<code>Finalizer</code>对象，然后执行该对象的<code>runFinalizer</code>方法，该方法会将<code>Finalizer</code>对象从<code>Finalizer</code>对象链里剥离出来，这样意味着下次GC发生时就可以将其关联的f对象回收了，最后将这个<code>Finalizer</code>对象关联的f对象传给一个native方法<code>invokeFinalizeMethod</code></p>
+<pre><code>private void runFinalizer() {
+        synchronized (this) {
+            if (hasBeenFinalized()) return;
+            remove();
+        }
+        try {
+            Object finalizee = this.get();
+            if (finalizee != null &amp;&amp; !(finalizee instanceof java.lang.Enum)) {
+                invokeFinalizeMethod(finalizee);
+                /* Clear stack slot containing this variable, to decrease
+                   the chances of false retention with a conservative GC */
+                finalizee = null;
+            }
+        } catch (Throwable x) { }
+        super.clear();
+    }
+
+ static native void invokeFinalizeMethod(Object o) throws Throwable;
+</code></pre><p>其实<code>invokeFinalizeMethod</code>方法就是调了这个f对象的finalize方法，看到这里大家应该恍然大悟了，整个过程都串起来了。</p>
+<pre><code>JNIEXPORT void JNICALL
+Java_java_lang_ref_Finalizer_invokeFinalizeMethod(JNIEnv *env, jclass clazz,
+                                                  jobject ob)
+{
+    jclass cls;
+    jmethodID mid;
+
+    cls = (*env)-&amp;gt;GetObjectClass(env, ob);
+    if (cls == NULL) return;
+    mid = (*env)-&amp;gt;GetMethodID(env, cls, &quot;finalize&quot;, &quot;()V&quot;);
+    if (mid == NULL) return;
+    (*env)-&amp;gt;CallVoidMethod(env, ob, mid);
+}
+</code></pre><h3 id="f对象的finalize方法抛出异常会导致FinalizeThread退出吗"><a href="#f对象的finalize方法抛出异常会导致FinalizeThread退出吗" class="headerlink" title="f对象的finalize方法抛出异常会导致FinalizeThread退出吗"></a>f对象的finalize方法抛出异常会导致FinalizeThread退出吗</h3><p>不知道大家有没有想过如果f对象的<code>finalize</code>方法抛了一个没捕获的异常，这个<code>FinalizerThread</code>会不会退出呢，细心的读者看上面的代码其实就可以找到答案，<code>runFinalizer</code>方法里对<code>Throwable</code>的异常进行了捕获，因此不可能出现<code>FinalizerThread</code>因异常未捕获而退出的情况。</p>
+<h3 id="f对象的finalize方法会执行多次吗"><a href="#f对象的finalize方法会执行多次吗" class="headerlink" title="f对象的finalize方法会执行多次吗"></a>f对象的finalize方法会执行多次吗</h3><p>如果我们在f对象的<code>finalize</code>方法里重新将当前对象赋值，变成可达对象，当这个f对象再次变成不可达时还会执行<code>finalize</code>方法吗？答案是否定的，因为在执行完第一次<code>finalize</code>方法后，这个f对象已经和之前的<code>Finalizer</code>对象剥离了，也就是下次GC的时候不会再发现<code>Finalizer</code>对象指向该f对象了，自然也就不会调用这个f对象的<code>finalize</code>方法了。</p>
+<h3 id="Finalizer对象何时被放到ReferenceQueue里"><a href="#Finalizer对象何时被放到ReferenceQueue里" class="headerlink" title="Finalizer对象何时被放到ReferenceQueue里"></a>Finalizer对象何时被放到ReferenceQueue里</h3><p>除了这里接下来要介绍的环节之外，整个过程大家应该都比较清楚了。</p>
+<p>当GC发生时，GC算法会判断f类对象是不是只被<code>Finalizer</code>类引用（f类对象被<code>Finalizer</code>对象引用，然后放到<code>Finalizer</code>对象链里），如果这个类仅仅被<code>Finalizer</code>对象引用，说明这个对象在不久的将来会被回收，现在可以执行它的<code>finalize</code>方法了，于是会将这个<code>Finalizer</code>对象放到<code>Finalizer</code>类的<code>ReferenceQueue</code>里，但是这个f类对象其实并没有被回收，因为<code>Finalizer</code>这个类还对它们保持引用，在GC完成之前，JVM会调用<code>ReferenceQueue</code>中lock对象的notify方法（当<code>ReferenceQueue</code>为空时，<code>FinalizerThread</code>线程会调用<code>ReferenceQueue</code>的lock对象的wait方法直到被JVM唤醒），此时就会执行上面FinalizeThread线程里看到的其他逻辑了。</p>
+<h2 id="Finalizer导致的内存泄露"><a href="#Finalizer导致的内存泄露" class="headerlink" title="Finalizer导致的内存泄露"></a>Finalizer导致的内存泄露</h2><p>这里举一个简单的例子，我们使用挺广的Socket通信，<code>SocksSocketImpl</code>的父类其实就实现了<code>finalize</code>方法:</p>
+<pre><code>/**
+ * Cleans up if the user forgets to close it.
+ */
+protected void finalize() throws IOException {
+    close();
+}
+</code></pre><p>其实这么做的主要目的是万一用户忘记关闭Socket，那么在这个对象被回收时能主动关闭Socket来释放一些系统资源，但是如果用户真的忘记关闭，那这些<code>socket</code>对象可能因为<code>FinalizeThread</code>迟迟没有执行这些<code>socket</code>对象的<code>finalize</code>方法，而导致内存泄露，这种问题我们碰到过多次，因此对于这类情况除了大家好好注意貌似没有什么更好的方法了，该做的事真不能省.</p>
+<h2 id="Finalizer的客观评价"><a href="#Finalizer的客观评价" class="headerlink" title="Finalizer的客观评价"></a>Finalizer的客观评价</h2><p>上面的过程基本对<code>Finalizer</code>的实现细节进行了完整剖析，Java里我们看到有构造函数，但是并没有看到析构函数一说，<code>Finalizer</code>其实是实现了析构函数的概念，我们在对象被回收前可以执行一些“收拾性”的逻辑，应该说是一个特殊场景的补充，但是这种概念的实现给f对象生命周期以及GC等带来了一些影响：</p>
+<ul>
+<li>f对象因为<code>Finalizer</code>的引用而变成了一个临时的强引用，即使没有其他的强引用，还是无法立即被回收；</li>
+<li>f对象至少经历两次GC才能被回收，因为只有在<code>FinalizerThread</code>执行完了f对象的<code>finalize</code>方法的情况下才有可能被下次GC回收，而有可能期间已经经历过多次GC了，但是一直还没执行f对象的<code>finalize</code>方法；</li>
+<li>CPU资源比较稀缺的情况下<code>FinalizerThread</code>线程有可能因为优先级比较低而延迟执行f对象的<code>finalize</code>方法；</li>
+<li>因为f对象的<code>finalize</code>方法迟迟没有执行，有可能会导致大部分f对象进入到old分代，此时容易引发old分代的GC，甚至Full GC，GC暂停时间明显变长；</li>
+<li>f对象的<code>finalize</code>方法被调用后，这个对象其实还并没有被回收，虽然可能在不久的将来会被回收。</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.infoq.cn/articles/jvm-source-code-analysis-finalreference" target="_blank" rel="noopener">JVM 源码分析之 FinalReference 完全解读</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/2e7bd07f/" rel="bookmark">Java Reference详解</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/53c15109/">JVM源码分析之 FinalReference 完全解读</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月04日 - 10:24</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/53c15109/" title="JVM源码分析之 FinalReference 完全解读">JVM源码分析之 FinalReference 完全解读</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/53c15109/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/引用/" rel="tag">  <i class="fa fa-tag"></i> 引用</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/190054bc/" rel="next" title="String、StringBuffer和StringBuilder对比">
+                <i class="fa fa-chevron-left"></i> String、StringBuffer和StringBuilder对比
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/2e7bd07f/" rel="prev" title="Java Reference详解">
+                Java Reference详解 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JDK中的FinalReference"><span class="nav-text">JDK中的FinalReference</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalizer的构造函数"><span class="nav-text">Finalizer的构造函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Finalizer对象何时被注册到Finalizer对象链里"><span class="nav-text">Finalizer对象何时被注册到Finalizer对象链里</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#如何判断一个类是不是一个final类"><span class="nav-text">如何判断一个类是不是一个final类</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#f类的对象何时传到Finalizer-register方法"><span class="nav-text">f类的对象何时传到Finalizer.register方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer-register"><span class="nav-text">hotspot如何实现f类对象在构造函数执行完毕后调用Finalizer.register</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#f类对象的GC回收"><span class="nav-text">f类对象的GC回收</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FinalizerThread线程"><span class="nav-text">FinalizerThread线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#f对象的finalize方法抛出异常会导致FinalizeThread退出吗"><span class="nav-text">f对象的finalize方法抛出异常会导致FinalizeThread退出吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#f对象的finalize方法会执行多次吗"><span class="nav-text">f对象的finalize方法会执行多次吗</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Finalizer对象何时被放到ReferenceQueue里"><span class="nav-text">Finalizer对象何时被放到ReferenceQueue里</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Finalizer导致的内存泄露"><span class="nav-text">Finalizer导致的内存泄露</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Finalizer的客观评价"><span class="nav-text">Finalizer的客观评价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/53c15109/";
+        this.page.identifier = "posts/53c15109/";
+        this.page.title = 'JVM源码分析之 FinalReference 完全解读';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

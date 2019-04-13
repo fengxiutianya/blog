@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述 前言 准备工作 CompleteableFuture基本使用 CompletableFuture 类使用示例前言Java 5 并发库主要关注于异步任务的处理，它采用了这样一种模式，producer 线程创建任务并且利用阻塞队列将其传递给任务的 consumer。这种模型在 Java 7 和 8 中进一步发展，并且开始支持另外一种风格的任务执行，那就是将任务的数据集分解为子集，每个子集都可以由">
+<meta name="keywords" content="JUC,Future">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java CompletableFuture 详解">
+<meta property="og:url" content="http://fengxiutianya.top/posts/931a340/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述 前言 准备工作 CompleteableFuture基本使用 CompletableFuture 类使用示例前言Java 5 并发库主要关注于异步任务的处理，它采用了这样一种模式，producer 线程创建任务并且利用阻塞队列将其传递给任务的 consumer。这种模型在 Java 7 和 8 中进一步发展，并且开始支持另外一种风格的任务执行，那就是将任务的数据集分解为子集，每个子集都可以由">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java CompletableFuture 详解">
+<meta name="twitter:description" content="概述 前言 准备工作 CompleteableFuture基本使用 CompletableFuture 类使用示例前言Java 5 并发库主要关注于异步任务的处理，它采用了这样一种模式，producer 线程创建任务并且利用阻塞队列将其传递给任务的 consumer。这种模型在 Java 7 和 8 中进一步发展，并且开始支持另外一种风格的任务执行，那就是将任务的数据集分解为子集，每个子集都可以由">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/931a340/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java CompletableFuture 详解 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/931a340/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java CompletableFuture 详解
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-04 16:49:00" itemprop="dateCreated datePublished" datetime="2019-01-04T16:49:00+08:00">2019-01-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/java8/" itemprop="url" rel="index"><span itemprop="name">java8</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/931a340/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/931a340/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/931a340/" class="leancloud_visitors" data-flag-title="Java CompletableFuture 详解">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">20k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">18 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>前言</li>
+<li>准备工作</li>
+<li>CompleteableFuture基本使用</li>
+<li>CompletableFuture 类使用示例<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3>Java 5 并发库主要关注于异步任务的处理，它采用了这样一种模式，producer 线程创建任务并且利用阻塞队列将其传递给任务的 consumer。这种模型在 Java 7 和 8 中进一步发展，并且开始支持另外一种风格的任务执行，那就是将任务的数据集分解为子集，每个子集都可以由独立且同质的子任务来负责处理。</li>
+</ol>
+<p>这种风格的基础库也就是 fork/join 框架，它允许程序员规定数据集该如何进行分割，并且支持将子任务提交到默认的标准线程池中，也就是通用的<strong>ForkJoinPool</strong>。Java 8 中，fork/join 并行功能借助并行流的机制变得更加具有可用性。但是，不是所有的问题都适合这种风格的并行处理：所处理的元素必须是独立的，数据集要足够大，并且在并行加速方面，每个元素的处理成本要足够高，这样才能补偿建立 fork/join 框架所消耗的成本。CompletableFuture 类则是 Java 8 在并行流方面的创新。<br><a id="more"></a></p>
+<h3 id="准备工作"><a href="#准备工作" class="headerlink" title="准备工作"></a>准备工作</h3><p>这里主要介绍下面我们需要使用的一些知识点，主要是为了是读者可以更好的理解。</p>
+<h4 id="异步计算"><a href="#异步计算" class="headerlink" title="异步计算"></a>异步计算</h4><p>所谓异步调用其实就是实现一个可无需等待被调用函数的返回值而让操作继续运行的方法。在 Java 语言中，简单的讲就是另启一个线程来完成调用中的部分计算，使调用继续运行或返回，而不需要等待计算结果。但调用者仍需要取线程的计算结果。</p>
+<h4 id="回调函数"><a href="#回调函数" class="headerlink" title="回调函数"></a>回调函数</h4><p>回调函数比较通用的解释是，它是一个通过函数指针调用的函数。如果你把函数的指针（地址）作为参数传递给另一个函数，当这个指针被用为调用它所指向的函数时，我们就说这是回调函数。回调函数不是由该函数的实现方直接调用，而是在特定的事件或条件发生时由另外一方调用的，用于对该事件或条件进行响应。</p>
+<p>回调函数的机制：</p>
+<ol>
+<li>定义一个回调函数；</li>
+<li>提供函数实现的一方在初始化时候，将回调函数的函数指针注册给调用者；</li>
+<li>当特定的事件或条件发生的时候，调用者使用函数指针调用回调函数对事件进行处理。</li>
+</ol>
+<p>回调函数通常与原始调用者处于同一层次，如图 1 所示：</p>
+<h5 id="图-1-回调函数示例图"><a href="#图-1-回调函数示例图" class="headerlink" title="图 1. 回调函数示例图"></a>图 1. 回调函数示例图</h5><p><img src alt></p>
+<h4 id="Future接口"><a href="#Future接口" class="headerlink" title="Future接口"></a>Future接口</h4><p>JDK5 新增了 Future 接口，用于描述一个异步计算的结果。虽然 Future 以及相关使用方法提供了异步执行任务的能力，但是对于结果的获取却是很不方便，只能通过阻塞或者轮询的方式得到任务的结果。阻塞的方式显然和我们的异步编程的初衷相违背，轮询的方式又会耗费无谓的 CPU 资源，而且也不能及时地得到计算结果，为什么不能用观察者设计模式呢？即当计算结果完成及时通知监听者。</p>
+<p>有一些开源框架实现了我们的设想，例如 Netty 的 ChannelFuture 类扩展了 Future 接口，通过提供 addListener 方法实现支持回调方式的异步编程。Netty 中所有的 I/O 操作都是异步的,这意味着任何的 I/O 调用都将立即返回，而不保证这些被请求的 I/O 操作在调用结束的时候已经完成。取而代之地，你会得到一个返回的 ChannelFuture 实例，这个实例将给你一些关于 I/O 操作结果或者状态的信息。当一个 I/O 操作开始的时候，一个新的 Future 对象就会被创建。在开始的时候，新的 Future 是未完成的状态－－它既非成功、失败，也非被取消，因为 I/O 操作还没有结束。如果 I/O 操作以成功、失败或者被取消中的任何一种状态结束了，那么这个 Future 将会被标记为已完成，并包含更多详细的信息（例如：失败的原因）。请注意，即使是失败和被取消的状态，也是属于已完成的状态。阻塞方式的示例代码如清单 1 所示。</p>
+<h5 id="清单-1-阻塞方式示例代码"><a href="#清单-1-阻塞方式示例代码" class="headerlink" title="清单 1. 阻塞方式示例代码"></a>清单 1. 阻塞方式示例代码</h5><pre><code class="java">`// Start the connection attempt.``ChannelFuture Future = bootstrap.connect(new InetSocketAddress(host, port));``// Wait until the connection is closed or the connection attempt fails.``Future.getChannel().getCloseFuture().awaitUninterruptibly();``// Shut down thread pools to exit.``bootstrap.releaseExternalResources();`
+</code></pre>
+<p>上面代码使用的是 awaitUninterruptibly 方法，源代码如清单 2 所示。</p>
+<h5 id="清单-2-awaitUninterruptibly-源代码"><a href="#清单-2-awaitUninterruptibly-源代码" class="headerlink" title="清单 2. awaitUninterruptibly 源代码"></a>清单 2. awaitUninterruptibly 源代码</h5><pre><code class="java">publicChannelFutureawaitUninterruptibly() {
+    boolean interrupted = false;
+    synchronized (this) {
+        //循环等待到完成
+        while (!done) {
+            checkDeadLock();
+            waiters++;
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                //不允许中断
+                interrupted = true;
+            } finally {
+                waiters--;
+            }
+            }
+    }
+    if (interrupted) {
+           Thread.currentThread().interrupt();
+    }
+    return this;
+}
+</code></pre>
+<h5 id="清单-3-异步非阻塞方式示例代码"><a href="#清单-3-异步非阻塞方式示例代码" class="headerlink" title="清单 3. 异步非阻塞方式示例代码"></a>清单 3. 异步非阻塞方式示例代码</h5><pre><code class="java">// 尝试建立一个连接
+ChannelFuture Future = bootstrap.connect(new InetSocketAddress(host, port));
+// 注册连接完成监听器
+Future.addListener(new ChannelFutureListener(){
+    public void operationComplete(final ChannelFuture Future)
+        throws Exception {    
+        System.out.println(&quot;连接建立完成&quot;);
+    }
+});
+ printTime(&quot;异步时间：&quot;);
+// 连接关闭，释放资源
+bootstrap.releaseExternalResources();
+</code></pre>
+<p>可以明显的看出，在异步模式下，上面这段代码没有阻塞，在执行 connect 操作后直接执行到<strong> printTime(“异步时间： “)</strong>，随后 connect 完成，Future 的监听函数输出 connect 操作完成。</p>
+<p>非阻塞则是添加监听类 ChannelFutureListener，通过覆盖 ChannelFutureListener 的 operationComplete 执行业务逻辑。</p>
+<h5 id="清单-4-异步非阻塞方式示例代码"><a href="#清单-4-异步非阻塞方式示例代码" class="headerlink" title="清单 4. 异步非阻塞方式示例代码"></a>清单 4. 异步非阻塞方式示例代码</h5><pre><code class="java">`public void addListener(final ChannelFutureListener listener) {``    ``if (listener == null) {``    ``throw new NullPointerException(&quot;listener&quot;);``}``    ``booleannotifyNow = false;``    ``synchronized (this) {``        ``if (done) {``        ``notifyNow = true;``    ``} else {``        ``if (firstListener == null) {``        ``//listener 链表头``        ``firstListener = listener;``    ``} else {``        ``if (otherListeners == null) {``        ``otherListeners = new ArrayList&lt;``ChannelFutureListener``&gt;(1);``        ``}``        ``//添加到 listener 链表中，以便操作完成后遍历操作``        ``otherListeners.add(listener);``    ``}``    ``......``    ``if (notifyNow) {``        ``//通知 listener 进行处理``        ``notifyListener(listener);``        ``}``}`
+</code></pre>
+<p>这部分代码的逻辑很简单，就是注册回调函数，当操作完成后自动调用回调函数，就达到了异步的效果。</p>
+<h3 id="CompleteableFuture基本使用"><a href="#CompleteableFuture基本使用" class="headerlink" title="CompleteableFuture基本使用"></a>CompleteableFuture基本使用</h3><p>在Java 8中, 新增加了一个包含50个方法左右的类: <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletableFuture.html" target="_blank" rel="noopener">CompletableFuture</a>，提供了非常强大的Future的扩展功能，可以帮助我们简化异步编程的复杂性，提供了函数式编程的能力，可以通过回调的方式处理计算结果，并且提供了转换和组合CompletableFuture的方法。</p>
+<p>如果想使用以前阻塞或者轮询方式来使用，依然可以通过 CompletableFuture 类来实现，因为CompleteableFuture实现了 CompletionStage 和 Future 接口方，因此也支持这种方式。</p>
+<p>CompletableFuture 类声明了 CompletionStage 接口，CompletionStage 接口实际上提供了同步或异步运行计算的舞台，所以我们可以通过实现多个 CompletionStage 命令，并且将这些命令串联在一起的方式实现多个命令之间的触发。</p>
+<h4 id="同步方式完成计算"><a href="#同步方式完成计算" class="headerlink" title="同步方式完成计算"></a>同步方式完成计算</h4><p>CompletableFuture类实现了<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/CompletionStage.html" target="_blank" rel="noopener">CompletionStage</a>和<a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html" target="_blank" rel="noopener">Future</a>接口，所以你还是可以像以前一样通过阻塞或者轮询的方式获得结果，尽管这种方式不推荐使用。</p>
+<pre><code class="java">public T     get()
+public T     get(long timeout, TimeUnit unit)
+public T     getNow(T valueIfAbsent)
+public T     join()
+</code></pre>
+<p><code>getNow</code>有点特殊，如果结果已经计算完则返回结果或者抛出异常，否则返回给定的<code>valueIfAbsent</code>值。<br><code>join</code>返回计算的结果或者抛出一个unchecked异常(CompletionException)，可以不进行捕捉，它和<code>get</code>对抛出的异常的处理有些细微的区别，你可以运行下面的代码进行比较：</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    int i = 1/0;
+    return 100;
+});
+// join的使用方式
+//future.join();
+
+// get必须要捕捉异常，对异常进行处理
+  try {
+            future.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+</code></pre>
+<p>尽管Future可以代表在另外的线程中执行的一段异步代码，但是你还是可以在本身线程中执行：</p>
+<pre><code class="java">public static CompletableFuture&lt;Integer&gt; compute() {
+    final CompletableFuture&lt;Integer&gt; future = new CompletableFuture&lt;&gt;();
+
+    return future;
+}
+</code></pre>
+<p>上面的代码中<code>future</code>没有关联任何的<code>Callback</code>、线程池、异步任务等，如果客户端调用<code>future.get</code>就会一直傻等下去。你可以通过下面的代码完成一个计算，触发客户端的等待：</p>
+<pre><code>f.complete(100);
+</code></pre><p>当然你也可以抛出一个异常，而不是一个成功的计算结果：</p>
+<pre><code>f.completeExceptionally(new Exception());
+</code></pre><p>完整的代码如下：</p>
+<pre><code class="java">public class BasicMain {
+    public static CompletableFuture&lt;Integer&gt; compute() {
+        final CompletableFuture&lt;Integer&gt; future = new CompletableFuture&lt;&gt;();
+        return future;
+    }
+    public static void main(String[] args) throws Exception {
+        final CompletableFuture&lt;Integer&gt; f = compute();
+        class Client extends Thread {
+            CompletableFuture&lt;Integer&gt; f;
+            Client(String threadName, CompletableFuture&lt;Integer&gt; f) {
+                super(threadName);
+                this.f = f;
+            }
+            @Override
+            public void run() {
+                try {
+                    System.out.println(this.getName() + &quot;: &quot; + f.get());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        new Client(&quot;Client1&quot;, f).start();
+        new Client(&quot;Client2&quot;, f).start();
+        System.out.println(&quot;waiting&quot;);
+        f.complete(100);
+        //f.completeExceptionally(new Exception());
+        System.in.read();
+    }
+}
+</code></pre>
+<p>可以看到我们并没有把<code>f.complete(100);</code>放在另外的线程中去执行，但是在大部分情况下我们可能会用一个线程池去执行这些异步任务。<code>CompletableFuture.complete()</code>、<code>CompletableFuture.completeExceptionally</code>只能被调用一次。但是我们有两个后门方法可以重设这个值:<code>obtrudeValue</code>、<code>obtrudeException</code>，但是使用的时候要小心，因为<code>complete</code>已经触发了客户端，有可能导致客户端会得到不期望的结果。</p>
+<h4 id="创建CompletableFuture对象"><a href="#创建CompletableFuture对象" class="headerlink" title="创建CompletableFuture对象"></a>创建CompletableFuture对象</h4><p><code>CompletableFuture.completedFuture</code>是一个静态辅助方法，用来返回一个已经计算好的<code>CompletableFuture</code>。</p>
+<pre><code class="java">public static &lt;U&gt; CompletableFuture&lt;U&gt; completedFuture(U value)
+</code></pre>
+<p>而以下四个静态方法用来为一段异步执行的代码创建<code>CompletableFuture</code>对象：</p>
+<pre><code class="java">public static CompletableFuture&lt;Void&gt;     runAsync(Runnable runnable)
+public static CompletableFuture&lt;Void&gt;     runAsync(Runnable runnable, Executor executor)
+public static &lt;U&gt; CompletableFuture&lt;U&gt;     supplyAsync(Supplier&lt;U&gt; supplier)
+public static &lt;U&gt; CompletableFuture&lt;U&gt;     supplyAsync(Supplier&lt;U&gt; supplier, Executor executor)
+</code></pre>
+<p>以<code>Async</code>结尾并且没有指定<code>Executor</code>的方法会使用<code>ForkJoinPool.commonPool()</code>作为它的线程池执行异步代码。</p>
+<p><code>runAsync</code>方法也好理解，它以<code>Runnable</code>函数式接口类型为参数，所以<code>CompletableFuture</code>的计算结果为空。</p>
+<p><code>supplyAsync</code>方法以<code>Supplier&lt;U&gt;</code>函数式接口类型为参数,<code>CompletableFuture</code>的计算结果类型为<code>U</code>。</p>
+<p>因为方法的参数类型都是函数式接口，所以可以使用lambda表达式实现异步任务，比如：</p>
+<pre><code class="java">CompletableFuture&lt;String&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    //长时间的计算任务
+    return &quot;处理完成&quot;;
+});
+</code></pre>
+<h4 id="计算结果完成时的处理"><a href="#计算结果完成时的处理" class="headerlink" title="计算结果完成时的处理"></a>计算结果完成时的处理</h4><p>当<code>CompletableFuture</code>的计算结果完成，或者抛出异常的时候，我们可以执行特定的<code>Action</code>。主要是下面的方法：</p>
+<pre><code class="java">public CompletableFuture&lt;T&gt;     whenComplete(BiConsumer&lt;? super T,? super Throwable&gt; action)
+public CompletableFuture&lt;T&gt;     whenCompleteAsync(BiConsumer&lt;? super T,? super Throwable&gt; action)
+public CompletableFuture&lt;T&gt;     whenCompleteAsync(BiConsumer&lt;? super T,? super Throwable&gt; action, Executor executor)
+public CompletableFuture&lt;T&gt;     exceptionally(Function&lt;Throwable,? extends T&gt; fn)
+</code></pre>
+<p>可以看到<code>Action</code>的类型是<code>BiConsumer&lt;? super T,? super Throwable&gt;</code>，它可以处理正常的计算结果，或者异常情况。<br>方法不以<code>Async</code>结尾，意味着<code>Action</code>使用相同的线程执行，而<code>Async</code>可能会使用其它的线程去执行(如果使用相同的线程池，也可能会被同一个线程选中执行)。</p>
+<p>注意这几个方法都会返回<code>CompletableFuture</code>，当<code>Action</code>执行完毕后它的结果返回原始的<code>CompletableFuture</code>的计算结果或者返回异常。</p>
+<pre><code class="java">public class Main {
+    private static Random rand = new Random();
+    private static long t = System.currentTimeMillis();
+    static int getMoreData() {
+        System.out.println(&quot;begin to start compute&quot;);
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println(&quot;end to start compute. passed &quot; + 
+                           (System.currentTimeMillis() - t)/1000 + &quot; seconds&quot;);
+        return rand.nextInt(1000);
+    }
+    public static void main(String[] args) throws Exception {
+        CompletableFuture&lt;Integer&gt; future = 
+            CompletableFuture.supplyAsync(Main::getMoreData);
+        Future&lt;Integer&gt; f = future.whenComplete((v, e) -&gt; {
+            System.out.println(v);
+            System.out.println(e);
+        });
+        System.out.println(f.get());
+        System.in.read();
+    }
+}
+</code></pre>
+<p><code>exceptionally</code>方法返回一个新的CompletableFuture，当原始的CompletableFuture抛出异常的时候，就会触发这个CompletableFuture的计算，调用function计算值，否则如果原始的CompletableFuture正常计算完后，这个新的CompletableFuture也计算完成，它的值和原始的CompletableFuture的计算的值相同。也就是这个<code>exceptionally</code>方法用来处理异常的情况。</p>
+<p>下面一组方法虽然也返回CompletableFuture对象，但是对象的值和原来的CompletableFuture计算的值不同。当原先的CompletableFuture的值计算完成或者抛出异常的时候，会触发这个CompletableFuture对象的计算，结果由<code>BiFunction</code>参数计算而得。因此这组方法兼有<code>whenComplete</code>和转换的两个功能。</p>
+<pre><code class="java">public &lt;U&gt; CompletableFuture&lt;U&gt;     handle(BiFunction&lt;? super T,Throwable,? extends U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     handleAsync(BiFunction&lt;? super T,Throwable,? extends U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     handleAsync(BiFunction&lt;? super T,Throwable,? extends U&gt; fn, Executor executor)
+</code></pre>
+<p>同样，不以<code>Async</code>结尾的方法由原来的线程计算，以<code>Async</code>结尾的方法由默认的线程池<code>ForkJoinPool.commonPool()</code>或者指定的线程池<code>executor</code>运行。</p>
+<h4 id="组合"><a href="#组合" class="headerlink" title="组合"></a>组合</h4><p><code>CompletableFuture</code>可以作为monad(单子)和functor。由于回调风格的实现，我们不必因为等待一个计算完成而阻塞着调用线程，而是告诉<code>CompletableFuture</code>当计算完成的时候请执行某个<code>function</code>。而且我们还可以将这些操作串联起来，或者将<code>CompletableFuture</code>组合起来。</p>
+<pre><code class="java">public &lt;U&gt; CompletableFuture&lt;U&gt;     thenApply(Function&lt;? super T,? extends U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     thenApplyAsync(Function&lt;? super T,? extends U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     thenApplyAsync(Function&lt;? super T,? extends U&gt; fn, Executor executor)
+</code></pre>
+<p>这一组函数的功能是当原来的CompletableFuture计算完后，将结果传递给函数<code>fn</code>，将<code>fn</code>的结果作为新的<code>CompletableFuture</code>计算结果。因此它的功能相当于将<code>CompletableFuture&lt;T&gt;</code>转换成<code>CompletableFuture&lt;U&gt;</code>。</p>
+<p>这三个函数的区别和上面介绍的一样，不以<code>Async</code>结尾的方法由原来的线程计算，以<code>Async</code>结尾的方法由默认的线程池<code>ForkJoinPool.commonPool()</code>或者指定的线程池<code>executor</code>运行。Java的CompletableFuture类总是遵循这样的原则，下面就不一一赘述了。</p>
+<p>使用例子如下：</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;String&gt; f =  future
+                                .thenApplyAsync(i -&gt; i * 10)
+                                .thenApply(i -&gt; i.toString());
+System.out.println(f.get()); //&quot;1000&quot;
+</code></pre>
+<p>需要注意的是，这些转换并不是马上执行的，也不会阻塞，而是在前一个stage完成后继续执行。</p>
+<p><strong>它们与<code>handle</code>方法的区别在于<code>handle</code>方法会处理正常计算值和异常，因此它可以屏蔽异常，避免异常继续抛出。而<code>thenApply</code>方法只是用来处理正常值，因此一旦有异常就会抛出。</strong></p>
+<p>上面的前一个CompleteFuture执行完成执行后一个，下面的是同时执行或者其中一个执行完成就代表执行完成。</p>
+<pre><code class="java">public &lt;U&gt; CompletableFuture&lt;U&gt;     thenCompose(Function&lt;? super T,? extends 
+                                                CompletionStage&lt;U&gt;&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     thenComposeAsync(Function&lt;? super T,? extends 
+                                                     CompletionStage&lt;U&gt;&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     thenComposeAsync(Function&lt;? super T,? extends 
+                                                     CompletionStage&lt;U&gt;&gt; fn,
+                                                     Executor executor)
+</code></pre>
+<p>这一组方法接受一个Function作为参数，这个Function的输入是当前的CompletableFuture的计算值，返回结果将是一个新的CompletableFuture，这个新的CompletableFuture会组合原来的CompletableFuture和函数返回的CompletableFuture。因此它的功能类似:</p>
+<pre><code>A +--&gt; B +---&gt; C
+</code></pre><p>记住，<code>thenCompose</code>返回的对象并不一定是函数<code>fn</code>返回的对象，如果原来的<code>CompletableFuture</code>还没有计算出来，它就会生成一个新的组合后的CompletableFuture。</p>
+<p>例子：</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;String&gt; f =  future.thenCompose( i -&gt; {
+    return CompletableFuture.supplyAsync(() -&gt; {
+        return (i * 10) + &quot;&quot;;
+    });
+});
+System.out.println(f.get()); //1000
+</code></pre>
+<p>而下面的一组方法<code>thenCombine</code>用来复合另外一个CompletionStage的结果。它的功能类似：</p>
+<pre><code>A +
+  |
+  +------&gt; C
+  +------&gt;
+B +
+</code></pre><p>两个CompletionStage是并行执行的，它们之间并没有先后依赖顺序，other并不会等待先前的CompletableFuture执行完毕后再执行。</p>
+<pre><code class="java">public &lt;U,V&gt; CompletableFuture&lt;V&gt;     thenCombine(CompletionStage&lt;? extends U&gt; other, 
+                                        BiFunction&lt;? super T,? super U,? extends V&gt; fn)
+public &lt;U,V&gt; CompletableFuture&lt;V&gt;     thenCombineAsync(CompletionStage&lt;? extends U&gt; other, 
+                                        BiFunction&lt;? super T,? super U,? extends V&gt; fn)
+public &lt;U,V&gt; CompletableFuture&lt;V&gt;     thenCombineAsync(CompletionStage&lt;? extends U&gt; other,
+                    BiFunction&lt;? super T,? super U,? extends V&gt; fn, Executor executor)
+</code></pre>
+<p>其实从功能上来讲,它们的功能更类似<code>thenAcceptBoth</code>，只不过<code>thenAcceptBoth</code>是纯消费，它的函数参数没有返回值，而<code>thenCombine</code>的函数参数<code>fn</code>有返回值。</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;String&gt; future2 = CompletableFuture.supplyAsync(() -&gt; {
+    return &quot;abc&quot;;
+});
+CompletableFuture&lt;String&gt; f =  future.thenCombine(future2, (x,y) -&gt; y + &quot;-&quot; + x);
+System.out.println(f.get()); //abc-100
+</code></pre>
+<h4 id="纯消费-执行Action"><a href="#纯消费-执行Action" class="headerlink" title="纯消费(执行Action)"></a>纯消费(执行Action)</h4><p>上面的方法是当计算完成的时候，会生成新的计算结果(<code>thenApply</code>, <code>handle</code>)，或者返回同样的计算结果<code>whenComplete</code>，<code>CompletableFuture</code>还提供了一种处理结果的方法，只对结果执行<code>Action</code>,而不返回新的计算值，因此计算值为<code>Void</code>:</p>
+<pre><code class="java">public CompletableFuture&lt;Void&gt;     thenAccept(Consumer&lt;? super T&gt; action)
+public CompletableFuture&lt;Void&gt;     thenAcceptAsync(Consumer&lt;? super T&gt; action)
+public CompletableFuture&lt;Void&gt;     thenAcceptAsync(Consumer&lt;? super T&gt; action, Executor executor)
+</code></pre>
+<p>看它的参数类型也就明白了，它们是函数式接口<code>Consumer</code>，这个接口只有输入，没有返回值。</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;Void&gt; f =  future.thenAccept(System.out::println);
+System.out.println(f.get());
+</code></pre>
+<p><code>thenAcceptBoth</code>以及相关方法提供了类似的功能，当两个CompletionStage都正常完成计算的时候，就会执行提供的<code>action</code>，它用来组合另外一个异步的结果。</p>
+<p><code>runAfterBoth</code>是当两个CompletionStage都正常完成计算的时候,执行一个Runnable，这个Runnable并不使用计算的结果。</p>
+<pre><code class="java">public &lt;U&gt; CompletableFuture&lt;Void&gt;     thenAcceptBoth(CompletionStage&lt;? extends U&gt; other,
+                                             BiConsumer&lt;? super T,? super U&gt; action)
+public &lt;U&gt; CompletableFuture&lt;Void&gt;     thenAcceptBothAsync(CompletionStage&lt;? extends U&gt; 
+                                        other, BiConsumer&lt;? super T,? super U&gt; action)
+public &lt;U&gt; CompletableFuture&lt;Void&gt;     thenAcceptBothAsync(CompletionStage&lt;? extends U&gt; 
+                     other, BiConsumer&lt;? super T,? super U&gt; action, Executor executor)
+public     CompletableFuture&lt;Void&gt;     runAfterBoth(CompletionStage&lt;?&gt; other, 
+                                                 Runnable action)
+</code></pre>
+<p>例子如下：</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;Void&gt; f = future.thenAcceptBoth(CompletableFuture.completedFuture(10), 
+                                     (x, y) -&gt; System.out.println(x * y));
+System.out.println(f.get());
+</code></pre>
+<p>更彻底地，下面一组方法当计算完成的时候会执行一个Runnable,与<code>thenAccept</code>不同，Runnable并不使用CompletableFuture计算的结果。</p>
+<pre><code class="java">public CompletableFuture&lt;Void&gt;     thenRun(Runnable action)
+public CompletableFuture&lt;Void&gt;     thenRunAsync(Runnable action)
+public CompletableFuture&lt;Void&gt;     thenRunAsync(Runnable action, Executor executor)
+</code></pre>
+<p>因此先前的CompletableFuture计算的结果被忽略了,这个方法返回<code>CompletableFuture&lt;Void&gt;</code>类型的对象。</p>
+<pre><code class="java">CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    return 100;
+});
+CompletableFuture&lt;Void&gt; f =  future.thenRun(() -&gt; System.out.println(&quot;finished&quot;));
+System.out.println(f.get());
+</code></pre>
+<blockquote>
+<p>因此，你可以根据方法的参数的类型来加速你的记忆。<code>Runnable</code>类型的参数会忽略计算的结果，<code>Consumer</code>是纯消费计算结果，<code>BiConsumer</code>会组合另外一个<code>CompletionStage</code>纯消费，<code>Function</code>会对计算结果做转换，<code>BiFunction</code>会组合另外一个<code>CompletionStage</code>的计算结果做转换。</p>
+</blockquote>
+<h4 id="Either"><a href="#Either" class="headerlink" title="Either"></a>Either</h4><p><code>thenAcceptBoth</code>和<code>runAfterBoth</code>是当两个CompletableFuture都计算完成，而我们下面要了解的方法是当任意一个CompletableFuture计算完成的时候就会执行。</p>
+<pre><code class="java">public CompletableFuture&lt;Void&gt;     acceptEither(CompletionStage&lt;? extends T&gt; other, Consumer&lt;? super T&gt; action)
+public CompletableFuture&lt;Void&gt;     acceptEitherAsync(CompletionStage&lt;? extends T&gt; other, Consumer&lt;? super T&gt; action)
+public CompletableFuture&lt;Void&gt;     acceptEitherAsync(CompletionStage&lt;? extends T&gt; other, Consumer&lt;? super T&gt; action, Executor executor)
+
+public &lt;U&gt; CompletableFuture&lt;U&gt;     applyToEither(CompletionStage&lt;? extends T&gt; other, Function&lt;? super T,U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     applyToEitherAsync(CompletionStage&lt;? extends T&gt; other, Function&lt;? super T,U&gt; fn)
+public &lt;U&gt; CompletableFuture&lt;U&gt;     applyToEitherAsync(CompletionStage&lt;? extends T&gt; other, Function&lt;? super T,U&gt; fn, Executor executor)
+
+</code></pre>
+<p><strong>acceptEither<code>方法是当任意一个CompletionStage完成的时候，</code>action<code>这个消费者就会被执行。这个方法返回</code>CompletableFuture<void></void></strong></p>
+<p><strong>applyToEither<code>方法是当任意一个CompletionStage完成的时候，</code>fn<code>会被执行，它的返回值会当作新的</code>CompletableFuture<u>的计算结果。</u></strong></p>
+<p>下面这个例子有时会输出<code>100</code>,有时候会输出<code>200</code>,哪个Future先完成就会根据它的结果计算。</p>
+<pre><code class="java">Random rand = new Random();
+CompletableFuture&lt;Integer&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    try {
+        Thread.sleep(10000 + rand.nextInt(1000));
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    return 100;
+});
+CompletableFuture&lt;Integer&gt; future2 = CompletableFuture.supplyAsync(() -&gt; {
+    try {
+        Thread.sleep(10000 + rand.nextInt(1000));
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    return 200;
+});
+CompletableFuture&lt;String&gt; f =  future.applyToEither(future2,i -&gt; i.toString());
+</code></pre>
+<h4 id="辅助方法-allOf-和-anyOf"><a href="#辅助方法-allOf-和-anyOf" class="headerlink" title="辅助方法 allOf 和 anyOf"></a>辅助方法 <code>allOf</code> 和 <code>anyOf</code></h4><p>前面我们已经介绍了几个静态方法：<code>completedFuture</code>、<code>runAsync</code>、<code>supplyAsync</code>,下面介绍的这两个方法用来组合多个CompletableFuture。</p>
+<pre><code class="java">public static CompletableFuture&lt;Void&gt;         allOf(CompletableFuture&lt;?&gt;... cfs)
+public static CompletableFuture&lt;Object&gt;     anyOf(CompletableFuture&lt;?&gt;... cfs)
+</code></pre>
+<p><code>allOf</code>方法是当所有的<code>CompletableFuture</code>都执行完后执行计算。</p>
+<p><code>anyOf</code>方法是当任意一个<code>CompletableFuture</code>执行完后就会执行计算，计算的结果相同。</p>
+<p>下面的代码运行结果有时是100,有时是”abc”。但是<code>anyOf</code>和<code>applyToEither</code>不同。<code>anyOf</code>接受任意多的CompletableFuture但是<code>applyToEither</code>只是判断两个CompletableFuture,<code>anyOf</code>返回值的计算结果是参数中其中一个CompletableFuture的计算结果，<code>applyToEither</code>返回值的计算结果却是要经过<code>fn</code>处理的。当然还有静态方法的区别，线程池的选择等。</p>
+<pre><code class="java">Random rand = new Random();
+CompletableFuture&lt;Integer&gt; future1 = CompletableFuture.supplyAsync(() -&gt; {
+    try {
+        Thread.sleep(10000 + rand.nextInt(1000));
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    return 100;
+});
+CompletableFuture&lt;String&gt; future2 = CompletableFuture.supplyAsync(() -&gt; {
+    try {
+        Thread.sleep(10000 + rand.nextInt(1000));
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+    return &quot;abc&quot;;
+});
+//CompletableFuture&lt;Void&gt; f =  CompletableFuture.allOf(future1,future2);
+CompletableFuture&lt;Object&gt; f =  CompletableFuture.anyOf(future1,future2);
+System.out.println(f.get());
+</code></pre>
+<p>我想通过上面的介绍，应该把CompletableFuture的方法和功能介绍完了(<code>cancel</code>、<code>isCompletedExceptionally()</code>、<code>isDone()</code>以及继承于Object的方法无需介绍了， <code>toCompletableFuture()</code>返回CompletableFuture本身)，希望你能全面了解CompletableFuture强大的功能，并将它应用到Java的异步编程中。如果你有使用它的开源项目，可以留言分享一下。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://colobu.com/2016/02/29/Java-CompletableFuture/" target="_blank" rel="noopener">Java CompletableFuture 详解</a></li>
+<li><a href="https://www.ibm.com/developerworks/cn/java/j-cf-of-jdk8/index.html" target="_blank" rel="noopener">通过实例理解 JDK8 的 CompletableFuture</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/a1d13062/" rel="bookmark">java多线程系列-JUC线程池之03 ThreadPoolExecutor 线程池的创建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/984191f2/" rel="bookmark">java多线程系列-JUC线程池之 01 线程池架构</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d4c4bc29/" rel="bookmark">java多线程系列-JUC线程池之04 Future 和Callable</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ca60f1d2/" rel="bookmark">java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/6d00129c/" rel="bookmark">自旋锁</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/931a340/">Java CompletableFuture 详解</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月04日 - 16:49</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/931a340/" title="Java CompletableFuture 详解">Java CompletableFuture 详解</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/931a340/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JUC/" rel="tag">  <i class="fa fa-tag"></i> JUC</a>
+          
+            <a href="/tags/Future/" rel="tag">  <i class="fa fa-tag"></i> Future</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/2e7bd07f/" rel="next" title="Java Reference详解">
+                <i class="fa fa-chevron-left"></i> Java Reference详解
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/c51c4fa0/" rel="prev" title="Spring源码解析之 01环境搭建">
+                Spring源码解析之 01环境搭建 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前言"><span class="nav-text">前言</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#准备工作"><span class="nav-text">准备工作</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#异步计算"><span class="nav-text">异步计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#回调函数"><span class="nav-text">回调函数</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#图-1-回调函数示例图"><span class="nav-text">图 1. 回调函数示例图</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Future接口"><span class="nav-text">Future接口</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#清单-1-阻塞方式示例代码"><span class="nav-text">清单 1. 阻塞方式示例代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#清单-2-awaitUninterruptibly-源代码"><span class="nav-text">清单 2. awaitUninterruptibly 源代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#清单-3-异步非阻塞方式示例代码"><span class="nav-text">清单 3. 异步非阻塞方式示例代码</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#清单-4-异步非阻塞方式示例代码"><span class="nav-text">清单 4. 异步非阻塞方式示例代码</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#CompleteableFuture基本使用"><span class="nav-text">CompleteableFuture基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#同步方式完成计算"><span class="nav-text">同步方式完成计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#创建CompletableFuture对象"><span class="nav-text">创建CompletableFuture对象</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#计算结果完成时的处理"><span class="nav-text">计算结果完成时的处理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#组合"><span class="nav-text">组合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#纯消费-执行Action"><span class="nav-text">纯消费(执行Action)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Either"><span class="nav-text">Either</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#辅助方法-allOf-和-anyOf"><span class="nav-text">辅助方法 allOf 和 anyOf</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/931a340/";
+        this.page.identifier = "posts/931a340/";
+        this.page.title = 'Java CompletableFuture 详解';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概述 索引基础 索引主要类型 索引优化 InnoDB和MyISAM数据分布对比  1. 索引基础 索引，又叫key（键）  在mysql中，存储引擎先在索引中找到检索的内容，然后根据索引结果找到对应的数据行  索引可以包含一个或多个列的值，如果索引包含多个列，那么列的顺序十分重要，因为mysql只能高效的使用索引的最左前缀列，最左前缀列就是KEY(id, name, sex)，id在id、name">
+<meta name="keywords" content="索引">
+<meta property="og:type" content="article">
+<meta property="og:title" content="索引">
+<meta property="og:url" content="http://fengxiutianya.top/posts/df9a61f7/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概述 索引基础 索引主要类型 索引优化 InnoDB和MyISAM数据分布对比  1. 索引基础 索引，又叫key（键）  在mysql中，存储引擎先在索引中找到检索的内容，然后根据索引结果找到对应的数据行  索引可以包含一个或多个列的值，如果索引包含多个列，那么列的顺序十分重要，因为mysql只能高效的使用索引的最左前缀列，最左前缀列就是KEY(id, name, sex)，id在id、name">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-307.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-321.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-314.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-315.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-316.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-317.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-318.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-320.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-319.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="索引">
+<meta name="twitter:description" content="概述 索引基础 索引主要类型 索引优化 InnoDB和MyISAM数据分布对比  1. 索引基础 索引，又叫key（键）  在mysql中，存储引擎先在索引中找到检索的内容，然后根据索引结果找到对应的数据行  索引可以包含一个或多个列的值，如果索引包含多个列，那么列的顺序十分重要，因为mysql只能高效的使用索引的最左前缀列，最左前缀列就是KEY(id, name, sex)，id在id、name">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-307.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/df9a61f7/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>索引 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/df9a61f7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">索引
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-21 12:23:00" itemprop="dateCreated datePublished" datetime="2019-03-21T12:23:00+08:00">2019-03-21</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据库/" itemprop="url" rel="index"><span itemprop="name">数据库</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据库/mysql/" itemprop="url" rel="index"><span itemprop="name">mysql</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/df9a61f7/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/df9a61f7/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/df9a61f7/" class="leancloud_visitors" data-flag-title="索引">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">6.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
+<li>索引基础</li>
+<li>索引主要类型</li>
+<li>索引优化</li>
+<li>InnoDB和MyISAM数据分布对比</li>
+</ol>
+<h2 id="1-索引基础"><a href="#1-索引基础" class="headerlink" title="1. 索引基础"></a>1. 索引基础</h2><ul>
+<li><p>索引，又叫key（键）</p>
+</li>
+<li><p>在mysql中，存储引擎先在索引中找到检索的内容，然后根据索引结果找到对应的<code>数据行</code></p>
+</li>
+<li><p>索引可以包含一个或多个列的值，如果索引包含多个列，那么<code>列的顺序十分重要</code>，因为mysql只能高效的使用索引的<code>最左前缀列</code>，<code>最左前缀列</code>就是<code>KEY(id, name, sex)</code>，<code>id</code>在<code>id、name、sex</code>里面是写在左边的，这就叫最左前缀</p>
+<a id="more"></a>
+</li>
+</ul>
+<h2 id="2-索引主要类型"><a href="#2-索引主要类型" class="headerlink" title="2. 索引主要类型"></a>2. 索引主要类型</h2><p>索引是<strong>存储引擎</strong>用于快速找到记录的一种数据结构,这句话也侧面说明了<strong>mysql 索引是<code>在存储引擎层</code>而不是服务器层实现的。</strong>索引是对查询性能优化最有效的手段了，索引能够轻松将查询性能提升几个数量级。索引我们一般都是对某一列加索引。</p>
+<p>存储引擎先在索引中找到对应值，然后根据匹配的索引记录上的rowid找到对应的数据行。比如运行如下查询语句：</p>
+<pre><code>SELECT first_name from actor where actor_id=5;
+</code></pre><p>如果在actor_id列上建立有索引， MySQL将使用该索引找到actor_id 为5对应的行，也就是说，MySQL先在索引上按值查找，然后返回所有包含该值的数据行。</p>
+<p>索引可以包含一个或则多个列的值，如果索引包含多个列(组合索引)，那么列的顺序也十分重要，因为MySQL只能高效的使用索引的最左前缀列。创建一个包含两个列的索引和创建两个包含包含一个列的索引是大不相同的。后面将会说道。</p>
+<h3 id="B树索引"><a href="#B树索引" class="headerlink" title="B树索引"></a><strong>B树索引</strong></h3><p>一般情况下索引都是指B-Tree索引，它使用B-Tree数据结构来存储数据。实际上其实是基于B+Tree实现的，在每个叶子结点都包含一个指向下一个叶子结点的指针。</p>
+<p>B-Tree意味着所有的值都是按照顺序存储的，比如对于name属性，就是按照从a-z的顺序存储的。使用B-Tree索引后，存储引擎不再需要进行全表扫描来获取需要的数据，而是从索引的根节点开始进行搜索，最终结果是要么找到对应的值，要么记录不存在。这样就能够加快访问数据的速度。</p>
+<p>B-Tree对索引列是顺序组织存储的，所以很适合查找范围数据。（比如查找I-k开头的名字，这样效率会很高）</p>
+<p><strong>B-Tree索引适合的查询类型</strong> </p>
+<ol>
+<li>全值匹配：和索引中的所有列进行匹配。 </li>
+<li>匹配最左前缀：对于一个索引包含多个列，只使用索引的第一列。</li>
+<li>匹配列前缀：匹配某一列的值的开头部分。（比如匹配name字段的时候，只匹配以J开头的姓名）这里只用到了索引的第一列。</li>
+<li>匹配范围值：匹配字段在某一个范围内的记录，这里只用到了索引的第一列。</li>
+<li>精确匹配某一列并范围匹配另外一列：对于一个索引包含多个字段的情况，比如精确匹配第一列，第二列范围匹配。</li>
+<li>只访问索引的查询：只访问索引行而不访问记录中其余字段的数据行。</li>
+</ol>
+<p>上面的范围匹配，主要是因为索引的按顺序存储索引列，导致的范围匹配的高效性。</p>
+<p>对于B-Tree的索引也有一些限制： </p>
+<ol>
+<li>索引只能从最左列开始查找，如果查找使用的索引顺序和设置的索引顺序不同，则不能使用这个索引。比如索引<code>(name,age，sex)</code>如果查找使用的是age和sex，则这个索引不能使用。</li>
+<li>不能跳过索引中的列，比如上面的，如果使用的是name和sex，跳过age，也是不能使用这个索引的。</li>
+<li>如果查询中有某个列的范围查找，则其右边所有列都无法使用索引优化。还拿上面的例子，就是使用的查找条件<code>name=dog and age &gt;10 and sex=1</code>，如果是这样查找的胡啊，只能使用索引的前俩列，而最后一列使用不了。</li>
+</ol>
+<p>看到上面的限制应该就能明白关于索引中包含多个列的时候，索引列的顺序是很重要的。</p>
+<h3 id="Hash哈希索引"><a href="#Hash哈希索引" class="headerlink" title="Hash哈希索引"></a>Hash哈希索引</h3><p>哈希索引是基于哈希表实现的，只有精确匹配索引所有列的查询才有效。对于每一行数据存储引擎都会为所有的索引列计算一个哈希码，哈希码是一个较小的值，并且不同键值的行计算出来的哈希码也不一样。</p>
+<p>1）哈希索引只存储哈希值和行指针，并不存储具体的字段值，所以一定会存在读取行的过程。</p>
+<p>2）哈希索引并不是按照索引值顺序存储的，所以就无法用于排序。</p>
+<p>3）哈希索引只支持等值比较查询，不支持范围比较查询，这与哈希表的特性与有关。</p>
+<p>4）哈希索引就存在哈希冲突的问题，对于哈希冲突的数据必须遍历链表中的所有行指针。</p>
+<p>上面的这些限制，哈希索引只适合于特定的场合，但是一旦适合哈希索引，性能就会特别高。</p>
+<p>使用hash索引时，一般情况下还要再查询条件中带上hash前的值，比如：</p>
+<pre><code>mysql&gt;select * from words where crc=crc32(‘gnu’) and word=’gnu’;
+</code></pre><p>这里crc字段就是word字段哈希之后的值，因为hash之后可能存在冲突，带上原本的值做上二次比较，就可以精确定位。</p>
+<p>此外InnoDB存储引擎有一个特殊的功能叫做自适应hash索引。当InnoDB注意到某些索引值被使用的非常频繁时，就会在内存中基于B-Tree索引上在创建一个哈希索引，这样就让B-Tree索引也具有哈希索引的一些优点，比如快速的哈希查找。这是一个完全自动的、内部的行为，用户无法控制或者配置，不过如果没有必要，完全可以关闭该功能。</p>
+<h3 id="使用索引的优点"><a href="#使用索引的优点" class="headerlink" title="使用索引的优点"></a><strong>使用索引的优点</strong></h3><p>索引可以让服务器快速定位到表的指定位置。但是这不是唯一的作用，还有以下功能：</p>
+<ol>
+<li>对于B-Tree索引，由于B-Tree是按照顺序存储数据的，所以用来做order by 操作或则是 group by操作的效率很高。</li>
+<li>因为索引中存储了实际的列值，所以某些查询只需要索引就可以完成全部查询。</li>
+</ol>
+<p>总结来说索引的有三个优点：<br>（1）索引大大减少服务器需要扫描的数据量；</p>
+<p>（2）索引可以帮助服务器避免排序和临时表；</p>
+<p>（3）索引可以将随机IO变为排序IO。</p>
+<p><strong>索引的缺点</strong></p>
+<p>（1）对于insert、update、delete操作，需要同步更新索引，导致速度变慢。</p>
+<p>（2）索引会占用很大的存储。</p>
+<h2 id="3-索引优化"><a href="#3-索引优化" class="headerlink" title="3. 索引优化"></a>3. 索引优化</h2><p>先概括一下索引的策略：<br>1）单列索引<br>2）多列索引<br>3）前缀索引<br>4）聚簇索引<br>5）覆盖索引</p>
+<h3 id="单列索引"><a href="#单列索引" class="headerlink" title="单列索引"></a><strong>单列索引</strong></h3><p>所谓单列索引是指：使用数据表字段中的某一列作为索引。</p>
+<p>但是在查询的时，索引列不能是表达式的一部分，也不能是函数的参数。</p>
+<p>比如对于下面的一个例子：</p>
+<pre><code>select actor_id from actor where actor_id+1=5;
+</code></pre><p>对于这样的一个SQL，where语句后面 是一个表达式，其实很明显是actor_id=4的条件，但是MySQL却无法解析，索引无法正却使用索引。</p>
+<p> 还有一种是函数参数：也是无法正常的使用索引的</p>
+<pre><code>   select ... where TO_DAYS(CURRENT_DATE) - TO_DAYS(date_col)&lt;=10;
+</code></pre><h3 id="多列索引（组合索引）以及选择合适的索引顺序"><a href="#多列索引（组合索引）以及选择合适的索引顺序" class="headerlink" title="多列索引（组合索引）以及选择合适的索引顺序"></a><strong>多列索引（组合索引）以及选择合适的索引顺序</strong></h3><p>注意这里要区分：为每个列创建独立的索引和为多个列创建一个索引的区别。</p>
+<p>比如下面这种情况：</p>
+<pre><code>CREATE TABLE t{
+c1 int,
+c2 int,
+c3 int,
+key(c1),
+key(c2),
+key(c3)
+}
+</code></pre><p>这一种就是为表中的3个列都创建了索引。</p>
+<p>但是多个列创建索引就是：创建了一个索引，包含customer_id,和staff_id</p>
+<pre><code>alter table payment add KEY(customer_id, staff_id);
+</code></pre><p>上面这个索引其实是包含了两个索引，一个是customer_id这个索引，还有一个是(customer_id，staff_id)。<strong>注意: staff_id并不能作为单独的索引使用，这里有一个最左值匹配问题，也就是只能先从最左边的customer_id开始匹配，如果从staff_id匹配，则和此索引不匹配，也就不能使用此索引，但是可以单独匹配customer_id这个索引，因为他是最左边的索引</strong></p>
+<p>对于多列索引，最重要的就是怎么选择索引列的顺序，其实这一点与实际的查询需求有关。主要是为了满足排序和分组。</p>
+<p>先从数据结构层次来分析，我们知道索引是以B-Tree的形式存储的，在一个多列索引列中，索引的顺序意味着索引首先按照最左列进行排序，其次是第二列。所以对于一个多列索引，如果以第二列或则第三列直接作为索引，基本是没有用到索引。由于索引的有序性很好的满足了order by、group by和distinct等子句的查询需求。 </p>
+<p>   从上面的分析我们就能认识到多列索引中列的顺序是多么重要。关于多列索引中有一点经验法则： </p>
+<ol>
+<li><p>在不需要考虑排序和分组时，通常情况下将选择性最高的列放在索引最前列。(这时候索引只需要优化where查询条件，能够很快过滤出需要的行)</p>
+<pre><code>索引列的选择性定义：不重复的索引值和数据表的记录总数的比值。索引的选择性越高也就是查询效率越高。比如对于人员信息表，phone这一字段的选择性是很高的，几乎为1，但是对于sex性别这一字段的选择性是非常低的，因为只有两个选择男或则是女，几乎为0。
+</code></pre></li>
+<li><p>实际情况下也与数据的分布有很大关系。<br>以下面的查询为例：</p>
+<pre><code>SELECT * FROM item WHERE staff_id=2 AND customer_id=584;
+</code></pre></li>
+</ol>
+<p>这时候应该创建（staff_id, customer_id）的索引还是应该创建（customer_id，staff_id）的索引呢？这时候就应该确认一下那个字段的选择性更高，先查询一下staff_id和customer_id的总数，哪个小就将哪个放在前面。</p>
+<h3 id="前缀索引和索引的选择性"><a href="#前缀索引和索引的选择性" class="headerlink" title="前缀索引和索引的选择性"></a><strong>前缀索引和索引的选择性</strong></h3><p>有时候需要索引很长的字符列，这会让索引变得大且慢。这种情况下可以索引开始的部分字符，这样可以大大节约索引空间，从而提高索引效率。但这样也会降低索引的选择性。索引的选择性是指，不重复的索引值和数据表的记录总数的比值。索引的选择性越高则查询效率越高，因为选择性高的索引可以让 MySQL 在查找时过滤掉更多的行。 前缀索引是一种能使索引更小、更快的有效办法，但也有缺点：MySQL 无法使用前缀索引做 ORDER BY 和 GROUP BY，也无法使用前缀索引做覆盖扫描。</p>
+<h3 id="聚簇索引"><a href="#聚簇索引" class="headerlink" title="聚簇索引"></a><strong>聚簇索引</strong></h3><p>聚簇索引并不是一种单独的索引类型，而是一种数据存储方式。这里主要以InnoDB为例来说明聚簇索引。</p>
+<p>InnoDB中聚族索引实际上是在同一个结构中保存额B-tree索引和数据行，非聚族索引就是索引和数据不放在一起。当表中有聚族索引时，它的数据行实际上是存放在索引的叶子节点中。聚簇的含义实际上就是数据行和相邻的B-Tree中键值紧凑的存储在一起。数据行只能存放在一个地方，所以聚簇索引只能有一个。</p>
+<p>下面以一个示例图来说明：索引列是整数值，叶子页包含了行的全部数据，但是结点页只包含了索引列(下图中的整型值)。</p>
+<p><img src="/images/pasted-307.png" alt="upload successful"></p>
+<p>在目前为止的MySQL版本中，InnoDB的聚簇索引还只支持使用主键来聚簇数据。如果没有定义主键，InnoDB会选择一个唯一的非空索引来替代。</p>
+<p>聚簇的数据的优点： </p>
+<ol>
+<li>可以把相关数据保存在一起。比如查询电子邮箱邮件为例，以用户ID为主键，通过用户ID聚簇数据，这样只需要从磁盘读取少量数据页就能获取某个用户全部邮件。</li>
+<li>数据访问更快。聚簇索引将索引和数据保存在一个B-Tree中，因此从聚簇索引中获取数据通常比非聚簇索引查找的快。（当然存在查找列就是索引列的情况）</li>
+<li>使用覆盖索引扫描的查询可以直接使用页结点中的主键。</li>
+</ol>
+<p><strong>利用查询和设计表时上面的优点能够极大的提升性能，但是也有一些缺点：</strong> </p>
+<ol>
+<li>聚簇数据极大提升了IO密集型应用的性能，但是数据全部放在内存中，访问的顺序就不重要了，聚簇索引也就失去了优势。</li>
+<li>插入速度严重依赖于插入顺序。按照主键的顺序插入是速度最快的方式。如果是随机的会造成很多次的夜分裂，这样导致插入的速度变慢。这个后面会举例子。</li>
+<li>更新聚簇索引列的代价很高，需要调整树的结构。</li>
+<li>在插入新行或主键被更新导致需要移动行的时候，可能面临<strong>页分裂</strong>的问题。</li>
+<li>可能导致全表扫描变慢，尤其是行比较稀疏，或者由于页分裂导致数据存储不连续。</li>
+<li>二级索引可能占用了更多空间，因为二级索引的叶子节点包含了引用行的主键。</li>
+<li>二级索引访问需要两次索引查找。</li>
+</ol>
+<h3 id="覆盖索引"><a href="#覆盖索引" class="headerlink" title="覆盖索引"></a><strong>覆盖索引</strong></h3><p>如果一个索引包含（或者说覆盖）所有需要查询的字段的值，我们就称之为<strong>“覆盖索引”</strong>。</p>
+<p>覆盖索引的好处：</p>
+<p><img src="/images/pasted-321.png" alt="upload successful"></p>
+<h3 id="使用索引扫描来做排序"><a href="#使用索引扫描来做排序" class="headerlink" title="使用索引扫描来做排序"></a>使用索引扫描来做排序</h3><p>MySQL有两种方式可以生成有序的结果： 通过排序操作或者按照索引顺序扫描。如果explain出来的type值是index，则说明MySQL使用了索引扫描来做排序。</p>
+<p>索引扫描本身很快，只需要从一条记录往下一条记录移动即可，但是如果索引列不能覆盖所有查询字段，那么每次扫描一条索引记录都要回表查询一次，这基本上就是随机IO，因此按索引顺序读取数据的速度通常比顺序的全表扫描要慢。</p>
+<p>只有当索引的列顺序和Order By子句的顺序完全一致，并且所有列的排序方向都一致时，Mysql才能使用索引对结果排序。</p>
+<p>尽可能设计同一索引即满足排序又可用于查找。</p>
+<h2 id="4-InnoDB和MyISAM数据分布对比"><a href="#4-InnoDB和MyISAM数据分布对比" class="headerlink" title="4. InnoDB和MyISAM数据分布对比"></a>4. InnoDB和MyISAM数据分布对比</h2><p>聚簇索引和非聚簇索引的数据分布有区别，以及对应的主键索引和二级索引的数据分布也有区别，使用下面这个表来看看InnoDB和MyISAM是如何存储的</p>
+<pre><code class="sql">create table layout_test{
+    col1 int not null,
+    col2 int not null,
+    primary key(col1)
+    key(col2)
+}
+</code></pre>
+<p>MyISAM的数据分布很简单，按照数据插入的顺序进行存储。如下5-4所示，在行的旁边加了行号，（并不一定总是行号，这里是定长的所以是行号，如果是变长则可能使用另外的策略，这里就不仔细研究）</p>
+<p><img src="/images/pasted-314.png" alt="upload successful"></p>
+<p>上面图5-5显示了索引的创建的结构，这里省略了页的分布。索引节点的每个叶子节点中国包含行号，也就是实际存储的位置，另外MyISAM的其他索引的结构和上图是一样的，都是在叶子节点存储的行号，也就是存储的位置的指针（定长可以直接根据行号定位）。</p>
+<p>InnoDB的数据分布如下图，使用的是聚簇索引，索引和数据存储在一起。如下图</p>
+<p><img src="/images/pasted-315.png" alt="upload successful"></p>
+<p>上面数据和索引存储在一起，这是和MyISAM第一点不同。还有一点和MyISAM不同的是，InnoDB的二级索引和聚簇索引很不相同。InnoDB二级索引的叶子节点存储的是主键值而不是像MyISAM那样存储的是行指针。这样在进行移动或者数据页分裂时索引的维护工作变少。使用主键来当二级索引的的指针会占用更多的空间。不过好处是，在移动时不用更新这个二级索引中的这个指针。具体结构如下图</p>
+<p><img src="/images/pasted-316.png" alt="upload successful"></p>
+<p>下图描述了InnoDB和MyISAM如何存放表的抽象图，也可以看出是聚簇和非聚簇表的对比图</p>
+<p><img src="/images/pasted-317.png" alt="upload successful"></p>
+<p>下面我们来看一下为什么往聚簇索引中插入数据，最好按照顺序比较好，也就是按照主键自增长的顺序比较好.如下图所示，再插入的时候，是一条接一条的写，也就是顺序插入，相对随机插入会快，另外页的分裂也相对较少，产生的数据碎片也比较少，就是一页就存储很少的数据。</p>
+<p><img src="/images/pasted-318.png" alt="upload successful"></p>
+<p>从上面可以看出，因为主键的值是顺序插入的，所以InnoDB把每一条记录都存储子啊上一条记录的后面，当达到页的最大填充因子时(InnoDB的默认填充因子是页大小的15/16，留出部分空间用于以后修改)。下一条记录就会写入新的页中。一旦数据按照这种顺序方式加载，主键页都是近似于顺序的被填满，这也正是所期望的结果。</p>
+<p>相对于顺序，随机主键值的缺点如下:</p>
+<p><img src="/images/pasted-320.png" alt="upload successful"></p>
+<p>随机主键值写入的过程如下：</p>
+<p><img src="/images/pasted-319.png" alt="upload successful"></p>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/df9a61f7/">索引</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月21日 - 12:23</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/df9a61f7/" title="索引">索引</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/df9a61f7/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/索引/" rel="tag">  <i class="fa fa-tag"></i> 索引</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/70e3f5d8/" rel="next" title="事务隔离性实现">
+                <i class="fa fa-chevron-left"></i> 事务隔离性实现
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/31ad40b4/" rel="prev" title="InnoDB存储引擎 之 锁">
+                InnoDB存储引擎 之 锁 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-索引基础"><span class="nav-text">1. 索引基础</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-索引主要类型"><span class="nav-text">2. 索引主要类型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#B树索引"><span class="nav-text">B树索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Hash哈希索引"><span class="nav-text">Hash哈希索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用索引的优点"><span class="nav-text">使用索引的优点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-索引优化"><span class="nav-text">3. 索引优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#单列索引"><span class="nav-text">单列索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多列索引（组合索引）以及选择合适的索引顺序"><span class="nav-text">多列索引（组合索引）以及选择合适的索引顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#前缀索引和索引的选择性"><span class="nav-text">前缀索引和索引的选择性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#聚簇索引"><span class="nav-text">聚簇索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#覆盖索引"><span class="nav-text">覆盖索引</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用索引扫描来做排序"><span class="nav-text">使用索引扫描来做排序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-InnoDB和MyISAM数据分布对比"><span class="nav-text">4. InnoDB和MyISAM数据分布对比</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/df9a61f7/";
+        this.page.identifier = "posts/df9a61f7/";
+        this.page.title = '索引';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

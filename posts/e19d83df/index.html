@@ -1,0 +1,1755 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="内部类的定义与分类 在《Thinking in Java》这本书里面给出的定义是：可以将一个类的定义放在另一个类的定义内部就是内部类。用一段代码来说明就是下面这样的 class Outter{ class InnerClass{} } 其中InnerClass就是内部类。 内部类大体上可以划分为以下几种：成员内部类，局部内部类，静态内部类，匿名内部类。下面我将依次讲解这几种内部类。">
+<meta name="keywords" content="java基础">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内部类的定义与分类">
+<meta property="og:url" content="http://fengxiutianya.top/posts/e19d83df/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="内部类的定义与分类 在《Thinking in Java》这本书里面给出的定义是：可以将一个类的定义放在另一个类的定义内部就是内部类。用一段代码来说明就是下面这样的 class Outter{ class InnerClass{} } 其中InnerClass就是内部类。 内部类大体上可以划分为以下几种：成员内部类，局部内部类，静态内部类，匿名内部类。下面我将依次讲解这几种内部类。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="内部类的定义与分类">
+<meta name="twitter:description" content="内部类的定义与分类 在《Thinking in Java》这本书里面给出的定义是：可以将一个类的定义放在另一个类的定义内部就是内部类。用一段代码来说明就是下面这样的 class Outter{ class InnerClass{} } 其中InnerClass就是内部类。 内部类大体上可以划分为以下几种：成员内部类，局部内部类，静态内部类，匿名内部类。下面我将依次讲解这几种内部类。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/e19d83df/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>内部类的定义与分类 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/e19d83df/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">内部类的定义与分类
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-03-22 17:14:00" itemprop="dateCreated datePublished" datetime="2018-03-22T17:14:00+08:00">2018-03-22</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/e19d83df/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/e19d83df/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/e19d83df/" class="leancloud_visitors" data-flag-title="内部类的定义与分类">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.8k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="内部类的定义与分类"><a href="#内部类的定义与分类" class="headerlink" title="内部类的定义与分类"></a>内部类的定义与分类</h1><blockquote>
+<p>在《Thinking in Java》这本书里面给出的定义是：可以将一个类的定义放在另一个类的定义内部就是内部类。用一段代码来说明就是下面这样的</p>
+<pre><code>class Outter{
+class InnerClass{}
+}
+</code></pre><p>其中InnerClass就是内部类。</p>
+<p>内部类大体上可以划分为以下几种：成员内部类，局部内部类，静态内部类，匿名内部类。下面我将依次讲解这几种内部类。</p>
+</blockquote>
+<a id="more"></a>
+<h3 id="成员内部类"><a href="#成员内部类" class="headerlink" title="成员内部类"></a>成员内部类</h3><blockquote>
+<p>成员内部类也是最普通的内部类，它是外围类的一个成员，所以他是可以无限制的访问外围类的所有成员属性和方法，即使是private属性成员和方法也可以访问。但是外围类要访问内部类的成员属性和方法则需要通过内部类实例来访问。</p>
+<p>在成员内部类中要注意的几点：</p>
+<p><strong>第一：</strong>成员内部类中不能存在任何static的变量和方法；</p>
+<p><strong>第二：</strong>成员内部类是依附于外围类的，所以只有先创建了外围类才能够创建内部类。</p>
+<p><strong>第三</strong>：成员内部类也是有包的权限的，如果是public，则在任何一个包下面都可以使用，没有权限修饰符的则  </p>
+<p>​           只能在当前包下面使用。private则只能在当前类中使用，protected则可以在子类中使用。</p>
+<p>下面我们来看一个案例</p>
+<pre><code class="java">public class OuterClass {
+   private String str;
+
+   public void outerDisplay(){
+       System.out.println(&quot;outerClass...&quot;);
+   }
+
+   public class InnerClass{
+       public void innerDisplay(){
+           //使用外围内的属性
+           str = &quot;chenssy...&quot;;
+           System.out.println(str);
+           //使用外围内的方法
+           outerDisplay();
+       }
+   }
+
+   /*推荐使用getxxx()来获取成员内部类，尤其是该内部类的构造函数无参数时 */
+   public InnerClass getInnerClass(){
+       return new InnerClass();
+   }
+
+   public static void main(String[] args) {
+       OuterClass outer = new OuterClass();
+       OuterClass.InnerClass inner = outer.getInnerClass();
+       inner.innerDisplay();
+   }
+}
+--------------------
+chenssy...
+outerClass...
+</code></pre>
+<h3 id="this-和-new的使用"><a href="#this-和-new的使用" class="headerlink" title=".this 和 .new的使用"></a>.this 和 .new的使用</h3><p>如果你需要在内部类生成对外部类对象的引用，可以使用外部类的名字后面紧跟圆点和this。这样产生的引用自动地具有正确的类型，这一点在编译期就被知晓并受到检查，因此没有任何运行时开销。</p>
+<h3 id="this使用"><a href="#this使用" class="headerlink" title=".this使用"></a><strong>.this</strong>使用</h3><blockquote>
+<pre><code>public class OutterClass {
+
+
+   private int key = 0;
+   private int key2 = 0;
+
+
+   public static void main(String[] args) {
+       OutterClass k1 = new OutterClass();
+       InnerClass in = k1.new InnerClass(); //生成内部类
+       OutterClass k2 = in.getOutterClass(); //通过 .this 来生成外部类
+       System.out.println(k1 == k2); //true 说明俩个对象指向同一个引用
+   }
+
+   public int getKey() {
+       return this.key;
+   }
+
+   public class InnerClass {
+
+       public InnerClass() {
+           key = 12;
+           key2 = 13;
+       }
+
+       public int getKey() {
+           // 通过 .this 来使用外部类的getKey
+           return OutterClass.this.getKey();
+       }
+       // 使用 .this 返回外部类对象
+       public OutterClass getOutterClass() {
+           return OutterClass.this;
+       }
+   }
+}
+---------------
+outPut:
+true
+</code></pre><p>这个例子演示了<strong>.this</strong>的使用，同时也证明了<strong>.this</strong>返回的就是外部类生成的对象。</p>
+</blockquote>
+<h3 id="new-使用"><a href="#new-使用" class="headerlink" title=".new 使用"></a><strong>.new </strong>使用</h3><blockquote>
+<p>如果希望创建内部类对象，则必须先拥有外部类对象前提下才能创建，这是因为内部类对象会暗暗地连接到创建它的外部类对象上。这里就先不仔细说明，等看过例子之后在来说明好理解一些。创建内部类的格式是</p>
+<pre><code>outterObject.new    outterclass.innerClass
+</code></pre><p>也就是外部类的对象后面跟上圆点和new。</p>
+<pre><code>public class OuterClass {
+   private String name ;
+   private int age;
+
+   /**省略getter和setter方法**/
+
+   public class InnerClass{
+       public InnerClass(){
+           name = &quot;chenssy&quot;;
+           age = 23;
+       }
+
+       public void display(){
+           System.out.println(&quot;name：&quot; + getName() +&quot;   ;age：&quot; + getAge());
+       }
+   }
+
+   public static void main(String[] args) {
+       OuterClass outerClass = new OuterClass();
+       OuterClass.InnerClass innerClass = outerClass.new InnerClass();
+       innerClass.display();
+   }
+}
+--------------
+Output：
+name：chenssy   ;age：23
+</code></pre></blockquote>
+<p>通过上面的例子你大概能明白<strong>.this</strong>和<strong>.new</strong>的作用。</p>
+<p>通过上面的介绍相信你对成员内部类有一定的了解了，但肯定也会有一些以后，为什么内部类会自动拥有对其外部类所有成员的访问权。这是如何做到的呢？当某个外部类创建完一个内部类对象时，此内部类对象必定会秘密地捕获一个指向那个外围类对象的引用。然后，当你访问此外围类的成员时，就是用那个引用来选择外围类的成员。幸运的是，编译器会帮你处理所有的细节。</p>
+</blockquote>
+<h3 id="局部内部类"><a href="#局部内部类" class="headerlink" title="局部内部类"></a>局部内部类</h3><blockquote>
+<p>其实这个名字不是太好，但是又不知道起什么名字。这一部分讲解的类主要是在方法和作用域内的内部类。在一个方法里面或者任意的作用域内定义内部类的理由有俩个：</p>
+<ol>
+<li>实现了某类型的接口，于是可以创建并返回对其的引用。</li>
+<li>你要解决一个复杂的问题，想创建一个类来辅助你的解决方案，但又不希望这个类是公共可用的。</li>
+</ol>
+<p>下面使用来个具体的例子来讲解，因为这一部分没有什么好讲解的，主要是自己体会。</p>
+<pre><code class="Java">public class Parcel5{
+ private int i= 0;
+ public Destination destination(String s ){
+   class PDestination implements Destination{
+     private String label;
+     private PDestination(Strng whereTo){
+       label = whereTo;
+     }
+     public String readLable(){
+       return label;
+     }
+   }
+   return new PDestination(s);
+ }
+ public static void main(String[] args){
+   Parcel5 p =new Parcel5();
+   Destination d = p.destination(&quot;fuyang&quot;);
+ }
+}
+</code></pre>
+<p>上面的代码演示的是定义在方法中的内部类，不过在这里有一点需要注意的是，这个内部类的范围是在方法内。也就是他的作用域就在方法内部。所以方法外面的属性是访问不到的，但是可以访问方法内的变量。</p>
+<pre><code class="java">public class Parcel6 {
+   private void internalTracking(boolean b){
+       if(b){
+           class TrackingSlip{
+               private String id;
+               TrackingSlip(String s) {
+                   id = s;
+               }
+               String getSlip(){
+                   return id;
+               }
+           }
+           TrackingSlip ts = new TrackingSlip(&quot;chenssy&quot;);
+           String string = ts.getSlip();
+       }
+
+         // 到这里就不能使用上面定义的TrackingSlip内部类了。
+       //下面这句话就会编译报错
+         // TrackingSlip ts = new TrackingSlip(&quot;chenssy&quot;);
+   }
+
+   public void track(){
+       internalTracking(true);
+   }
+
+   public static void main(String[] args) {
+       Parcel6 parcel6 = new Parcel6();
+       parcel6.track();
+   }
+}
+</code></pre>
+</blockquote>
+<h3 id="静态内部类"><a href="#静态内部类" class="headerlink" title="静态内部类"></a>静态内部类</h3><blockquote>
+<p>使用static修饰的内部类我们称之为静态内部类，不过我们更喜欢称之为嵌套内部类。静态内部类与非静态内部类之间存在一个最大的区别，我们知道非静态内部类在编译完成之后会隐含地保存着一个引用，该引用是指向创建它的外围类，但是静态内部类却没有。没有这个引用就意味着：</p>
+<p>​      <strong>1、</strong> 它的创建是不需要依赖于外围类的。</p>
+<p>​      <strong>2、</strong> 它不能使用任何外围类的非static成员变量和方法。</p>
+<pre><code class="java">public class OuterClass {
+   private String sex;
+   public static String name = &quot;chenssy&quot;;
+
+   /**
+    *静态内部类
+    */
+   static class InnerClass1{
+       /* 在静态内部类中可以存在静态成员 */
+       public static String _name1 = &quot;chenssy_static&quot;;
+
+       public void display(){
+           /* 
+            * 静态内部类只能访问外围类的静态成员变量和方法
+            * 不能访问外围类的非静态成员变量和方法
+            */
+           System.out.println(&quot;OutClass name :&quot; + name);
+       }
+   }
+
+   /**
+    * 非静态内部类
+    */
+   class InnerClass2{
+       /* 非静态内部类中不能存在静态成员 */
+       public String _name2 = &quot;chenssy_inner&quot;;
+       /* 非静态内部类中可以调用外围类的任何成员,不管是静态的还是非静态的 */
+       public void display(){
+           System.out.println(&quot;OuterClass name：&quot; + name);
+       }
+   }
+
+
+   public void display(){
+       /* 外围类访问静态内部类：内部类. */
+       System.out.println(InnerClass1._name1);
+       /* 静态内部类 可以直接创建实例不需要依赖于外围类 */
+       new InnerClass1().display();
+
+       /* 非静态内部的创建需要依赖于外围类 */
+       OuterClass.InnerClass2 inner2 = new OuterClass().new InnerClass2();
+       /* 方位非静态内部类的成员需要使用非静态内部类的实例 */
+       System.out.println(inner2._name2);
+       inner2.display();
+   }
+
+   public static void main(String[] args) {
+       OuterClass outer = new OuterClass();
+       outer.display();
+   }
+}
+----------------
+Output:
+chenssy_static
+OutClass name :chenssy
+chenssy_inner
+OuterClass name：chenssy
+</code></pre>
+</blockquote>
+<h3 id="匿名内部类"><a href="#匿名内部类" class="headerlink" title="匿名内部类"></a>匿名内部类</h3><blockquote>
+<p>匿名内部类可以简单理解就是没有名字的类。我们直接用例子演示可以说的更清楚。</p>
+<pre><code class="java">button2.addActionListener(  
+               new ActionListener(){  
+                   public void actionPerformed(ActionEvent e) {  
+                       System.out.println(&quot;你按了按钮二&quot;);  
+                   }  
+               });
+</code></pre>
+<p>相信很多人都写过与上面类似的代码，这其实就是匿名类。其实就是在定义的时候就创建这个类的对象，但因为没有类名，所以以后就不能在创建使用。</p>
+<pre><code class="java">public class OuterClass {
+   public InnerClass getInnerClass(final int num,String str2){
+       return new InnerClass(){
+           int number = num + 3;
+           public int getNumber(){
+               return number;
+           }
+       };  /* 注意：分号不能省 */
+   }
+
+   public static void main(String[] args) {
+       OuterClass out = new OuterClass();
+       InnerClass inner = out.getInnerClass(2, &quot;chenssy&quot;);
+       System.out.println(inner.getNumber());
+   }
+}
+
+interface InnerClass {
+   int getNumber();
+}
+
+----------------
+Output:
+</code></pre>
+<p> 这里我们就需要看清几个地方</p>
+<p>​        <strong>1、</strong> 匿名内部类是没有访问修饰符的。</p>
+<p>​        <strong>2、</strong> new 匿名内部类，这个类首先是要存在的。如果我们将那个InnerClass接口注释掉，就会出现编译出错。</p>
+<p>​         <strong>3、</strong> 注意getInnerClass()方法的形参，第一个形参是用final修饰的，而第二个却没有。同时我们也发现第二个形参在匿名内部类中没有使用过，所以当所在方法的形参需要被匿名内部类使用，那么这个形参就必须为final。</p>
+<p>​        <strong>4、</strong> 匿名内部类是没有构造方法的。因为它连名字都没有何来构造方法。</p>
+</blockquote>
+<h3 id="为什么要使用内部类"><a href="#为什么要使用内部类" class="headerlink" title="为什么要使用内部类"></a>为什么要使用内部类</h3><blockquote>
+<p>​        使用内部类最吸引人的原因是：<strong>每个内部类都能独立的继承自一个接口的实现，所以无论外围类是否已经继承了某个接口的实现，对于内部类都没有影响</strong>。</p>
+<p>​         在我们程序设计中有时候会存在一些使用接口很难解决的问题，这个时候我们可以利用内部类提供的、可以继承多个具体的或者抽象的类的能力来解决这些程序设计问题。可以这样说，接口只是解决了部分问题，而内部类使得多重继承的解决方案变得更加完整。</p>
+<p>同时使用内部类还可以获得以下的一些特性：</p>
+<ol>
+<li>内部类可以有多个实例，每个实例都有自己的状态信息，并且与其外围里对象的信息相互独立。</li>
+<li>在单个外围类中，可以多个内部类以不同的方式实现同一个接口或者继承同一个类。</li>
+<li>创建内部类对象的时刻并不依赖于外部类的创建。</li>
+<li>内部类并没有令人迷惑的”is-a”关系，他就是一个独立的实体。</li>
+</ol>
+<p>以上主要摘自《Thinking in java》</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/190054bc/" rel="bookmark">String、StringBuffer和StringBuilder对比</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/633a03ca/" rel="bookmark">枚举</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/e19d83df/">内部类的定义与分类</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2018年03月22日 - 17:14</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/e19d83df/" title="内部类的定义与分类">内部类的定义与分类</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/e19d83df/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java基础/" rel="tag">  <i class="fa fa-tag"></i> java基础</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/633a03ca/" rel="next" title="枚举">
+                <i class="fa fa-chevron-left"></i> 枚举
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/50d898f6/" rel="prev" title="伪共享（false sharing）并发编程无声的性能杀手">
+                伪共享（false sharing）并发编程无声的性能杀手 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#内部类的定义与分类"><span class="nav-text">内部类的定义与分类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#成员内部类"><span class="nav-text">成员内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#this-和-new的使用"><span class="nav-text">.this 和 .new的使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#this使用"><span class="nav-text">.this使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#new-使用"><span class="nav-text">.new 使用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#局部内部类"><span class="nav-text">局部内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#静态内部类"><span class="nav-text">静态内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#匿名内部类"><span class="nav-text">匿名内部类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#为什么要使用内部类"><span class="nav-text">为什么要使用内部类</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/e19d83df/";
+        this.page.identifier = "posts/e19d83df/";
+        this.page.title = '内部类的定义与分类';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

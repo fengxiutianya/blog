@@ -1,0 +1,2133 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概要首先，对Collection进行说明。下面是Collection的继承关系的主要类图，（这里只列举了抽象类和接口，来说明Collection的整体结构）  Collection是一个接口，它主要的俩个分支是：List 和Set。 List和Set都是接口，他们继承于Collection。 List是有序队列，这里所说的有序队列是指，按照什么顺序添加，可以以相同的顺序取出来，List中可以有相同">
+<meta name="keywords" content="集合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 集合系列02之 Collection">
+<meta property="og:url" content="http://fengxiutianya.top/posts/9646a357/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概要首先，对Collection进行说明。下面是Collection的继承关系的主要类图，（这里只列举了抽象类和接口，来说明Collection的整体结构）  Collection是一个接口，它主要的俩个分支是：List 和Set。 List和Set都是接口，他们继承于Collection。 List是有序队列，这里所说的有序队列是指，按照什么顺序添加，可以以相同的顺序取出来，List中可以有相同">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-155.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 集合系列02之 Collection">
+<meta name="twitter:description" content="概要首先，对Collection进行说明。下面是Collection的继承关系的主要类图，（这里只列举了抽象类和接口，来说明Collection的整体结构）  Collection是一个接口，它主要的俩个分支是：List 和Set。 List和Set都是接口，他们继承于Collection。 List是有序队列，这里所说的有序队列是指，按照什么顺序添加，可以以相同的顺序取出来，List中可以有相同">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-155.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/9646a357/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java 集合系列02之 Collection | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/9646a357/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java 集合系列02之 Collection
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 09:13:00" itemprop="dateCreated datePublished" datetime="2019-03-04T09:13:00+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/collections/" itemprop="url" rel="index"><span itemprop="name">collections</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/9646a357/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/9646a357/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/9646a357/" class="leancloud_visitors" data-flag-title="Java 集合系列02之 Collection">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">20k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">18 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h2><p>首先，对Collection进行说明。下面是Collection的继承关系的主要类图，（这里只列举了抽象类和接口，来说明Collection的整体结构）</p>
+<p><img src="/images/pasted-155.png" alt="collection 整体架构"></p>
+<p>Collection是一个接口，它主要的俩个分支是：<strong>List</strong> 和<strong>Set</strong>。</p>
+<p><strong>List</strong>和<strong>Set</strong>都是接口，他们继承于Collection。</p>
+<p>List是有序队列，这里所说的有序队列是指，按照什么顺序添加，可以以相同的顺序取出来，List中可以有相同的元素。</p>
+<p>Set可以和数学概念中的集合类比，Set中不允许有重复的元素。</p>
+<p>由上面的类图可以看出，首先抽象出了一个AbstractCollection抽象类，实现了Collection接口中的大部分方法，方便后面代码的编写。接着AbstractList 和 AbstractSet继承了AbstractCollection。其中AbstraList实现了List中特有的一写方法，AbstractSet实现了对于Set来说通用的一些方法。这样做可以方便子类的编写。这很好的体现了面向对象的思想。</p>
+<p>另外要说明的一点是，Collection继承了Iterator接口，所以每一个实现了Collection接口的类中，都可以使用迭代器遍历。List系列的集合实现了一个特有的ListIterator接口，在这个接口中增加了一些添加，删除等方法。</p>
+<p>通过上面的介绍可以发现，Collection体系中的集合并不是特别的复杂，所以只要细心的理一下，还是很容易理解和使用的。java 8新增加了default方法，还有流（Stream），因为我们关注的是集合的使用，因此在这里就省略这部分内容。后面我会专门写一系列的博客来讲解java8中的流。</p>
+<a id="more"></a>
+<h2 id="主要内容"><a href="#主要内容" class="headerlink" title="主要内容"></a>主要内容</h2><ol>
+<li><p>Collection 简介</p>
+</li>
+<li><p>List 简介</p>
+</li>
+<li><p>Set 简介</p>
+</li>
+<li><p>AbstractCollection 源码分析</p>
+</li>
+<li><p>AbstractList    源码分析 </p>
+</li>
+<li><p>AbstractSet    源码分析</p>
+</li>
+<li><p>ListIterator</p>
+<p>注：Iterator 请看我的另一篇博客<a href="http://blog.csdn.net/u014569188/article/details/78881952" target="_blank" rel="noopener">Iterator 和 iterable 区别</a></p>
+</li>
+</ol>
+<h3 id="1-Collection-简介"><a href="#1-Collection-简介" class="headerlink" title="1. Collection 简介"></a>1. Collection 简介</h3><p>Collection 定义如下</p>
+<pre><code class="java">public interface Collection&lt;E&gt; extends Iterable&lt;E&gt;{}
+</code></pre>
+<p>本身是一个接口，高度抽象出来集合，它包含了集合的基本操作：添加、删除、清空、遍历、是否为空、获取大小、是否保护某元素等等。</p>
+<p>在Java API规定，所有实现Collection接口的子类（直接子类和间接子类）都必须实现俩种构造参数：不带参数的构造参数（为了创建出一个空的集合类）和带参数的构造参数（用参数创建出一个新的集合类，也就是可以转换集合类）。</p>
+<pre><code class="java">//Collection 接口
+public abstract boolean add(E e)  //添加元素
+public abstract boolean add(Collection&lt;? extend E&gt; c) //添加集合
+public abstract void clear()   //清空集合
+public abstract boolean contains(Object o) //判断集合是否包含此元素
+public abstract boolean containsAll(Collection&lt;?&gt; c)
+                                  //判断集合中是否包含参数集合中所有的元素
+public abstract boolean  equals(Object object)  //比较俩个是否相同
+public abstract int     hashCode()   //返回hash值
+public abstract boolean         isEmpty()    //是否为空
+public abstract Iterator&lt;E&gt;     iterator()   //返回迭代器
+public abstract boolean remove(Object object)  //删除某个元素
+public abstract boolean removeAll(Collection&lt;?&gt; collection)  //删除参数中的元素        
+public abstract boolean retainAll(Collection?&gt; collection)  //保留参数集合中元素
+public abstract int             size()  //返回集合的大小
+public abstract &lt;T&gt; T[]         toArray(T[] array) //返回T类型的数组
+public abstract Object[]        toArray()  //返回包含集合所有元素的集，是Object类型
+</code></pre>
+<h3 id="2-List-简介"><a href="#2-List-简介" class="headerlink" title="2. List 简介"></a>2. List 简介</h3><p>List 定义如下：</p>
+<pre><code>public interface List&lt;E&gt; extends Collection&lt;E&gt; {}
+</code></pre><p>List 是一个继承了Collection的接口，是集合的一种，是一个有序集合。List中的每一个集合都有一个索引，第一个元素的索引是0，往后的元素一次加1，List中允许有重复的元素</p>
+<p>关于API方面。既然List是继承于Collection接口，它自然就包含了Collection中的全部函数接口；由于List是有序队列，它也额外的有自己的API接口。主要有“添加、删除、获取、修改指定位置的元素”、“获取List中的子队列”等。</p>
+<pre><code class="java">// 相比与Collection，List新增的API：
+abstract void                add(int location, E object) //在指定的位置增加元素
+                                  //在指定的位置开始增加元素
+abstract boolean             addAll(int location, Collection&lt;? extends E&gt; c)
+abstract E                   get(int location) //得到指定位置的元素
+abstract int                 indexOf(Object object)  //返回第一个出现出现元素的索引
+abstract int                 lastIndexOf(Object object) //返回最后一个出现出现元素的索引
+abstract ListIterator&lt;E&gt;     listIterator(int location)  //从location位置开始返回
+abstract ListIterator&lt;E&gt;     listIterator()//返回listIterator对象
+abstract E                   remove(int location)
+abstract E                   set(int location, E object) //替换某个位置的元素
+abstract List&lt;E&gt;             subList(int start, int end) //返回当前List的子集
+</code></pre>
+<h3 id="3-Set-简介"><a href="#3-Set-简介" class="headerlink" title="3. Set 简介"></a>3. Set 简介</h3><p>Set的定义如下：</p>
+<pre><code class="java">public interface Set&lt;E&gt; extends Collection&lt;E&gt; {}
+</code></pre>
+<p>Set是一个继承与Collection的接口，也是集合中的一种。Set是不允许有重复元素的集合</p>
+<p>在API上，和Collection完全一样</p>
+<h3 id="4-AbstractCollection"><a href="#4-AbstractCollection" class="headerlink" title="4. AbstractCollection"></a>4. AbstractCollection</h3><p>AbstractCollection 定义如下：</p>
+<pre><code class="Java">public abstract class AbstractCollection&lt;E&gt; implements Collection&lt;E&gt; {}
+</code></pre>
+<p>AbstractCollection 是一个抽象类，他实现了Collection中除Iterator()和size()之外的函数</p>
+<p>AbstractCollection的主要作用：它实现了Collection接口中的大部分函数。从而方便其它类实现Collection，比如ArrayList、LinkedList等，它们这些类想要实现Collection接口，通过继承AbstractCollection就已经实现了大部分的接口了。</p>
+<p>另外在集合中，很多的操作都是依赖于迭代器。而不同类型的集合迭代器的实现方式可能不同，因此实现迭代器一般都会放在子类中实现。</p>
+<pre><code class="Java">//对AbstractCollection的源码分析
+package java.util;
+public abstract class AbstractCollection&lt;E&gt; implements Collection&lt;E&gt; {
+
+    protected AbstractCollection() {
+
+    }
+
+    // 查询操作
+
+    //有collection的子类有不同的种类
+    //因此不同种类的迭代器可能不相同，这里就没有实现
+    public abstract Iterator&lt;E&gt; iterator();
+
+    //返回当前集合的大小
+    public abstract int size();
+
+    //判断当前集合是否为空，
+    //只要size等于0说明没有元素
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    //由于每个集合都有迭代器，
+    //因此可以通过迭代器进行遍历，
+    //然后判断指定元素是否存在
+    public boolean contains(Object o) {
+        Iterator&lt;E&gt; it = iterator();
+        if (o == null) {
+            while (it.hasNext())
+                if (it.next() == null)
+                    return true;
+        } else {
+            while (it.hasNext())
+                if (o.equals(it.next()))
+                    return true;
+        }
+        return false;
+    }
+
+    //返回object类型的数组，
+    public Object[] toArray() {
+        // 先得到一个预期的集合大小，为了防止在遍历是有其他线程修改了集合
+        Object[] r = new Object[size()];
+        Iterator&lt;E&gt; it = iterator();
+        for (int i = 0; i &lt; r.length; i++) {
+            if (!it.hasNext()) // 少于预期的集合大小，返回一个和新的集合大小相同数组
+                return Arrays.copyOf(r, i);
+            r[i] = it.next();
+        }
+        //如果预期的大小小于集合的size，则利用finishToArray返回这个集合最终转换的数组
+        return it.hasNext() ? finishToArray(r, it) : r;
+    }
+
+    //返回指定指定类型的数组，不是object类型的
+    @SuppressWarnings(&quot;unchecked&quot;)
+    public &lt;T&gt; T[] toArray(T[] a) {
+        // 先得到一个预期的集合大小，为了防止在遍历是有其他线程修改了集合
+        int size = size();
+        //通过反射创建指定类型的数组
+        T[] r = a.length &gt;= size ? a : (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+        Iterator&lt;E&gt; it = iterator();
+
+        for (int i = 0; i &lt; r.length; i++) {
+            if (!it.hasNext()) { // 少于预期的大小
+                if (a == r) {
+                    r[i] = null; // null-terminate
+                } else if (a.length &lt; i) {
+                    return Arrays.copyOf(r, i);
+                } else {
+                    System.arraycopy(r, 0, a, 0, i);
+                    if (a.length &gt; i) {
+                        a[i] = null;
+                    }
+                }
+                return a;
+            }
+            r[i] = (T) it.next();
+        }
+        // 超过预期的集合大小
+        return it.hasNext() ? finishToArray(r, it) : r;
+    }
+
+    //数组的最大长度，有虚拟机内部会在array头部存储一些信息，
+    //因此最大长度没有达到Integer的最大值
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    //当在进行toArray操作时，集合大小发生改变，
+    //则会使用下面的操作，重新分配数组的大小，并进行拷贝
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private static &lt;T&gt; T[] finishToArray(T[] r, Iterator&lt;?&gt; it) {
+        int i = r.length;
+        while (it.hasNext()) {
+            int cap = r.length;
+            if (i == cap) {
+                int newCap = cap + (cap &gt;&gt; 1) + 1;
+                // overflow-conscious code
+                if (newCap - MAX_ARRAY_SIZE &gt; 0)
+                    newCap = hugeCapacity(cap + 1);
+                r = Arrays.copyOf(r, newCap);
+            }
+            r[i++] = (T) it.next();
+        }
+        // 如果数组的实际长度和当前数组的长度不相等，则缩短当前数组的长度
+        return (i == r.length) ? r : Arrays.copyOf(r, i);
+    }
+
+    private static int hugeCapacity(int minCapacity) {
+        if (minCapacity &lt; 0) // overflow
+            throw new OutOfMemoryError(&quot;Required array size too large&quot;);
+        return (minCapacity &gt; MAX_ARRAY_SIZE) ? Integer.MAX_VALUE : MAX_ARRAY_SIZE;
+    }
+
+    // 修改集合操作
+
+    // 添加操作
+    public boolean add(E e) {
+        throw new UnsupportedOperationException();
+    }
+
+    //通过迭代器移除和当前对象所匹配的元素
+    //只会移除1个
+    public boolean remove(Object o) {
+        Iterator&lt;E&gt; it = iterator();
+        if (o == null) {
+            while (it.hasNext()) {
+                if (it.next() == null) {
+                    it.remove();
+                    return true;
+                }
+            }
+        } else {
+            while (it.hasNext()) {
+                if (o.equals(it.next())) {
+                    it.remove();
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // 批量操作
+
+    // 判断给定的集合是否在当前collection中都存在
+    public boolean containsAll(Collection&lt;?&gt; c) {
+        for (Object e : c)
+            if (!contains(e))
+                return false;
+        return true;
+    }
+
+    //添加集合
+    public boolean addAll(Collection&lt;? extends E&gt; c) {
+        boolean modified = false;
+        for (E e : c)
+            if (add(e))
+                modified = true;
+        return modified;
+    }
+
+    //删除当前集合中和参数给定集合匹配的元素
+    public boolean removeAll(Collection&lt;?&gt; c) {
+        Objects.requireNonNull(c);
+        boolean modified = false;
+        Iterator&lt;?&gt; it = iterator();
+        while (it.hasNext()) {
+            if (c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
+    //保留当前集合中和参数给定集合匹配的元素
+    public boolean retainAll(Collection&lt;?&gt; c) {
+        Objects.requireNonNull(c);
+        boolean modified = false;
+        Iterator&lt;E&gt; it = iterator();
+        while (it.hasNext()) {
+            if (!c.contains(it.next())) {
+                it.remove();
+                modified = true;
+            }
+        }
+        return modified;
+    }
+
+    //清空元素，利用迭代器里面的remove
+    //如果没有实现这个方法
+    //则抛出不支持该操作异常
+    public void clear() {
+        Iterator&lt;E&gt; it = iterator();
+        while (it.hasNext()) {
+            it.next();
+            it.remove();
+        }
+    }
+
+    //  返回当前collection元素组成的string
+    public String toString() {
+        Iterator&lt;E&gt; it = iterator();
+        if (!it.hasNext())
+            return &quot;[]&quot;;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(&#39;[&#39;);
+        for (;;) {
+            E e = it.next();
+            sb.append(e == this ? &quot;(this Collection)&quot; : e);
+            if (!it.hasNext())
+                return sb.append(&#39;]&#39;).toString();
+            sb.append(&#39;,&#39;).append(&#39; &#39;);
+        }
+    }
+}
+</code></pre>
+<h3 id="5-AbstractList"><a href="#5-AbstractList" class="headerlink" title="5. AbstractList"></a>5. AbstractList</h3><p>AbstractList的定义如下：</p>
+<pre><code class="Java">public abstract class AbstractList&lt;E&gt; extends AbstractCollection&lt;E&gt; implements List&lt;E&gt; {}
+</code></pre>
+<p>AbstractList是一个继承于AbstractCollection，并且实现List接口的抽象类。</p>
+<p>AbstractList的主要作用：它实现了List接口中的大部分函数。从而方便其它集合类继承List。</p>
+<p>另外，和AbstractCollection相比，AbstractList抽象类中，实现了iterator()接口。</p>
+<p>有以下的方法没有实现</p>
+<pre><code>1. public abstract E get(int var1)
+2. public E set(int var1, E var2)
+3. public void add(int var1, E var2)
+4. public E remove(int var1)
+</code></pre><pre><code class="Java">package java.util;
+public abstract class AbstractList&lt;E&gt; 
+            extends AbstractCollection&lt;E&gt; implements List&lt;E&gt; {
+
+    //当前list的修改操作次数，用于fail-fast决策
+    protected transient int modCount = 0;
+
+    protected AbstractList() {
+    }
+
+    //在末尾增加元素
+    public boolean add(E var1) {
+        this.add(this.size(), var1);
+        return true;
+    }
+
+    //得到指定位置的元素 
+    //需要子类实现
+    public abstract E get(int var1);
+
+    //替换指定位置的元素
+    //如果未实现则抛出不支持操作异常
+    public E set(int var1, E var2) {
+        throw new UnsupportedOperationException();
+    }
+
+    //在指定位置增加元素
+    //如果未实现则抛出不支持操作
+    public void add(int var1, E var2) {
+        throw new UnsupportedOperationException();
+    }
+
+    //移除指定位置元素
+    //如果未实现，则抛出不支持操作
+    public E remove(int var1) {
+        throw new UnsupportedOperationException();
+    }
+
+    //搜索操作
+
+    //利用listIterator来搜索指定元素
+    //包含null类型的元素 
+    //搜索不到返回 -1
+    //如果有，返回第一个匹配元素的索引
+    public int indexOf(Object var1) {
+        ListIterator var2 = this.listIterator();
+        if (var1 == null) {
+            while (var2.hasNext()) {
+                if (var2.next() == null) {
+                    return var2.previousIndex();
+                }
+            }
+        } else {
+            while (var2.hasNext()) {
+                if (var1.equals(var2.next())) {
+                    return var2.previousIndex();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    //利用listIterator来搜索指定元素
+    //包含null类型的元素 
+    //搜索不到返回 -1
+    //如果有，返回最后一个匹配元素的索引
+    public int lastIndexOf(Object var1) {
+        ListIterator var2 = this.listIterator(this.size());
+        if (var1 == null) {
+            while (var2.hasPrevious()) {
+                if (var2.previous() == null) {
+                    return var2.nextIndex();
+                }
+            }
+        } else {
+            while (var2.hasPrevious()) {
+                if (var1.equals(var2.previous())) {
+                    return var2.nextIndex();
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    //清空元素
+    public void clear() {
+        this.removeRange(0, this.size());
+    }
+
+    //在指定位置之后添加集合
+    public boolean addAll(int var1, Collection&lt;? extends E&gt; var2) {
+        this.rangeCheckForAdd(var1);
+        boolean var3 = false;
+
+        for (Iterator var4 = var2.iterator(); var4.hasNext(); var3 = true) {
+            Object var5 = var4.next();
+            this.add(var1++, var5);
+        }
+
+        return var3;
+    }
+
+    //得到迭代器
+    public Iterator&lt;E&gt; iterator() {
+        return new AbstractList.Itr();
+    }
+
+    //得到list特有的ListIterator迭代器
+    public ListIterator&lt;E&gt; listIterator() {
+        return this.listIterator(0);
+    }
+
+    //从指定元素位置开始
+    //创建一个新的迭代器
+    public ListIterator&lt;E&gt; listIterator(int var1) {
+        this.rangeCheckForAdd(var1);
+        return new AbstractList.ListItr(var1);
+    }
+
+    public List&lt;E&gt; subList(int var1, int var2) {
+        return (List) (this instanceof RandomAccess ? 
+                new RandomAccessSubList(this, var1, var2) : 
+                                    new SubList(this, var1, var2));
+    }
+
+    public boolean equals(Object var1) {
+        if (var1 == this) {
+            return true;
+        } else if (!(var1 instanceof List)) {
+            return false;
+        } else {
+            ListIterator var2 = this.listIterator();
+            ListIterator var3 = ((List) var1).listIterator();
+
+            while (true) {
+                if (var2.hasNext() &amp;&amp; var3.hasNext()) {
+                    Object var4 = var2.next();
+                    Object var5 = var3.next();
+                    if (var4 == null) {
+                        if (var5 == null) {
+                            continue;
+                        }
+                    } else if (var4.equals(var5)) {
+                        continue;
+                    }
+
+                    return false;
+                }
+
+                return !var2.hasNext() &amp;&amp; !var3.hasNext();
+            }
+        }
+    }
+
+    public int hashCode() {
+        int var1 = 1;
+
+        Object var3;
+        for (Iterator var2 = this.iterator(); var2.hasNext(); 
+                    var1 = 31 * var1 + (var3 == null ? 0 : var3.hashCode())) {
+            var3 = var2.next();
+        }
+        return var1;
+    }
+
+    protected void removeRange(int var1, int var2) {
+        ListIterator var3 = this.listIterator(var1);
+        int var4 = 0;
+
+        for (int var5 = var2 - var1; var4 &lt; var5; ++var4) {
+            var3.next();
+            var3.remove();
+        }
+    }
+
+    //检测添加的位置范围是否合适
+    private void rangeCheckForAdd(int var1) {
+        if (var1 &lt; 0 || var1 &gt; this.size()) {
+            throw new IndexOutOfBoundsException(this.outOfBoundsMsg(var1));
+        }
+    }
+    //设置超出集合界限的模板消息
+    private String outOfBoundsMsg(int var1) {
+        return &quot;Index: &quot; + var1 + &quot;, Size: &quot; + this.size();
+    }
+
+    //借助于Iterator实现双向链表,
+    private class ListItr extends AbstractList&lt;E&gt;.Itr implements ListIterator&lt;E&gt; {
+        ListItr(int var2) {
+            super(null);
+            this.cursor = var2;
+        }
+
+        public boolean hasPrevious() {
+            return this.cursor != 0;
+        }
+
+        public E previous() {
+            this.checkForComodification();
+
+            try {
+                int var1 = this.cursor - 1;
+                Object var2 = AbstractList.this.get(var1);
+                this.lastRet = this.cursor = var1;
+                return var2;
+            } catch (IndexOutOfBoundsException var3) {
+                this.checkForComodification();
+                throw new NoSuchElementException();
+            }
+        }
+
+        public int nextIndex() {
+            return this.cursor;
+        }
+
+        public int previousIndex() {
+            return this.cursor - 1;
+        }
+
+        public void set(E var1) {
+            if (this.lastRet &lt; 0) {
+                throw new IllegalStateException();
+            } else {
+                this.checkForComodification();
+
+                try {
+                    AbstractList.this.set(this.lastRet, var1);
+                    this.expectedModCount = AbstractList.this.modCount;
+                } catch (IndexOutOfBoundsException var3) {
+                    throw new ConcurrentModificationException();
+                }
+            }
+        }
+
+        public void add(E var1) {
+            this.checkForComodification();
+
+            try {
+                int var2 = this.cursor;
+                AbstractList.this.add(var2, var1);
+                this.lastRet = -1;
+                this.cursor = var2 + 1;
+                this.expectedModCount = AbstractList.this.modCount;
+            } catch (IndexOutOfBoundsException var3) {
+                throw new ConcurrentModificationException();
+            }
+        }
+    }
+
+    // 实现list通用的迭代器，
+    // 主要借助的是外部类的两个方法，remove(int) 和 get(int)
+    private class Itr implements Iterator&lt;E&gt; {
+        int cursor; //当前迭代器指向的位置
+        int lastRet; //指向next操作的前一个元素
+        int expectedModCount; //外部集合类修改集合的次数，用于fail-fast
+
+        private Itr() {
+            this.cursor = 0; //开始的位置
+            this.lastRet = -1; //没有开始进行迭代操作
+
+            //外部集合类修改集合的次数，用于fail-fast
+            this.expectedModCount = AbstractList.this.modCount;                           }
+
+        //利用当前指向的游标和外部类list的大小来判断是否还有下一个元素
+        public boolean hasNext() {
+            return this.cursor != AbstractList.this.size();
+        }
+
+        //返回元素
+        public E next() {
+            //首先利用fail-fast来检测list是否改变，
+            this.checkForComodification();
+
+            try {
+                int var1 = this.cursor;
+                //借助外部集合类得到指定位置的元素
+                Object var2 = AbstractList.this.get(var1);
+                this.lastRet = var1;
+                this.cursor = var1 + 1;
+                return var2;
+            } catch (IndexOutOfBoundsException var3) { //捕获超出边界异常
+
+                //判断是否是当前list被并发修改，如果是，则抛出此异常
+                this.checkForComodification(); 
+                throw new NoSuchElementException(); //正常抛出异常
+            }
+        }
+
+        //实现Iterator 接口 的remove方法
+        public void remove() {
+            if (this.lastRet &lt; 0) {
+                throw new IllegalStateException();
+            } else {
+                this.checkForComodification();
+
+                try {
+                    //借助外部类的remove方法进行删除
+                    AbstractList.this.remove(this.lastRet);
+                    if (this.lastRet &lt; this.cursor) { //当期那游标减1
+                        --this.cursor;
+                    }
+                    this.lastRet = -1;
+                        //重新设置list的大小
+                    this.expectedModCount = AbstractList.this.modCount; 
+                } catch (IndexOutOfBoundsException var2) {
+                    throw new ConcurrentModificationException();
+                }
+            }
+        }
+
+        // 判断list是否已经修改，
+        // 如果修改则抛出并发修改错误
+        final void checkForComodification() {
+            if (AbstractList.this.modCount != this.expectedModCount) {
+                throw new ConcurrentModificationException();
+            }
+        }
+    }
+}
+
+</code></pre>
+<h3 id="6-AbstractSet"><a href="#6-AbstractSet" class="headerlink" title="6 AbstractSet"></a><strong>6 AbstractSet</strong></h3><p>AbstractSet的定义如下： </p>
+<pre><code>public abstract class AbstractSet&lt;E&gt; 
+        extends AbstractCollection&lt;E&gt; 
+            implements Set&lt;E&gt; {}
+</code></pre><p>AbstractSet是一个继承于AbstractCollection，并且实现Set接口的抽象类。由于Set接口和Collection接口中的API完全一样，Set也就没有自己单独的API。</p>
+<p>和AbstractCollection一样，它实现了List中除iterator()和size()之外的函数。</p>
+<p>AbstractSet的主要作用：它实现了Set接口中的大部分函数。从而方便其它类实现Set接口。</p>
+<h3 id="7-ListIterator"><a href="#7-ListIterator" class="headerlink" title="7 ListIterator"></a>7 ListIterator</h3><blockquote>
+<p>ListIterator的定义如下：</p>
+<pre><code>public interface ListIterator&lt;E&gt; extends Iterator&lt;E&gt; {}
+</code></pre><p>ListIterator是一个继承于Iterator的接口，它是队列迭代器。专门用于便利List，能提供向前/向后遍历。相比于Iterator，它新增了添加、是否存在上一个元素、获取上一个元素等等API接口。</p>
+<pre><code class="java">// ListIterator的API
+// 继承于Iterator的接口
+abstract boolean hasNext()
+abstract E next()
+abstract void remove()
+// 新增API接口
+abstract void add(E object)
+abstract boolean hasPrevious()
+abstract int nextIndex()
+abstract E previous()
+abstract int previousIndex()
+abstract void set(E object)
+</code></pre>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/2d62f277/" rel="bookmark">Java 集合系列01之 总体框架</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ab3cc2a5/" rel="bookmark">Java 集合系列07之 Stack源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/719892b8/" rel="bookmark">Java 集合系列09之 Map架构</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8ab0f653/" rel="bookmark">Java集合系列14 之WeakHashMap源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8af04eac/" rel="bookmark">Java 集合系列16之 Set架构</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/9646a357/">Java 集合系列02之 Collection</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月04日 - 09:13</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/9646a357/" title="Java 集合系列02之 Collection">Java 集合系列02之 Collection</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/9646a357/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/集合/" rel="tag">  <i class="fa fa-tag"></i> 集合</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/2d62f277/" rel="next" title="Java 集合系列01之 总体框架">
+                <i class="fa fa-chevron-left"></i> Java 集合系列01之 总体框架
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/6ad3883/" rel="prev" title="Java 集合系列04之 fail-fast总结">
+                Java 集合系列04之 fail-fast总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#主要内容"><span class="nav-text">主要内容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Collection-简介"><span class="nav-text">1. Collection 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-List-简介"><span class="nav-text">2. List 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Set-简介"><span class="nav-text">3. Set 简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-AbstractCollection"><span class="nav-text">4. AbstractCollection</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-AbstractList"><span class="nav-text">5. AbstractList</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-AbstractSet"><span class="nav-text">6 AbstractSet</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-ListIterator"><span class="nav-text">7 ListIterator</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/9646a357/";
+        this.page.identifier = "posts/9646a357/";
+        this.page.title = 'Java 集合系列02之 Collection';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

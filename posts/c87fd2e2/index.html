@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="java 注解 01：基本介绍以及用法概述本篇主要对java Annotation进行了整理。理解 Annotation 的关键，是理解Annotation的语法和用法。下面也单独对此进行了详细的介绍。  Annotation 架构 Annotation 组成部分 Annotation 基本语法和java自带注解介绍 Annotation 的作用">
+<meta name="keywords" content="注解">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java 注解 01：基本介绍以及用法">
+<meta property="og:url" content="http://fengxiutianya.top/posts/c87fd2e2/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="java 注解 01：基本介绍以及用法概述本篇主要对java Annotation进行了整理。理解 Annotation 的关键，是理解Annotation的语法和用法。下面也单独对此进行了详细的介绍。  Annotation 架构 Annotation 组成部分 Annotation 基本语法和java自带注解介绍 Annotation 的作用">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-131.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-132.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-133.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java 注解 01：基本介绍以及用法">
+<meta name="twitter:description" content="java 注解 01：基本介绍以及用法概述本篇主要对java Annotation进行了整理。理解 Annotation 的关键，是理解Annotation的语法和用法。下面也单独对此进行了详细的介绍。  Annotation 架构 Annotation 组成部分 Annotation 基本语法和java自带注解介绍 Annotation 的作用">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-131.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/c87fd2e2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java 注解 01：基本介绍以及用法 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/c87fd2e2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java 注解 01：基本介绍以及用法
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 07:20:00" itemprop="dateCreated datePublished" datetime="2019-03-04T07:20:00+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/c87fd2e2/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/c87fd2e2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/c87fd2e2/" class="leancloud_visitors" data-flag-title="java 注解 01：基本介绍以及用法">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">6.4k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="java-注解-01：基本介绍以及用法"><a href="#java-注解-01：基本介绍以及用法" class="headerlink" title="java 注解 01：基本介绍以及用法"></a>java 注解 01：基本介绍以及用法</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p>本篇主要对java Annotation进行了整理。理解 Annotation 的关键，是理解Annotation的语法和用法。下面也单独对此进行了详细的介绍。</p>
+<ol>
+<li>Annotation 架构</li>
+<li>Annotation 组成部分</li>
+<li>Annotation 基本语法和java自带注解介绍</li>
+<li>Annotation 的作用</li>
+</ol>
+<a id="more"></a>
+<h3 id="Annotation架构"><a href="#Annotation架构" class="headerlink" title="Annotation架构"></a><strong>Annotation架构</strong></h3><p>下面是Annotation整体的架构图，如果你对这个图感到迷惑，可以跳过这一节直接看Annotation的基本语法，然后回来再看。</p>
+<p><img src="/images/pasted-131.png" alt="upload successful"></p>
+<p>下面，我先介绍框架图的左半边(如下图)，即Annotation, RetentionPolicy, ElementType；然后在就Annotation的实现类进行举例说明。</p>
+<p><img src="/images/pasted-132.png" alt="upload successful"></p>
+<h3 id="Annotation组成部分"><a href="#Annotation组成部分" class="headerlink" title="Annotation组成部分"></a>Annotation组成部分</h3><p>java annotation 的组成中，有3个非常重要的主干类。它们分别是：</p>
+<p>(01) Annotation.java</p>
+<pre><code class="java">package java.lang.annotation;
+public interface Annotation {
+
+    boolean equals(Object obj);
+
+    int hashCode();
+
+    String toString();
+
+    Class&lt;? extends Annotation&gt; annotationType();
+}
+</code></pre>
+<p>(02) ElementType.java</p>
+<pre><code class="java">package java.lang.annotation;
+
+public enum ElementType {
+    TYPE,               /* 类、接口（包括注释类型）或枚举声明  */
+
+    FIELD,              /* 字段声明（包括枚举常量）  */
+
+    METHOD,             /* 方法声明  */
+
+    PARAMETER,          /* 参数声明  */
+
+    CONSTRUCTOR,        /* 构造方法声明  */
+
+    LOCAL_VARIABLE,     /* 局部变量声明  */
+
+    ANNOTATION_TYPE,    /* 注释类型声明  */
+
+    PACKAGE             /* 包声明  */
+}
+</code></pre>
+<p>(03) RetentionPolicy.java</p>
+<pre><code class="java">package java.lang.annotation;
+public enum RetentionPolicy {
+    SOURCE,            /* Annotation信息仅存在于编译器处理期间，编译器处理完之后就没有该Annotation信息了  */
+
+    CLASS,             /* 编译器将Annotation存储于类对应的.class文件中。默认行为  */
+
+    RUNTIME            /* 编译器将Annotation存储于class文件中，并且可由JVM读入 */
+}
+</code></pre>
+<p>说明：</p>
+<ol>
+<li><p><strong>Annotation</strong> 是个接口：<br>​      <strong>每1个Annotation</strong> 都与 <strong>1个RetentionPolicy</strong>关联，并且与 <strong>1～n个ElementType</strong>关联。可以通俗的理解为：每1个Annotation对象，都会有唯一的RetentionPolicy属性；至于ElementType属性，则有1~n个。</p>
+</li>
+<li><p><strong>ElementType</strong> 是个枚举类型，它用来指定Annotation的类型，说明Annotation可以在哪里使用。<br> <strong>每1个Annotation</strong> 都与 <strong>1～n个ElementType</strong>关联。</p>
+<p>当Annotation与某个ElementType关联时，就意味着：Annotation有了某种用途。例如，若一个Annotation对象是METHOD类型，则该Annotation只能用来修饰方法。</p>
+</li>
+<li><p><strong>RetentionPolicy</strong> 是枚举类型，它用来指定Annotation的策略。通俗点说，就是不同RetentionPolicy类型的Annotation的作用域不同。<br>​     <strong>每1个Annotation</strong>都与 <strong>1个RetentionPolicy</strong>关联。</p>
+<ul>
+<li>若Annotation的类型为 <strong>SOURCE</strong>，则意味着：Annotation仅存在于编译器处理期间，编译器处理完之后，该Annotation就没用了。<br>​          例如，<code>@Override</code>标志就是一个Annotation。当它修饰一个方法的时候，就意味着该方法覆盖父类的方法；并且在编译期间会进行语法检查！编译器处理完后，<code>@Override</code>就没有任何作用了。</li>
+<li>若Annotation的类型为 <strong>CLASS</strong>，则意味着：编译器将Annotation存储于类对应的.class文件中，它是Annotation的默认行 为。</li>
+<li>若Annotation的类型为 <strong>RUNTIME</strong>，则意味着：编译器将Annotation存储于class文件中，并且可由JVM读入。</li>
+</ul>
+</li>
+</ol>
+<p>这时，只需要记住<em>“每1个Annotation” 都与 “1个RetentionPolicy”关联，并且与 “1～n个ElementType”关联</em>。学完后面的内容之后，再回头看这些内容，会更容易理解。</p>
+<h3 id="Annoation基本语法和java自带注解介绍"><a href="#Annoation基本语法和java自带注解介绍" class="headerlink" title="Annoation基本语法和java自带注解介绍"></a>Annoation基本语法和java自带注解介绍</h3><p>理解了上面的3个类的作用之后，我们接下来可以讲解Annotation实现类的语法定义了。</p>
+<h4 id="1-Annotation基本语法"><a href="#1-Annotation基本语法" class="headerlink" title="1 Annotation基本语法"></a><strong>1 Annotation基本语法</strong></h4><pre><code class="java">@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface MyAnnotation1 {
+
+}
+</code></pre>
+<p>说明：</p>
+<p>上面的作用是定义一个Annotation，它的名字是MyAnnotation1。定义了MyAnnotation1之后，我们可以在代码中通过<code>@MyAnnotation1</code>来使用它。<br>其它的， @Target, @Retention, @interface都是来修饰MyAnnotation1的。下面分别说说它们的含义：</p>
+<ol>
+<li><p><code>@interface</code><br>使用@interface定义注解时，意味着它实现了java.lang.annotation.Annotation接口，即该注解就是一个Annotation。<strong>定义Annotation时，@interface是必须的</strong><br>注意：它和我们通常的implemented实现接口的方法不同。Annotation接口的实现细节都由编译器完成。通过@interface定义注解后，该注解不能继承其他的注解或接口。</p>
+</li>
+<li><p><code>@Target(ElementType.TYPE)</code><br>​      前面我们说过，ElementType 是Annotation的类型属性。而@Target的作用，就是来指定Annotation的类型属性。 <code>@Target(ElementType.TYPE)</code> 的意思就是指定该Annotation的类型是<code>ElementType.TYPE</code>。这就意味着，MyAnnotation1是来修饰<strong>类、接口（包括注释类型）或枚举</strong>声明的注解。<br>注意： 定义Annotation时，@Target可有可无。若有@Target，则该Annotation只能用于它所指定的地方；若没有@Target，则该Annotation可以用于任何地方。</p>
+</li>
+<li><p><code>@Retention(RetentionPolicy.RUNTIME)</code><br>​      前面我们说过，RetentionPolicy 是Annotation的策略属性，而<code>@Retention</code>的作用，就是指定Annotation的策略属性。<code>@Retention(RetentionPolicy.RUNTIME)</code>的意思就是指定该Annotation的策略是<code>RetentionPolicy.RUNTIME</code>。这就意味着，编译器会将该Annotation信息保留在.class文件中，并且能被虚拟机读取。</p>
+<p>注意：定义Annotation时，<code>@Retention</code>可有可无。若没有<code>@Retention</code>，则默认是<code>RetentionPolicy.CLASS</code>。</p>
+</li>
+</ol>
+<h4 id="2-java-中自带的注解"><a href="#2-java-中自带的注解" class="headerlink" title="2 .java 中自带的注解"></a>2 .java 中自带的注解</h4><p>理解了上面java注解的基本语法之后，我们就很容易理解java中自带的Annotation的实现类，即Annotation架构图的右半边。如下图：</p>
+<p><img src="/images/pasted-133.png" alt="upload successful"></p>
+<p><strong>java 常用的Annotation：</strong></p>
+<pre><code class="txt">@Deprecated  -- @Deprecated 所标注内容，不再被建议使用。
+@Override    -- @Override 只能标注方法，表示该方法覆盖父类中的方法。
+@Documented  -- @Documented 所标注内容，可以出现在javadoc中。
+@Inherited   -- @Inherited只能被用来标注“Annotation类型”，它所标注的Annotation具有继承性。
+@Retention   -- @Retention只能被用来标注“Annotation类型”，而且它被用来指定Annotation的RetentionPolicy属性。
+@Target      -- @Target只能被用来标注“Annotation类型”，而且它被用来指定Annotation的ElementType属性。
+@SuppressWarnings -- @SuppressWarnings 所标注内容产生的警告，编译器会对这些警告保持静默。
+</code></pre>
+<p>由于<code>@Deprecated和@Override</code>类似，<code>@Documented, @Inherited, @Retention, @Target</code>类似；下面，我们只对<code>@Deprecated, @SuppressWarnings</code>这2个Annotation进行说明，另外我会单独用一篇文章对<code>@Inherited</code>进行介绍</p>
+<p><strong>@Deprecated</strong></p>
+<p>@Deprecated 的定义如下：</p>
+<pre><code class="java">@Documented
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Deprecated {
+}
+</code></pre>
+<p><strong>说明</strong>：</p>
+<ul>
+<li>@interface – 它的用来修饰Deprecated，意味着Deprecated实现了java.lang.annotation.Annotation接口；即Deprecated就是一个注解。</li>
+<li>@Documented – 它的作用是说明该注解能出现在javadoc中。</li>
+<li>@Retention(RetentionPolicy.RUNTIME) – 它的作用是指定Deprecated的策略是          RetentionPolicy.RUNTIME。这就意味着，编译器会将Deprecated的信息保留在.class文件中，并且能被虚拟机读取。</li>
+</ul>
+<p>@Deprecated 注解的作用是：被其所标注内容，不再被建议使用。</p>
+<p><strong>@SuppressWarnings</strong></p>
+<p>@SuppressWarnings 的定义如下：</p>
+<pre><code class="java">@Target({TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE})
+@Retention(RetentionPolicy.SOURCE)
+public @interface SuppressWarnings {
+
+    String[] value();
+
+}
+</code></pre>
+<p><strong>说明</strong>：</p>
+<ul>
+<li>@interface – 它的用来修饰SuppressWarnings，意味着SuppressWarnings实现了java.lang.annotation.Annotation接口；即SuppressWarnings就是一个注解。</li>
+<li>@Retention(RetentionPolicy.SOURCE) – 它的作用是指定SuppressWarnings的策略是RetentionPolicy.SOURCE。这就意味着，SuppressWarnings信息仅存在于编译器处理期间，编译器处理完之后SuppressWarnings就没有作用了。</li>
+<li>@Target({TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR, LOCAL_VARIABLE}) – 它的作用是指定SuppressWarnings的类型同时包括<code>TYPE, FIELD, METHOD, PARAMETER, CONSTRUCTOR,LOCAL_VARIABLE。</code><br>​       TYPE意味着，它能标注“类、接口（包括注释类型）或枚举声明”。<br>​       FIELD意味着，它能标注“字段声明”。<br>​       METHOD意味着，它能标注“方法”。<br>​       PARAMETER意味着，它能标注“参数”。<br>​       CONSTRUCTOR意味着，它能标注“构造方法”。<br>​       LOCAL_VARIABLE意味着，它能标注“局部变量”。</li>
+<li><p>String[] value(); 意味着，SuppressWarnings能指定参数</p>
+<p>SuppressWarnings 的作用是，让编译器对<strong>它所标注的内容”的某些警告保持静默</strong>。例如，<code>@SuppressWarnings(value={&quot;deprecation&quot;, &quot;unchecked&quot;})</code>表示对它所标注的内容中的 “deprecation不再建议使用警告”和“未检查的转换时的警告”保持沉默。</p>
+</li>
+</ul>
+<p>补充：<strong>SuppressWarnings 常用的关键字的表格</strong></p>
+<pre><code>deprecation  -- 使用了不赞成使用的类或方法时的警告
+unchecked    -- 执行了未检查的转换时的警告，例如当使用集合时没有用泛型 (Generics) 来指定集合保存的类型。
+fallthrough  -- 当 Switch 程序块直接通往下一种情况而没有 Break 时的警告。
+path         -- 在类路径、源文件路径等中有不存在的路径时的警告。
+serial       -- 当在可序列化的类上缺少 serialVersionUID 定义时的警告。
+finally      -- 任何 finally 子句不能正常完成时的警告。
+all          -- 关于以上所有情况的警告。
+</code></pre><h3 id="Annotation-的作用"><a href="#Annotation-的作用" class="headerlink" title="Annotation 的作用"></a><strong>Annotation 的作用</strong></h3><ol>
+<li><p><strong>编译检查</strong>:</p>
+<p>通过代码里标识的元数据让编译器能实现基本的编译检查。</p>
+<p>例如，@SuppressWarnings, @Deprecated和@Override都具有编译检查作用。<br>关于@SuppressWarnings和@Deprecated，已经在“第3部分”中详细介绍过了。这里就不再举例说明了。<br>若某个方法被 @Override的 标注，则意味着该方法会覆盖父类中的同名方法。如果有方法被@Override标示，但父类中却没有“被@Override标注”的同名方法，则编译器会报错。</p>
+</li>
+<li><p><strong>根据Annotation生成帮助文档</strong></p>
+<p>通过给Annotation注解加上@Documented标签，能使该Annotation标签出现在javadoc中。</p>
+</li>
+<li><p><strong>在反射中使用Annotation</strong></p>
+<p>通过代码里标识的注解对代码进行分析。跟踪代码依赖性，实现替代配置文件功能。比较常见的是spring开始的基于注解配置。作用就是减少配置。现在的框架基本都使用了这种配置来减少配置文件的数量。</p>
+</li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ca158b7a/" rel="bookmark">java 注解 02：@Inherited </a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/c87fd2e2/">java 注解 01：基本介绍以及用法</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月04日 - 07:20</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/c87fd2e2/" title="java 注解 01：基本介绍以及用法">java 注解 01：基本介绍以及用法</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/c87fd2e2/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/注解/" rel="tag">  <i class="fa fa-tag"></i> 注解</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/aae77c7e/" rel="next" title="Synchronize关键字使用及其实现原理">
+                <i class="fa fa-chevron-left"></i> Synchronize关键字使用及其实现原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/ca158b7a/" rel="prev" title="java 注解 02：@Inherited ">
+                java 注解 02：@Inherited  <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java-注解-01：基本介绍以及用法"><span class="nav-text">java 注解 01：基本介绍以及用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Annotation架构"><span class="nav-text">Annotation架构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Annotation组成部分"><span class="nav-text">Annotation组成部分</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Annoation基本语法和java自带注解介绍"><span class="nav-text">Annoation基本语法和java自带注解介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-Annotation基本语法"><span class="nav-text">1 Annotation基本语法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-java-中自带的注解"><span class="nav-text">2 .java 中自带的注解</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Annotation-的作用"><span class="nav-text">Annotation 的作用</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/c87fd2e2/";
+        this.page.identifier = "posts/c87fd2e2/";
+        this.page.title = 'java 注解 01：基本介绍以及用法';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

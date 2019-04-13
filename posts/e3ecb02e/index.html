@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Java NIO之浅谈内存映射文件原理与DirectMemory概述 传统文件IO操作原理 什么是内存映射 NIO中内存映射 直接缓冲区（DirectMemory）  学习了很久的NIO，但是一直对NIO中内存映射和DirectMemory有很多的不理解，恰好最近在读《深入理解操作系统》，对其中一些不理解的地点有了自己的一些感悟。此篇文章将结合操作系统谈谈自己对NIO中的内存映射和DirectMe">
+<meta name="keywords" content="NIO,直接内存">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java NIO之浅谈内存映射文件原理与DirectMemory">
+<meta property="og:url" content="http://fengxiutianya.top/posts/e3ecb02e/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="Java NIO之浅谈内存映射文件原理与DirectMemory概述 传统文件IO操作原理 什么是内存映射 NIO中内存映射 直接缓冲区（DirectMemory）  学习了很久的NIO，但是一直对NIO中内存映射和DirectMemory有很多的不理解，恰好最近在读《深入理解操作系统》，对其中一些不理解的地点有了自己的一些感悟。此篇文章将结合操作系统谈谈自己对NIO中的内存映射和DirectMe">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java NIO之浅谈内存映射文件原理与DirectMemory">
+<meta name="twitter:description" content="Java NIO之浅谈内存映射文件原理与DirectMemory概述 传统文件IO操作原理 什么是内存映射 NIO中内存映射 直接缓冲区（DirectMemory）  学习了很久的NIO，但是一直对NIO中内存映射和DirectMemory有很多的不理解，恰好最近在读《深入理解操作系统》，对其中一些不理解的地点有了自己的一些感悟。此篇文章将结合操作系统谈谈自己对NIO中的内存映射和DirectMe">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/e3ecb02e/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java NIO之浅谈内存映射文件原理与DirectMemory | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/e3ecb02e/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java NIO之浅谈内存映射文件原理与DirectMemory
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-13 16:40:00" itemprop="dateCreated datePublished" datetime="2019-01-13T16:40:00+08:00">2019-01-13</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/IO/" itemprop="url" rel="index"><span itemprop="name">IO</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/IO/nio/" itemprop="url" rel="index"><span itemprop="name">nio</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/e3ecb02e/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/e3ecb02e/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/e3ecb02e/" class="leancloud_visitors" data-flag-title="Java NIO之浅谈内存映射文件原理与DirectMemory">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">16k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Java-NIO之浅谈内存映射文件原理与DirectMemory"><a href="#Java-NIO之浅谈内存映射文件原理与DirectMemory" class="headerlink" title="Java NIO之浅谈内存映射文件原理与DirectMemory"></a>Java NIO之浅谈内存映射文件原理与DirectMemory</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>传统文件IO操作原理</li>
+<li>什么是内存映射</li>
+<li>NIO中内存映射</li>
+<li>直接缓冲区（DirectMemory）</li>
+</ol>
+<p>学习了很久的NIO，但是一直对NIO中内存映射和DirectMemory有很多的不理解，恰好最近在读《深入理解操作系统》，对其中一些不理解的地点有了自己的一些感悟。此篇文章将结合操作系统谈谈自己对NIO中的内存映射和DirectMemory的理解。</p>
+<a id="more"></a>
+<h3 id="1-传统文件IO操作原理"><a href="#1-传统文件IO操作原理" class="headerlink" title="1.传统文件IO操作原理"></a>1.传统文件IO操作原理</h3><p>在传统的文件IO操作中，我们都是调用操作系统提供的底层标准IO系统调用函数  read()、write() ，此时调用此函数的进程（在Java中即java进程）会从用户态切换到内核态，接着OS的内核代码负责将相应的文件数据读取到内核的IO缓冲区，然后再把数据从内核IO缓冲区拷贝到进程的私有地址空间中去，这样便完成了一次IO操作。至于为什么要多此一举搞一个内核IO缓冲区把原本只需一次拷贝数据的事情搞成需要2次数据拷贝呢？ 我想学过操作系统或者计算机系统结构的人都知道，这么做是为了减少磁盘的IO操作，为了提高性能而考虑的，因为我们的程序访问一般都带有局部性，也就是所谓的局部性原理，在这里主要是指的空间局部性，即我们访问了文件的某一段数据，那么接下去很可能还会访问接下去的一段数据，由于磁盘IO操作的速度比直接访问内存慢了好几个数量级，所以OS根据局部性原理会在一次 read()系统调用过程中预读更多的文件数据缓存在内核IO缓冲区中，当继续访问的文件数据在缓冲区中时便直接拷贝数据到进程私有空间，避免了再次的低效率磁盘IO操作。在Java中当我们采用IO包下的文件操作流，如：  </p>
+<pre><code>FileInputStream in = new FileInputStream(&quot;D:\\java.txt&quot;);
+in.read();
+</code></pre><p> Java虚拟机内部便会调用OS底层的 read()系统调用完成操作，如上所述，在第二次调用 in.read()的时候可能就是从内核缓冲区直接返回数据了（可能还有经过 native堆做一次中转，因为这些函数都被声明为 native，即本地平台相关，所以可能在C代码中有做一次中转，如 win32中是通过 C代码从OS读取数据，然后再传给JVM内存）。既然如此，Java的IO包中为啥还要提供一个BufferedInputStream类来作为缓冲区呢。关键在于四个字，”系统调用”！当读取OS内核缓冲区数据的时候，便发起了一次系统调用操作（通过native的C函数调用），而系统调用的代价相对来说是比较高的，涉及到进程用户态和内核态的上下文切换等一系列操作，所以我们经常采用如下的包装：</p>
+<pre><code class="java">FileInputStream in = new FileInputStream(&quot;D:\\java.txt&quot;); 
+BufferedInputStream buf_in = new BufferedInputStream(in);
+buf_in.read();
+</code></pre>
+<p>这样一来，我们每一次 buf_in.read() 时候，BufferedInputStream 会根据情况自动为我们预读更多的字节数据到它自己维护的一个内部字节数组缓冲区中，这样我们便可以减少系统调用次数，从而达到其缓冲区的目的。所以要明确的一点是BufferedInputStream的作用不是减少磁盘IO操作次数（这个OS已经帮我们做了），而是通过减少系统调用次数来提高性能的。同理 BufferedOuputStream , BufferedReader/Writer 也是一样的。在 C语言的函数库中也有类似的实现，如 fread()，这个函数就是 C语言中的缓冲IO，作用与BufferedInputStream()相同.</p>
+<p>​    这里简单的引用下JDK8 中 BufferedInputStream 的源码验证下：</p>
+<pre><code class="java">public class BufferedInputStream extends FilterInputStream {
+    /**
+    * 只列出了重要的部分
+    */
+    protected volatile byte buf[];
+
+    public synchronized int read() throws IOException {
+        if (pos &gt;= count) {
+            fill();
+            if (pos &gt;= count)
+                return -1;
+        }
+        return getBufIfOpen()[pos++] &amp; 0xff;
+    }
+}
+</code></pre>
+<p>我们可以看到，BufferedInputStream 内部维护着一个 字节数组 byte[] buf 来实现缓冲区的功能，我们调用的  buf_in.read() 方法在返回数据之前有做一个if判断，如果buf数组的当前索引不在有效的索引范围之内，即 if 条件成立， buf 字段维护的缓冲区已经不够了，这时候会调用内部的fill()方法进行填充，而fill()会预读更多的数据到 buf 数组缓冲区中去，然后再返回当前字节数据，如果 if 条件不成立便直接从 buf缓冲区数组返回数据了。其中getBufIfOpen()返回的就是 buf字段的引用。顺便说下，源码中的 buf 字段声明为  protected volatile byte buf[];  主要是为了通过 volatile 关键字保证 buf数组在多线程并发环境中的内存可见性.</p>
+<h3 id="2-什么是内存映射"><a href="#2-什么是内存映射" class="headerlink" title="2. 什么是内存映射"></a>2. 什么是内存映射</h3><p>Linux通过将一个虚拟内存区域与一个磁盘上的对象关联起来，以初始化这个虚拟内存区域的内容，这个过程称为内存映射(memory mapping)。虚拟内存区域可以映射到俩种类型的对象一种：</p>
+<ol>
+<li>linux文件系统中的普通文件：一个区域可以映射到一个普通磁盘文件的连续部分。并且磁盘文件区被分成页大小的片，每一片包含一个虚拟页面的初始内容。此时并没有拷贝数据到内存中去，而是当进程代码第一次引用这段代码内的虚拟地址时，触发了缺页异常，这时候OS根据映射关系直接将文件的相关部分数据拷贝到进程的用户私有空间中去，当有操作第N页数据的时候重复这样的OS页面调度程序操作。<strong>现在终于找出内存映射效率高的原因，原来内存映射文件的效率比标准IO高的重要原因就是因为少了把数据拷贝到OS内核缓冲区这一步（可能还少了native堆中转这一步）。如果区域比文件区要大，那么就用零来填充这个区域的余下部分。</strong></li>
+<li>匿名文件：一个区域也可以映射到一个匿名文件，匿名文件时有内核穿件的，包含的去不是二进制零。CPU第一次引用这样的一个区域内的虚拟页面时，内核就在物理内存中找到一个合适的牺牲页面，如果该页面被修改过，就将这个页面换出来，用二进制零覆盖牺牲页面并更新页表，经这个页面标记为是驻留在内存中的。注意在磁盘和内存之间并没有实际的数据传送。因为这个原因，映射到匿名文件的区域中的页面有时也叫做请求二进制零的页。</li>
+</ol>
+<p><strong>注：如果你对虚拟内存不是很明白，推介你去看《深入理解操作系统》第九章</strong></p>
+<h3 id="3-NIO中内存映射"><a href="#3-NIO中内存映射" class="headerlink" title="3.NIO中内存映射"></a>3.NIO中内存映射</h3><p>上面介绍了普通文件IO和内存映射，已经总结了为什么内存映射比普通的IO函数要快。现在来了解java中的内存映射，这也是NIO中的一个特性。其实java中的内存映射就是用c语言封装了一层，方便我们用java来调用，因此在了解概念的基础后，我们来看看如何使用。</p>
+<p>  java中提供了3种内存映射模式，即：只读(readonly)、读写(read_write)、专用(private) ，</p>
+<ol>
+<li>对于只读模式来说，如果程序试图进行写操作，则会抛出ReadOnlyBufferException异常；</li>
+<li>第二种的读写模式表明了通过内存映射文件的方式写或修改文件内容的话是会立刻反映到磁盘文件中去的，别的进程如果共享了同一个映射文件，那么也会立即看到变化！而不是像标准IO那样每个进程有各自的内核缓冲区，比如Java代码中，没有执行 IO输出流的 flush() 或者  close() 操作，那么对文件的修改不会更新到磁盘去，除非进程运行结束；</li>
+<li>最后一种专用模式采用的是OS的“写时拷贝”原则，即在没有发生写操作的情况下，多个进程之间都是共享文件的同一块物理内存（进程各自的虚拟地址指向同一片物理地址），一旦某个进程进行写操作，那么将会把受影响的文件数据单独拷贝一份到进程的私有缓冲区中，不会反映到物理文件中去。</li>
+</ol>
+<p>在Java NIO中可以很容易的创建一块内存映射区域，下面创建了一个只读方式的内存映射，代码如下：</p>
+<pre><code class="java">File file = new File(&quot;E:\download\office2007pro.chs.ISO&quot;);
+FileInputStream in = new FileInputStream(file);
+FileChannel channel = in.getChannel();
+MappedByteBuffer buff = channel.map(FileChannel.MapMode.READ_ONLY, 0,channel.size());
+</code></pre>
+<p>接下来是我对普通的读写和内存映射方式的读写做的一个性能对比。</p>
+<pre><code class="java">package mapperBuffer;
+
+/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-03-16 16:29
+ *      email  : 398757724@qq.com
+ *      Desc   : 把400万条数据输入到文件中并且取出来 对比io和nio的效率
+ *  * 当数据量过大的时候采用内存映射文件进行优化处理
+ ***************************************/
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.channels.FileChannel;
+
+public class Demo {
+
+    public static void main(String[] args) throws IOException {
+
+        long start = System.currentTimeMillis();
+        int count = 400_00000;
+        String path = &quot;temp_cache_tmp&quot;;
+        String path2 = &quot;temp_nio.tmp&quot;;
+        String path3 = &quot;temp_nio_mem.tmp&quot;;
+        IoWrite(path, count);
+        long end = System.currentTimeMillis();
+        System.out.println(&quot;io写入时间&quot; + (end - start));
+
+        start = System.currentTimeMillis();
+        IoRead(path, count);
+        end = System.currentTimeMillis();
+        System.out.println(&quot;io读取时间&quot; + (end - start));
+
+        start = System.currentTimeMillis();
+        NioWrite(path2, count);
+        end = System.currentTimeMillis();
+        System.out.println(&quot;nio写入时间&quot; + (end - start));
+
+        start = System.currentTimeMillis();
+        NioRead(path2, count);
+        end = System.currentTimeMillis();
+        System.out.println(&quot;nio读取时间&quot; + (end - start));
+
+        start = System.currentTimeMillis();
+        NioMemeryWrite(path3, count);
+        end = System.currentTimeMillis();
+        System.out.println(&quot;nio内存映射文件写入&quot; + (end - start));
+
+        start = System.currentTimeMillis();
+        NioMemeryRead(path3, count);
+        end = System.currentTimeMillis();
+        System.out.println(&quot;nio内存映射文件读取&quot; + (end - start));
+    }
+
+
+    /**
+     * 内存映射文件 读取
+     **/
+    public static void NioMemeryRead(String path, int count) {
+        FileChannel fc = null;
+        try {
+            fc = new FileInputStream(path).getChannel();
+            IntBuffer ib = fc.map(FileChannel.MapMode.READ_ONLY, 0, fc.size()).asIntBuffer();
+            while (ib.hasRemaining()) {
+                ib.get();
+            }
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fc != null) {
+                try {
+                    fc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+    //内存映射文件进行写入数据
+    public static void NioMemeryWrite(String path, int count) {
+        FileChannel fc = null;
+        ;
+        try {
+            fc = new RandomAccessFile(path, &quot;rw&quot;).getChannel();
+            IntBuffer ib = fc.map(FileChannel.MapMode.READ_WRITE, 0, count * 4).asIntBuffer();
+            for (int i = 0; i &lt; count; i++) {
+                ib.put(i);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fc != null) {
+                try {
+                    fc.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+
+    /**
+     * 普通io进行读取
+     **/
+    public static void IoRead(String path, int count) {
+        File file = new File(path);
+        DataInputStream dis = null;
+        try {
+            dis = new DataInputStream(new BufferedInputStream(
+                    new FileInputStream(file)));
+            for (int i = 0; i &lt; count; i++) {
+                dis.readInt();
+
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (dis != null) {
+                try {
+                    dis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+    }
+
+
+    /*
+     * 普通io进行读操作
+     */
+    public static void IoWrite(String path, int count) {
+        File f = new File(path);
+        if (!f.exists()) {
+            try {
+                f.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        DataOutputStream dos = null;
+        try {
+            dos = new DataOutputStream(new BufferedOutputStream(
+                    new FileOutputStream(f)));
+            for (int i = 0; i &lt; count; i++) {
+                dos.writeInt(i);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (dos != null) {
+                try {
+                    dos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+
+    public static int byte2int(byte b1, byte b2, byte b3, byte b4) {
+        return ((b1 &amp; 0xff) &lt;&lt; 24) | ((b2 &amp; 0xff) &lt;&lt; 16) | ((b3 &amp; 0xff) &lt;&lt; 18)
+                | (b4 &amp; 0xff);
+    }
+
+
+    public static byte[] int2byte(int res) {
+        byte[] targets = new byte[4];
+        targets[3] = (byte) (res &amp; 0xff);
+        targets[2] = (byte) ((res &gt;&gt; 8) &amp; 0xff);
+        targets[1] = (byte) ((res &gt;&gt; 16) &amp; 0xff);
+        targets[0] = (byte) ((res &gt;&gt;&gt; 24) &amp; 0xff);
+        return targets;
+    }
+
+
+    /**
+     * 采用Nio进行读取
+     */
+    public static void NioRead(String path, int count) {
+        File file = new File(path);
+        FileInputStream fin = null;
+        try {
+            fin = new FileInputStream(file);
+            FileChannel fc = fin.getChannel();
+            ByteBuffer byteBuffer = ByteBuffer.allocate(count * 4);
+            fc.read(byteBuffer);
+            fc.close();
+            byteBuffer.flip();
+            while (byteBuffer.hasRemaining()) {
+                byte2int(byteBuffer.get(), byteBuffer.get(), byteBuffer.get(),
+                        byteBuffer.get());
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 采用Nio进行写
+     */
+    public static void NioWrite(String path, int count) {
+        File file = new File(path);
+        FileOutputStream fout = null;
+        try {
+            fout = new FileOutputStream(file);
+            FileChannel fileChannel = fout.getChannel();
+            ByteBuffer byteBuffer = ByteBuffer.allocate(4 * count);
+            for (int i = 0; i &lt; count; i++) {
+                byteBuffer.put(int2byte(i));
+            }
+            byteBuffer.flip();
+            fileChannel.write(byteBuffer);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fout != null) {
+                try {
+                    fout.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
+
+    }
+}
+</code></pre>
+<p>测试结果</p>
+<pre><code>io写入时间3266
+io读取时间3123
+nio写入时间858
+nio读取时间274
+nio内存映射文件写入153
+nio内存映射文件读取29
+</code></pre><p>上面测试了普通IO，NIO和NIO内存映射的读写性能。从上可以看出，内存映射的读写性能远胜于其他俩种。文件越大，差距便越大。所以内存映射文件特别适合于对大文件的操作，Java中的限制是最大不得超过 Integer.MAX_VALUE，即2G左右，不过我们可以通过多次映射文件(channel.map)的不同部分来达到操作整个文件的目的。</p>
+<p>按照jdk文档的官方说法，内存映射文件属于JVM中的直接缓冲区，还可以通过 ByteBuffer.allocateDirect() ，即DirectMemory的方式来创建直接缓冲区。他们相比基础的 IO操作来说就是少了中间缓冲区的数据拷贝开销。同时他们属于JVM堆外内存，不受JVM堆内存大小的限制。</p>
+<h3 id="4-直接内存"><a href="#4-直接内存" class="headerlink" title="4. 直接内存"></a>4. 直接内存</h3><p>DirectMemory 默认的大小是等同于JVM最大堆，理论上说受限于进程的虚拟地址空间大小，比如32位的windows上，每个进程有4G的虚拟空间除去 2G为OS内核保留外，再减去 JVM堆的最大值，剩余的才是DirectMemory大小。通过设置 JVM参数 -Xmx64M，即JVM最大堆为64M，然后执行以下程序可以证明DirectMemory不受JVM堆大小控制：</p>
+<pre><code class="java"> public static void main(String[] args) {       
+   ByteBuffer.allocateDirect(1024*1024*100); // 100MB
+   }
+</code></pre>
+<p>我们设置了JVM堆64M限制，然后在直接内存上分配了 100MB空间，程序执行后直接报错：<strong>Exception in thread “main” java.lang.OutOfMemoryError: Direct buffer memory</strong>。</p>
+<p>接着我设置 -Xmx200M，程序正常结束。然后我修改配置： -Xmx64M  -XX:MaxDirectMemorySize=200M，程序正常结束。因此得出结论： 直接内存DirectMemory的大小默认为 -Xmx 的JVM堆的最大值，但是并不受其限制，而是由JVM参数 MaxDirectMemorySize单独控制。接下来我们来证明直接内存不是分配在JVM堆中。我们先执行以下程序，并设置 JVM参数       <strong>-XX:+PrintGC</strong> </p>
+<pre><code> public static void main(String[] args) {       
+     for(int i=0;i&lt;20000;i++) {
+            ByteBuffer.allocateDirect(1024*100);  //100K
+       }
+   }
+</code></pre><p>  输出结果如下：</p>
+<pre><code> [GC 1371K-&gt;1328K(61312K), 0.0070033 secs]
+ [Full GC 1328K-&gt;1297K(61312K), 0.0329592 secs]
+ [GC 3029K-&gt;2481K(61312K), 0.0037401 secs]
+ [Full GC 2481K-&gt;2435K(61312K), 0.0102255 secs]
+</code></pre><p>我们看到这里执行 GC的次数较少，但是触发 两次 Full GC，原因在于直接内存不受GC(新生代的Minor GC)影响，只有当执行老年代的 Full GC时候才会顺便回收直接内存！而直接内存是通过存储在JVM堆中的DirectByteBuffer对象来引用的，所以当众多的DirectByteBuffer对象从新生代被送入老年代后才触发了full gc。</p>
+<p>  再看直接在JVM堆上分配内存区域的情况：</p>
+<pre><code class="java">public static void main(String[] args) {       
+    for(int i=0;i&lt;10000;i++) {
+        ByteBuffer.allocate(1024*100);  //100K
+    }
+}
+</code></pre>
+<p>  ByteBuffer.allocate 意味着直接在 JVM堆上分配内存，所以受新生代的 Minor GC影响，输出如下：</p>
+<pre><code>[GC 16023K-&gt;224K(61312K), 0.0012432 secs]
+[GC 16211K-&gt;192K(77376K), 0.0006917 secs]
+[GC 32242K-&gt;176K(77376K), 0.0010613 secs]
+[GC 32225K-&gt;224K(109504K), 0.0005539 secs]
+[GC 64423K-&gt;192K(109504K), 0.0006151 secs]
+[GC 64376K-&gt;192K(171392K), 0.0004968 secs]
+[GC 128646K-&gt;204K(171392K), 0.0007423 secs]
+[GC 128646K-&gt;204K(299968K), 0.0002067 secs]
+[GC 257190K-&gt;204K(299968K), 0.0003862 secs]
+[GC 257193K-&gt;204K(287680K), 0.0001718 secs]
+[GC 245103K-&gt;204K(276480K), 0.0001994 secs]
+[GC 233662K-&gt;204K(265344K), 0.0001828 secs]
+[GC 222782K-&gt;172K(255232K), 0.0001998 secs]
+[GC 212374K-&gt;172K(245120K), 0.0002217 secs]
+</code></pre><p>可以看到，由于直接在 JVM堆上分配内存，所以触发了多次GC，且不会触及 Full GC，因为对象根本没机会进入老年代。</p>
+<p>在这里要来探讨一下内存映射和DirectMemory的内存回收问题。NIO中的DirectMemory和内存文件映射同属于直接缓冲区，但是前者和 -Xmx和-XX:MaxDirectMemorySize有关，而后者完全没有JVM参数可以影响和控制，这让我不禁怀疑两者的直接缓冲区是否相同，前者指的是Java进程中的native堆，因为C语言中的 malloc()分配的内存就属 native堆，不属 JVM堆，这也是DirectMemory能在一些场景中显著提高性能的原因，因为它避免了在 native堆和jvm堆之间数据的来回复制；而后者则是没有经过native堆，是由Java进程直接建立起某一段虚拟地址空间和文件对象的关联映射关系，所以内存映射文件的区域并不在JVM GC的回收范围内，因为它本身就不属于堆区，卸载这部分区域只能通过系统调用 unmap()来实现 (Linux)中，而Java API 只提供了 FileChannel.map 的形式创建内存映射区域，却没有提供对应的 unmap()。</p>
+<p>事实是由JVM帮助我们自动回收这部分内存，在定义这些类时，通过一个虚引用包裹这些创建的NIO对象，当JVM进行GC时检测指向这些内存映射或者直接内存的java对象是否被回收（java对象都是保存在堆上，只是对象中使用变量空间指向对外内存）。如果这些对象被回收，那么JVM就会自动的帮助我们回收这些堆外内存。具体参考：<a href="https://www.jianshu.com/p/007052ee3773" target="_blank" rel="noopener">堆外内存 之 DirectByteBuffer 详解</a></p>
+<p>最后再试试通过 DirectMemory来操作前面内存映射和基本通道操作的例子，来看看直接内存操作的话，程序的性能如何：</p>
+<pre><code class="java">    @Test
+    public void directBufferTest() throws IOException {
+        File file = new File(path);
+        FileInputStream in = new FileInputStream(file);
+        FileChannel channel = in.getChannel();
+
+        ByteBuffer buff = ByteBuffer.allocateDirect(1024);
+
+        long begin = System.currentTimeMillis();
+        while (channel.read(buff) != -1) {
+            buff.clear();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println(&quot;time is:&quot; + (end - begin));
+        in.close();
+    }
+</code></pre>
+<p>程序输出为 130毫秒，看来比普通的NIO通道操作（160毫秒）来的快，但是比 mmap 内存映射的 30差距太多了，我想应该不至于吧，通过修改：</p>
+<pre><code>ByteBuffer buff = ByteBuffer.allocateDirect(1024);  
+//将上面语句修改如下
+ByteBuffer buff = ByteBuffer.allocateDirect((int)file.length())，
+</code></pre><p>即一次性分配整个文件长度大小的堆外内存，最终输出为 78毫秒，由此可以得出两个结论：</p>
+<ol>
+<li><p>堆外内存的分配耗时比较大.  </p>
+</li>
+<li><p>还是比mmap内存映射来得慢，都不要说通过mmap读取数据的时候还涉及缺页异常、页面调度的系统调用了。</p>
+</li>
+</ol>
+<p>最后一点为 DirectMemory的内存只有在 JVM执行 full gc 的时候才会被回收，那么如果在其上分配过大的内存空间，那么也将出现 OutofMemoryError，即便 JVM 堆中的很多内存处于空闲状态。</p>
+<p>补充下额外的一个知识点，关于 JVM堆大小的设置是不受限于物理内存，而是受限于虚拟内存空间大小，理论上来说是进程的虚拟地址空间大小，但是实际上我们的虚拟内存空间是有限制的，一般windows上默认在C盘，大小为物理内存的2倍左右。我做了个实验：我机子是 64位的win7，那么理论上说进程虚拟空间是几乎无限大，物理内存为4G，而我设置 -Xms5000M， 即在启动JAVA程序的时候一次性申请到超过物理内存大小的5000M内存，程序正常启动，而当我加到 -Xms8000M的时候就报OOM错误了，然后我修改增加 win7的虚拟内存，程序又正常启动了，说明 -Xms 受限于虚拟内存的大小。我设置-Xms5000M，即超过了4G物理内存，并在一个死循环中不断创建对象，并保证不会被GC回收。程序运行一会后整个电脑几乎死机状态，即卡住了，反映很慢很慢，推测是发生了系统颠簸，即频繁的页面调度置换导致，说明 -Xms -Xmx不是局限于物理内存的大小，而是综合虚拟内存了，JVM会根据电脑虚拟内存的设置来控制。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://blog.csdn.net/fcbayernmunchen/article/details/8635427" target="_blank" rel="noopener">JAVA NIO之浅谈内存映射文件原理与DirectMemory</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/e3ecb02e/">Java NIO之浅谈内存映射文件原理与DirectMemory</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月13日 - 16:40</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/e3ecb02e/" title="Java NIO之浅谈内存映射文件原理与DirectMemory">Java NIO之浅谈内存映射文件原理与DirectMemory</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/e3ecb02e/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NIO/" rel="tag">  <i class="fa fa-tag"></i> NIO</a>
+          
+            <a href="/tags/直接内存/" rel="tag">  <i class="fa fa-tag"></i> 直接内存</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/2f7bd7dc/" rel="next" title="java 打包技术之jar文件">
+                <i class="fa fa-chevron-left"></i> java 打包技术之jar文件
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/a158638e/" rel="prev" title="spring源码解析之 03统一资源加载">
+                spring源码解析之 03统一资源加载 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-NIO之浅谈内存映射文件原理与DirectMemory"><span class="nav-text">Java NIO之浅谈内存映射文件原理与DirectMemory</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-传统文件IO操作原理"><span class="nav-text">1.传统文件IO操作原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-什么是内存映射"><span class="nav-text">2. 什么是内存映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-NIO中内存映射"><span class="nav-text">3.NIO中内存映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-直接内存"><span class="nav-text">4. 直接内存</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/e3ecb02e/";
+        this.page.identifier = "posts/e3ecb02e/";
+        this.page.title = 'Java NIO之浅谈内存映射文件原理与DirectMemory';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

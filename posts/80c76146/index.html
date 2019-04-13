@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Iterator（迭代器）作为一种设计模式，迭代器可以用于遍历一个对象，对外提供统一的遍历接口，而使得开发人员不用去了解这个对象的底层结构。这里就不仔细说迭代器这种设计模式，因为我们主要的目的是探索java中Iterator和 Iterable的基本使用，并说明俩则的区别">
+<meta name="keywords" content="java">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Iterator和Iterable 区别">
+<meta property="og:url" content="http://fengxiutianya.top/posts/80c76146/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="Iterator（迭代器）作为一种设计模式，迭代器可以用于遍历一个对象，对外提供统一的遍历接口，而使得开发人员不用去了解这个对象的底层结构。这里就不仔细说迭代器这种设计模式，因为我们主要的目的是探索java中Iterator和 Iterable的基本使用，并说明俩则的区别">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.348Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Iterator和Iterable 区别">
+<meta name="twitter:description" content="Iterator（迭代器）作为一种设计模式，迭代器可以用于遍历一个对象，对外提供统一的遍历接口，而使得开发人员不用去了解这个对象的底层结构。这里就不仔细说迭代器这种设计模式，因为我们主要的目的是探索java中Iterator和 Iterable的基本使用，并说明俩则的区别">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/80c76146/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Iterator和Iterable 区别 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/80c76146/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Iterator和Iterable 区别
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2017-12-23 19:31:00" itemprop="dateCreated datePublished" datetime="2017-12-23T19:31:00+08:00">2017-12-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/基础/" itemprop="url" rel="index"><span itemprop="name">基础</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/80c76146/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/80c76146/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/80c76146/" class="leancloud_visitors" data-flag-title="Iterator和Iterable 区别">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">6 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Iterator（迭代器）"><a href="#Iterator（迭代器）" class="headerlink" title="Iterator（迭代器）"></a>Iterator（迭代器）</h2><p>作为一种设计模式，迭代器可以用于遍历一个对象，对外提供统一的遍历接口，而使得开发人员不用去了解这个对象的底层结构。<br>这里就不仔细说迭代器这种设计模式，因为我们主要的目的是探索java中Iterator和 Iterable的基本使用，并说明俩则的区别<br><a id="more"></a></p>
+<h2 id="用法"><a href="#用法" class="headerlink" title="用法"></a>用法</h2><p>首先来说一下他们各自是怎么使用，不会用谈什么都是瞎搞。</p>
+<h3 id="Iterator-用法"><a href="#Iterator-用法" class="headerlink" title="Iterator 用法"></a>Iterator 用法</h3><p>首先来说一下 Iterator 这个接口，他定义了迭代器基本的功能。</p>
+<h4 id="源码如下"><a href="#源码如下" class="headerlink" title="源码如下"></a>源码如下</h4><pre><code class="java">package java.util;
+
+public interface Iterator&lt;E&gt; {
+    boolean hasNext();   //返回是否有下一个元素
+    E next();            //返回下一个元素
+    void remove();       //移除当前元素
+}
+</code></pre>
+<h4 id="如何使用这个接口"><a href="#如何使用这个接口" class="headerlink" title="如何使用这个接口"></a>如何使用这个接口</h4><pre><code class="java">public class main {
+
+    public static void main(String[] args) {
+        MyIterator mi = new MyIterator();
+        while (mi.hasNext()){
+            System.out.printf(&quot;%s\t&quot;,mi.next());
+        }
+    }
+}
+
+class MyIterator implements Iterator&lt;String&gt;{
+    private String[] words = (&quot;And that is how &quot;
+            + &quot;we know the Earth to be banana-shaped.&quot;).split(&quot; &quot;);
+    private int count = 0;
+
+    public MyIterator() {
+    }
+
+    @Override
+    public boolean hasNext() {
+        return count &lt; words.length;
+    }
+
+    @Override
+    public String next() {
+        return words[count++];
+    }
+}
+</code></pre>
+<h3 id="Iterable-用法"><a href="#Iterable-用法" class="headerlink" title="Iterable 用法"></a>Iterable 用法</h3><h4 id="源码"><a href="#源码" class="headerlink" title="源码"></a>源码</h4><pre><code class="java">package java.lang;
+
+import java.util.Iterator;
+
+public interface Iterable&lt;T&gt; {
+
+    Iterator&lt;T&gt; iterator(); // 返回Iterator对象
+}
+</code></pre>
+<h4 id="如何使用"><a href="#如何使用" class="headerlink" title="如何使用"></a>如何使用</h4><pre><code class="java">public class main {
+
+    public static void main(String[] args) {
+
+      MyIterable myIterable= new MyIterable();
+        Iterator&lt;String&gt; mIterator = myIterable.iterator();
+         while (mi.hasNext()){
+            System.out.printf(&quot;%s\t&quot;,mi.next());
+        } 
+    }
+}
+
+class MyIterable implements Iterable&lt;String&gt;{
+    private String[] words = (&quot;And that is how &quot;
+            + &quot;we know the Earth to be banana-shaped.&quot;).split(&quot; &quot;);
+
+    @Override
+    public Iterator&lt;String&gt; iterator() {
+        return new Iterator&lt;String&gt;() {
+            private int i = 0;
+            @Override
+            public boolean hasNext() {
+                return i &lt; words.length;
+            }
+
+            @Override
+            public String next() {
+                return words[i++];
+            }
+        };
+    }
+}
+</code></pre>
+<p>与上面 Iterator 不同的是，这个类还可以像下面这样使用</p>
+<pre><code class="java">        MyIterable mi = new MyIterable().iterator();
+       for (String s:myIterable){
+            System.out.printf(&quot;%s\t&quot;,s);
+        }
+</code></pre>
+<p>这是java提供的语法糖，foreach使用。语法糖是编程语言提供的一些便于程序员书写代码的语法，是编译器提供给程序员的糖衣，编译时会对这些语法特殊处理。语法糖虽然不会带来实质性的改进，但是在提高代码可读性，提高语法严谨性，减少编码错误机会上确实做出了很大贡献。</p>
+<p>Java要求集合必须实现Iterable接口，才能使用for-each语法糖遍历该集合的实例。<br>JDK对该接口的描述是：</p>
+<pre><code class="txt">Implementing this interface allows an object to be the target of * the &quot;for-each loop&quot; statement.
+</code></pre>
+<p>实际上，这也没什么高级的，foreach语法糖只是简化了我们遍历的代码，而这一步简化是有编译器帮我们做的，当编译器编译foreach语句的时候，其实还是转换成我们通常使用的方式。<br>类如上面的会转换成下面这个格式：</p>
+<pre><code class="java">for (I #i = Expression.iterator(); #i.hasNext(); ) {
+    {VariableModifier} TargetType Identifier =
+        (TargetType) #i.next();
+    Statement
+}
+</code></pre>
+<p>当然，除了集合，for-each还可以遍历数组，翻译如下：</p>
+<pre><code class="java">T[] #a = Expression;
+L1: L2: ... Lm:
+for (int #i = 0; #i &lt; #a.length; #i++) {
+    {VariableModifier} TargetType Identifier = #a[#i];
+    Statement
+}
+</code></pre>
+<h2 id="区别"><a href="#区别" class="headerlink" title="区别"></a>区别</h2><p>基本用法已经说完，相信你也能看出其中的一些区别</p>
+<ol>
+<li><p>Iterator是迭代器类(这个类是指定义了迭代器基本需要的方法)，而Iterable是接口,用于返回Iterator。因此俩个就不是在说同一件事，只是名字很相似</p>
+<pre><code class="java"> java.lang.Iterable
+ java.util.Iterator
+</code></pre>
+</li>
+<li><p>Iterator不能用于foreach 循环语句，Iterable可以</p>
+</li>
+<li><p>为什么一定要实现Iterable接口，为什么不直接实现Iterator接口呢？<br>看一下 JDK 中的集合类，比如List一族或者Set一族，都是实现了Iterable接口，但并不直接实现Iterator 接口。这并不是没有道理的。因为Iterator接口的核心方法next()或者hasNext()是依赖于迭代器的当前迭代位置的。如果Collection直接实现Iterator接口，势必导致集合对象中包含当前迭代位置的数据(指针)。当集合在不同方法间被传递时，由于当前迭代位置不可预知，那么next()方法的结果会变成不可预知。除非再为Iterator接口添加一个reset()方法，用来重置当前迭代位置。但即时这样，Collection也只能同时存在一个当前迭代位置。<br>而Iterable则不然，每次调用都会返回一个对象，这时可以设置一个从头开始计数的迭代器。多个迭代器之间不会造成是互不干扰。</p>
+</li>
+</ol>
+<h2 id="扩展"><a href="#扩展" class="headerlink" title="扩展"></a>扩展</h2><p>你在看ArrayList源码的时候，你会发现这样一段代码</p>
+<pre><code class="Java">   private class Itr implements Iterator&lt;E&gt; {
+       int cursor;       // 返回下一个元素的索引
+
+         int lastRet = -1; // 返回最后一个元素的索引，如果空，返回-1
+
+       int expectedModCount = modCount; //用于检测当前集合是否执行了添加删除操作，其中modCount，是当前集合中元素的个数
+
+       public boolean hasNext() {
+           return cursor != size;
+       }
+
+       @SuppressWarnings(&quot;unchecked&quot;)
+       public E next() {
+           checkForComodification(); //检测集合元素是否执行添加删除操作
+           int i = cursor;
+           if (i &gt;= size)
+               throw new NoSuchElementException();
+           Object[] elementData = ArrayList.this.elementData;
+           if (i &gt;= elementData.length)
+               throw new ConcurrentModificationException();
+           cursor = i + 1;
+           return (E) elementData[lastRet = i];
+       }
+
+       public void remove() {
+           if (lastRet &lt; 0)
+               throw new IllegalStateException();
+           checkForComodification();
+
+           try {
+               ArrayList.this.remove(lastRet);
+               cursor = lastRet;
+               lastRet = -1;
+               expectedModCount = modCount;
+           } catch (IndexOutOfBoundsException ex) {
+               throw new ConcurrentModificationException();
+           }
+       }
+
+       @Override
+       @SuppressWarnings(&quot;unchecked&quot;)
+       public void forEachRemaining(Consumer&lt;? super E&gt; consumer) {
+           Objects.requireNonNull(consumer);
+           final int size = ArrayList.this.size;
+           int i = cursor;
+           if (i &gt;= size) {
+               return;
+           }
+           final Object[] elementData = ArrayList.this.elementData;
+           if (i &gt;= elementData.length) {
+               throw new ConcurrentModificationException();
+           }
+           while (i != size &amp;&amp; modCount == expectedModCount) {
+               consumer.accept((E) elementData[i++]);
+           }
+           // update once at end of iteration to reduce heap write traffic
+           cursor = i;
+           lastRet = i - 1;
+           checkForComodification();
+       }
+        //如果发生添加删除操作，则抛出错误。
+       final void checkForComodification() {
+           if (modCount != expectedModCount)
+               throw new ConcurrentModificationException();
+       }
+   }
+</code></pre>
+<p>对于上述的代码不难看懂，有点疑惑的是<code>int expectedModCount = modCount;</code>这句代码其实这是集合迭代中的一种<strong>快速失败</strong>机制，这种机制提供迭代过程中集合的安全性。阅读源码​ 就可以知道 ArrayList 中存在modCount对象，增删操作都会使<code>modCount++</code>，通过两者的对比​ 迭代器可以快速的知道迭代过程中是否存在是否有其他线程正在修改这个集合，比如<code>list.add()</code>类似的操作，存在的话快速失败!</p>
+<h3 id="Fail-Fast-快速失败-机制"><a href="#Fail-Fast-快速失败-机制" class="headerlink" title="Fail-Fast(快速失败)机制"></a>Fail-Fast(快速失败)机制</h3><p>仔细观察上述的各个方法，我们在源码中就会发现一个特别的属性modCount，API解释如下：</p>
+<pre><code>The number of times this list has been structurally modified. Structural modifications 
+are those​ that change the size of the list, or otherwise perturb it in such a fashion
+that iterations in progress​ may yield incorrect results.
+</code></pre><p>记录修改此列表的次数：包括改变列表的结构，改变列表的大小，打乱列表的顺序等使正在进行迭代产生 错误的结果。</p>
+<p><strong>Tips:</strong>仅仅设置元素的值并不是结构的修改</p>
+<p>我们知道的是ArrayList是线程不安全的，如果在使用迭代器的过程中有其他的线程修改了List就会抛出 ConcurrentModificationException异常这就是Fail-Fast机制。那么快速失败究竟是个什么意思呢？在 ArrayList类创建迭代器之后，除非通过迭代器自身remove或add对列表结构进行修改，否则在其他线程中以任何形式对列表进行修改，迭代器马上会抛出异常，快速失败。</p>
+<h2 id="迭代器的有点"><a href="#迭代器的有点" class="headerlink" title="迭代器的有点"></a>迭代器的有点</h2><p>通过上述我们明白了迭代是到底是个什么，迭代器的使用也十分的简单。现在简要的总结下使用迭代器的有点。</p>
+<ol>
+<li>迭代器可以提供统一的迭代方式。</li>
+<li>迭代器也可以在对客户端透明的情况下，提供各种不同的迭代方式。</li>
+<li>迭代器提供一种快速失败机制，防止多线程下迭代的不安全操作。</li>
+</ol>
+<p>不过对于第三点尚需注意的是：就像上述事例代码一样，我们不能保证迭代过程中出现<strong>快速失败</strong>的都是因为同步造成的，因此为了保证迭代操作的正确性而去依赖此类异常是不正确的。这只是提示你当前有其他线程正在修改集合，因此你需要使用线程安全的方式来修改你的代码。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.jianshu.com/p/186bf11ffe51" target="_blank" rel="noopener">Java基础-迭代器Iterator与语法糖for-each</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/190054bc/" rel="bookmark">String、StringBuffer和StringBuilder对比</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/eb0962ed/" rel="bookmark">泛型中 < ? extends T > 和 < ? extends T > 的区别</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/385b4be6/" rel="bookmark">java多线程系列 06  线程优先级和守护线程</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/1354fe55/" rel="bookmark">java多线程系列 08 ThreadLocal</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/9dbd6aed/" rel="bookmark">java多线程系列 04 线程让步和join</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/80c76146/">Iterator和Iterable 区别</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2017年12月23日 - 19:31</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/80c76146/" title="Iterator和Iterable 区别">Iterator和Iterable 区别</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/80c76146/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/java/" rel="tag">  <i class="fa fa-tag"></i> java</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/eb0962ed/" rel="prev" title="泛型中 < ? extends T > 和 < ? extends T > 的区别">
+                泛型中 < ? extends T > 和 < ? extends T > 的区别 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Iterator（迭代器）"><span class="nav-text">Iterator（迭代器）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用法"><span class="nav-text">用法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Iterator-用法"><span class="nav-text">Iterator 用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#源码如下"><span class="nav-text">源码如下</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何使用这个接口"><span class="nav-text">如何使用这个接口</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Iterable-用法"><span class="nav-text">Iterable 用法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#源码"><span class="nav-text">源码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#如何使用"><span class="nav-text">如何使用</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#区别"><span class="nav-text">区别</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#扩展"><span class="nav-text">扩展</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Fail-Fast-快速失败-机制"><span class="nav-text">Fail-Fast(快速失败)机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#迭代器的有点"><span class="nav-text">迭代器的有点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/80c76146/";
+        this.page.identifier = "posts/80c76146/";
+        this.page.title = 'Iterator和Iterable 区别';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

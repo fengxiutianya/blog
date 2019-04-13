@@ -1,0 +1,1971 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="简单介绍Condition的作用是对锁进行更精确的控制。Condition中的await()方法相当于Object的wait方法，Condition中的signal()方法相当于Object的notify()方法，Condition中的signalAll()相当于Object的notifyAll()方法。不同的是，Object中的wait()、notify()、notifyAll()方法是和同步锁">
+<meta name="keywords" content="Condition">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java线程系列 JUC锁 05  Condition条件">
+<meta property="og:url" content="http://fengxiutianya.top/posts/d14480c0/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="简单介绍Condition的作用是对锁进行更精确的控制。Condition中的await()方法相当于Object的wait方法，Condition中的signal()方法相当于Object的notify()方法，Condition中的signalAll()相当于Object的notifyAll()方法。不同的是，Object中的wait()、notify()、notifyAll()方法是和同步锁">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java线程系列 JUC锁 05  Condition条件">
+<meta name="twitter:description" content="简单介绍Condition的作用是对锁进行更精确的控制。Condition中的await()方法相当于Object的wait方法，Condition中的signal()方法相当于Object的notify()方法，Condition中的signalAll()相当于Object的notifyAll()方法。不同的是，Object中的wait()、notify()、notifyAll()方法是和同步锁">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/d14480c0/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java线程系列 JUC锁 05  Condition条件 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/d14480c0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java线程系列 JUC锁 05  Condition条件
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 11:56:00" itemprop="dateCreated datePublished" datetime="2019-03-18T11:56:00+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/lock/" itemprop="url" rel="index"><span itemprop="name">lock</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/d14480c0/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/d14480c0/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/d14480c0/" class="leancloud_visitors" data-flag-title="java线程系列 JUC锁 05  Condition条件">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">17k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">15 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="简单介绍"><a href="#简单介绍" class="headerlink" title="简单介绍"></a>简单介绍</h2><p>Condition的作用是对锁进行更精确的控制。Condition中的await()方法相当于Object的wait方法，Condition中的signal()方法相当于Object的notify()方法，Condition中的signalAll()相当于Object的notifyAll()方法。不同的是，Object中的wait()、notify()、notifyAll()方法是和同步锁(synchronized关键字)捆绑使用的；而Condition是需要与斥锁/共享锁捆绑使用的。互斥锁前面已经说过一个ReentrantLock，后还会说道ReentrantReadWriteLock共享锁。<br><a id="more"></a></p>
+<h3 id="Condition函数示例"><a href="#Condition函数示例" class="headerlink" title="Condition函数示例"></a>Condition函数示例</h3><pre><code class="java">// 造成当前线程在接到信号或被中断之前一直处于等待状态。
+void await()
+// 造成当前线程在接到信号、被中断或到达指定等待时间之前一直处于等待状态。
+boolean await(long time, TimeUnit unit)
+// 造成当前线程在接到信号、被中断或到达指定等待时间之前一直处于等待状态。
+long awaitNanos(long nanosTimeout)
+// 造成当前线程在接到信号之前一直处于等待状态。
+void awaitUninterruptibly()
+// 造成当前线程在接到信号、被中断或到达指定最后期限之前一直处于等待状态。
+boolean awaitUntil(Date deadline)
+// 唤醒一个等待线程。
+void signal()
+// 唤醒所有等待线程。
+void signalAll()
+</code></pre>
+<h2 id="Condition示例"><a href="#Condition示例" class="headerlink" title="Condition示例"></a>Condition示例</h2><h3 id="示例1"><a href="#示例1" class="headerlink" title="示例1"></a>示例1</h3><pre><code class="java">public class WaitTest1 {
+
+    public static void main(String[] args) {
+
+        ThreadA ta = new ThreadA(&quot;ta&quot;);
+
+        synchronized(ta) { // 通过synchronized(ta)获取“对象ta的同步锁”
+            try {
+                System.out.println(Thread.currentThread().getName()+&quot; start ta&quot;);
+                ta.start();
+
+                System.out.println(Thread.currentThread().getName()+&quot; block&quot;);
+                ta.wait();    // 等待
+
+                System.out.println(Thread.currentThread().getName()+&quot; continue&quot;);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    static class ThreadA extends Thread{
+
+        public ThreadA(String name) {
+            super(name);
+        }
+
+        public void run() {
+            synchronized (this) { // 通过synchronized(this)获取“当前对象的同步锁”
+                System.out.println(Thread.currentThread().getName()+&quot; wakup others&quot;);
+                notify();    // 唤醒“当前对象上的等待线程”
+            }
+        }
+    }
+}
+</code></pre>
+<p>运行结果</p>
+<pre><code>main start ta
+main block
+ta  wakup others
+main continue
+</code></pre><h3 id="示例2"><a href="#示例2" class="headerlink" title="示例2"></a>示例2</h3><pre><code class="java">import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ConditionTest1 {
+
+    private static Lock lock = new ReentrantLock();
+    private static Condition condition = lock.newCondition();
+
+    public static void main(String[] args) {
+
+        ThreadA ta = new ThreadA(&quot;ta&quot;);
+
+        lock.lock(); // 获取锁
+        try {
+            System.out.println(Thread.currentThread().getName()+&quot; start ta&quot;);
+            ta.start();
+
+            System.out.println(Thread.currentThread().getName()+&quot; block&quot;);
+            condition.await();    // 等待
+
+            System.out.println(Thread.currentThread().getName()+&quot; continue&quot;);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            lock.unlock();    // 释放锁
+        }
+    }
+
+    static class ThreadA extends Thread{
+
+        public ThreadA(String name) {
+            super(name);
+        }
+
+        public void run() {
+            lock.lock();    // 获取锁
+            try {
+                System.out.println(Thread.currentThread().getName()+&quot; wakup others&quot;);
+                condition.signal();    // 唤醒“condition所在锁上的其它线程”
+            } finally {
+                lock.unlock();    // 释放锁
+            }
+        }
+    }
+}
+</code></pre>
+<p>运行结果</p>
+<pre><code>main start ta
+main block
+ta wakup others
+main continue
+</code></pre><p>通过示例1和示例2，我们知道Condition和Object的方法有一下对应关系：</p>
+<pre><code>              Object      Condition  
+休眠          wait        await
+唤醒个线程     notify      signal
+唤醒所有线程   notifyAll   signalAll
+</code></pre><p>Condition除了支持上面的功能之外，它更强大的地方在于：能够更加精细的控制多线程的休眠与唤醒。对于同一个锁，我们可以创建多个Condition，在不同的情况下使用不同的Condition。<br>例如，假如多线程读/写同一个缓冲区：当向缓冲区中写入数据之后，唤醒”读线程”；当从缓冲区读出数据之后，唤醒”写线程”；并且当缓冲区满的时候，”写线程”需要等待；当缓冲区为空时，”读线程”需要等待。        </p>
+<p> 如果采用Object类中的wait(), notify(), notifyAll()实现该缓冲区，当向缓冲区写入数据之后需要唤醒”读线程”时，不可能通过notify()或notifyAll()明确的指定唤醒”读线程”，而只能通过notifyAll唤醒所有线程(但是notifyAll无法区分唤醒的线程是读线程，还是写线程)。  但是，通过Condition，就能明确的指定唤醒读线程。<br>看看下面的示例3，可能对这个概念有更深刻的理解。</p>
+<h3 id="示例3"><a href="#示例3" class="headerlink" title="示例3"></a>示例3</h3><pre><code class="java">import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
+
+class BoundedBuffer {
+    final Lock lock = new ReentrantLock();
+    final Condition notFull  = lock.newCondition(); 
+    final Condition notEmpty = lock.newCondition(); 
+
+    final Object[] items = new Object[5];
+    int putptr, takeptr, count;
+
+    public void put(Object x) throws InterruptedException {
+        lock.lock();    //获取锁
+        try {
+            // 如果“缓冲已满”，则等待；直到“缓冲”不是满的，才将x添加到缓冲中。
+            while (count == items.length)
+                notFull.await();
+            // 将x添加到缓冲中
+            items[putptr] = x; 
+            // 将“put统计数putptr+1”；如果“缓冲已满”，则设putptr为0。
+            if (++putptr == items.length) putptr = 0;
+            // 将“缓冲”数量+1
+            ++count;
+            // 唤醒take线程，因为take线程通过notEmpty.await()等待
+            notEmpty.signal();
+
+            // 打印写入的数据
+            System.out.println(Thread.currentThread().getName() + &quot; put  &quot;+ (Integer)x);
+        } finally {
+            lock.unlock();    // 释放锁
+        }
+    }
+
+    public Object take() throws InterruptedException {
+        lock.lock();    //获取锁
+        try {
+            // 如果“缓冲为空”，则等待；直到“缓冲”不为空，才将x从缓冲中取出。
+            while (count == 0) 
+                notEmpty.await();
+            // 将x从缓冲中取出
+            Object x = items[takeptr]; 
+            // 将“take统计数takeptr+1”；如果“缓冲为空”，则设takeptr为0。
+            if (++takeptr == items.length) takeptr = 0;
+            // 将“缓冲”数量-1
+            --count;
+            // 唤醒put线程，因为put线程通过notFull.await()等待
+            notFull.signal();
+
+            // 打印取出的数据
+            System.out.println(Thread.currentThread().getName() + &quot; take &quot;+ (Integer)x);
+            return x;
+        } finally {
+            lock.unlock();    // 释放锁
+        }
+    } 
+}
+
+public class ConditionTest2 {
+    private static BoundedBuffer bb = new BoundedBuffer();
+
+    public static void main(String[] args) {
+        // 启动10个“写线程”，向BoundedBuffer中不断的写数据(写入0-9)；
+        // 启动10个“读线程”，从BoundedBuffer中不断的读数据。
+        for (int i=0; i&lt;10; i++) {
+            new PutThread(&quot;p&quot;+i, i).start();
+            new TakeThread(&quot;t&quot;+i).start();
+        }
+    }
+
+    static class PutThread extends Thread {
+        private int num;
+        public PutThread(String name, int num) {
+            super(name);
+            this.num = num;
+        }
+        public void run() {
+            try {
+                Thread.sleep(1);    // 线程休眠1ms
+                bb.put(num);        // 向BoundedBuffer中写入数据
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+
+    static class TakeThread extends Thread {
+        public TakeThread(String name) {
+            super(name);
+        }
+        public void run() {
+            try {
+                Thread.sleep(10);                    // 线程休眠1ms
+                Integer num = (Integer)bb.take();    // 从BoundedBuffer中取出数据
+            } catch (InterruptedException e) {
+            }
+        }
+    }
+}
+</code></pre>
+<p>运行结果</p>
+<pre><code>p1 put  1
+p4 put  4
+p5 put  5
+p0 put  0
+p2 put  2
+t0 take 1
+p3 put  3
+t1 take 4
+p6 put  6
+t2 take 5
+p7 put  7
+t3 take 0
+p8 put  8
+t4 take 2
+p9 put  9
+t5 take 3
+t6 take 6
+t7 take 7
+t8 take 8
+t9 take 9
+</code></pre><p><strong>结果说明</strong>：</p>
+<ol>
+<li><p>BoundedBuffer 是容量为5的缓冲，缓冲中存储的是Object对象，支持多线程的读/写缓冲。多个线程操作“一个BoundedBuffer对象”时，它们通过互斥锁lock对缓冲区items进行互斥访问；而且同一个BoundedBuffer对象下的全部线程共用“notFull”和“notEmpty”这两个Condition。<br>notFull用于控制写缓冲，notEmpty用于控制读缓冲。当缓冲已满的时候，调用put的线程会执行notFull.await()进行等待；当缓冲区不是满的状态时，就将对象添加到缓冲区并将缓冲区的容量count+1，最后，调用notEmpty.signal()缓冲notEmpty上的等待线程(调用notEmpty.await的线程)。 简言之，notFull控制“缓冲区的写入”，当往缓冲区写入数据之后会唤醒notEmpty上的等待线程。<br>同理，notEmpty控制“缓冲区的读取”，当读取了缓冲区数据之后会唤醒notFull上的等待线程。</p>
+</li>
+<li><p>在ConditionTest2的main函数中，启动10个“写线程”，向BoundedBuffer中不断的写数据(写入0-9)；同时，也启动10个“读线程”，从BoundedBuffer中不断的读数据。</p>
+</li>
+<li><p>简单分析一下运行结果。</p>
+<pre><code>     1, p1线程向缓冲中写入1。    此时，缓冲区数据:   | 1 |   |   |   |   |
+     2, p4线程向缓冲中写入4。    此时，缓冲区数据:   | 1 | 4 |   |   |   |
+     3, p5线程向缓冲中写入5。    此时，缓冲区数据:   | 1 | 4 | 5 |   |   |
+     4, p0线程向缓冲中写入0。    此时，缓冲区数据:   | 1 | 4 | 5 | 0 |   |
+     5, p2线程向缓冲中写入2。    此时，缓冲区数据:   | 1 | 4 | 5 | 0 | 2 |
+     此时，缓冲区容量为5；缓冲区已满！如果此时，还有“写线程”想往缓冲中写入数据，
+     会调用put中的notFull.await()等待，直接缓冲区非满状态，才能继续运行。
+     6, t0线程从缓冲中取出数据1。此时，缓冲区数据:    |   | 4 | 5 | 0 | 2 |
+     7, p3线程向缓冲中写入3。    此时，缓冲区数据:   | 3 | 4 | 5 | 0 | 2 |
+     8, t1线程从缓冲中取出数据4。此时，缓冲区数据:    | 3 |   | 5 | 0 | 2 |
+     9, p6线程向缓冲中写入6。    此时，缓冲区数据:   | 3 | 6 | 5 | 0 | 2 |
+     ...
+</code></pre></li>
+</ol>
+<h2 id="源码分析"><a href="#源码分析" class="headerlink" title="源码分析"></a>源码分析</h2><p>上面已经演示了如何使用Condition条件队列，下面来具体分析java是如何实现的。这里是结合ReentranLock来分析。</p>
+<p>Condition是一个接口，实现类其实是在AQS中——<code>ConditionObject</code>，ReentranLock的newConditon方法其实是创建了一个<code>AbstractQueuedSynchronizer.ConditionObject</code>对象：</p>
+<pre><code class="java">// ReentrantLock
+public Condition newCondition() {
+    return sync.newCondition();
+}
+// Sync中的代码
+final ConditionObject newCondition() {
+    return new ConditionObject();
+}
+</code></pre>
+<p>从上面可以看出实际上是创建了一个ConditionObject对象，下面首先看看这个对象的属性，然后分析wait和singal函数。</p>
+<pre><code class="java"> public class ConditionObject implements Condition, java.io.Serializable {
+        private static final long serialVersionUID = 1173984872572414699L;
+
+        // 条件队列的第一个节点
+        private transient Node firstWaiter;
+
+        // 条件队列的最后一个节点
+        private transient Node lastWaiter;
+        /** Mode meaning to reinterrupt on exit from wait */
+       // 表示线程被中断
+        private static final int REINTERRUPT =  1;
+
+        // 抛出异常而使得线程被中断
+        private static final int THROW_IE    = -1;
+        public ConditionObject() { }
+
+}
+</code></pre>
+<p>这里提前说明一点，其实Condition内部维护了等待队列的头结点和尾节点，该队列的作用是存放等待signal信号的线程，该线程被封装为Node节点后存放于此。</p>
+<p>这里又出现了一个条件队列，可能我们就有点晕了，了解AbstractQueuedSynchronizer同步器的都知道，这个类中还维护着一个队列，AQS自己维护的队列是当前等待资源(这里的资源就是锁)的队列，AQS会在资源被释放后，依次唤醒队列中从前到后的所有节点，使他们对应的线程恢复执行。直到队列为空。</p>
+<p>而Condition自己也维护了一个队列，该队列的作用是维护一个等待signal信号的队列，两个队列的作用是不同，事实上，每个线程也仅仅会同时存在以上两个队列中的一个，流程是这样的：</p>
+<ol>
+<li><p>首先，线程1调用lock.lock()时，由于此时锁并没有被其它线程占用，因此线程1直接获得锁并不会进入AQS同步队列中进行等待。</p>
+</li>
+<li><p>在线程1执行期间，线程2调用lock.lock()时由于锁已经被线程1占用，因此，线程2进入AQS同步队列中进行等待。</p>
+</li>
+<li><p>在线程1中执行condition.await()方法后，线程1释放锁并进入条件队列Condition中等待signal信号的到来。</p>
+</li>
+<li><p>线程2，因为线程1释放锁的关系，会唤醒AQS队列中的头结点，所以线程2会获取到锁。</p>
+</li>
+<li><p>线程2调用signal方法，这个时候Condition的等待队列中只有线程1一个节点，于是它被取出来，并被加入到AQS的等待队列中。注意，这个时候，线程1 并没有被唤醒。只是加入到了AQS等待队列中去了</p>
+</li>
+<li><p>待线程2执行完成之后并调用lock.unlock()释放锁之后，会唤醒此时在AQS队列中的头结点.所以线程1开始争夺锁(由于此时只有线程1在AQS队列中，因此没人与其争夺),如果获得锁继续执行。直到线程1释放锁整个过程执行完毕。</p>
+</li>
+</ol>
+<p>可以看到，整个协作过程是靠结点在AQS的等待队列和Condition的等待队列中来回移动实现的，Condition作为一个条件类，很好的自己维护了一个等待信号的队列，并在适时的时候将结点加入到AQS的等待队列中来实现的唤醒操作。</p>
+<p>这里先定义：AQS中的队列叫等待队列，Condition中的队列叫条件等待队列。</p>
+<h3 id="await"><a href="#await" class="headerlink" title="await()"></a>await()</h3><p>代用此方法，会使的当前线程进入条件队列进行阻塞，源码如下:</p>
+<pre><code class="java">public final void await() throws InterruptedException {
+    // 线程终端抛出异常
+    if (Thread.interrupted())
+        throw new InterruptedException();
+    // 添加线程到条件等待队列
+    Node node = addConditionWaiter();
+    // 释放锁，也就是将锁的状态设为0
+    int savedState = fullyRelease(node);
+    int interruptMode = 0;
+    // 检测此节点是否在等待队列上，如果不在，说明此队列没有资格竞争锁
+    // 线程继续挂起休眠，直到检测到此线程已经在同步队列上
+    // 说明有线程发出了signal信号
+    while (!isOnSyncQueue(node)) {
+        LockSupport.park(this);
+        // 检测当前线程是否被中断过，如果中断，则退出
+        if ((interruptMode = checkInterruptWhileWaiting(node)) != 0)
+            break;
+    }
+    //被唤醒后，重新开始正式竞争锁，同样，如果竞争不到还是会将自己沉睡，等待唤醒重新开始竞争。
+    if (acquireQueued(node, savedState) &amp;&amp; interruptMode != THROW_IE)
+        interruptMode = REINTERRUPT;
+    // 清理条件队列中不是在等待条件的节点
+    if (node.nextWaiter != null) // clean up if cancelled
+        unlinkCancelledWaiters();
+    // 报告异常
+    if (interruptMode != 0)
+        reportInterruptAfterWait(interruptMode);
+}
+</code></pre>
+<p>上面的注释已经描述的比较清楚，现在来其中具体的函数。这里对流程进行总结</p>
+<ol>
+<li>判断线程是否被中断，如果中断，则抛出中断异常。</li>
+<li>插入节点到等待条件队列中，等待条件队列是通过nextWaiter来进行连接。</li>
+<li>释放当前线程获取的所有锁，然后返回锁的状态值。</li>
+<li>循环判断当前条件节点是否在等待队列上，如果是，则可以重新获取锁，在循环中会判断当前线程是否被中断过，如果中断则退出循环。</li>
+<li>获取锁，没有中断返回false，继续下一步，如果线程是有中断产生，则判断中断的类型，设置线程的中断标志。</li>
+<li>如果当前节点还有后继等待条件节点，删除所有非条件等待节点。</li>
+<li>如果线程是被中断或者因为异常而被中断，则报告异常。</li>
+</ol>
+<h4 id="addConditionWaiter"><a href="#addConditionWaiter" class="headerlink" title="addConditionWaiter"></a>addConditionWaiter</h4><p>添加当前线程到条件等待队列中，源码如下</p>
+<pre><code class="java">private Node addConditionWaiter() {
+    // 尾节点
+    Node t = lastWaiter;
+
+    // CONDITION，值为-2，表示当前节点在等待condition，也就是在condition队列中；
+    // 如果此节点的状态不是CONDITION,则需要将此节点在条件队列中移除
+    if (t != null &amp;&amp; t.waitStatus != Node.CONDITION) {
+        // 删除所有非等待条件节点
+        unlinkCancelledWaiters();
+        t = lastWaiter;
+    }
+    // 创建当前线程的等待节点
+    Node node = new Node(Thread.currentThread(), Node.CONDITION);
+
+    // 将节点插入到条件队列中
+    if (t == null)
+        firstWaiter = node;
+    else
+        t.nextWaiter = node;
+    // 设置尾节点为node
+    lastWaiter = node;
+    return node;
+}
+// 删除所有非等待条件节点
+private void unlinkCancelledWaiters() {
+    Node t = firstWaiter;
+    Node trail = null;
+    // 循环知道遍历完所有节点
+    while (t != null) {
+        Node next = t.nextWaiter;
+        if (t.waitStatus != Node.CONDITION) {
+            t.nextWaiter = null;
+            if (trail == null)
+                firstWaiter = next;
+            else
+                trail.nextWaiter = next;
+            if (next == null)
+                lastWaiter = trail;
+        }
+        else
+            trail = t;
+        t = next;
+    }
+}
+</code></pre>
+<p>上面主要过程就是创建当前节点对应的条件节点然后插入，如果尾节点不是等待条件节点，则会调用unlinkCancelledWaiters，删除所有的非条件节点。</p>
+<p>另外此处为什么没有使用CAS来替换这些节点的原因是，只有获取到锁的节点才能有资格来操作条件队列，也就是每个时刻只有一个线程操作条件队列，因此不会出现线程安全问题。</p>
+<h4 id="fullyRelease"><a href="#fullyRelease" class="headerlink" title="fullyRelease"></a>fullyRelease</h4><p>释放当前线程获取到的锁，代码如下</p>
+<pre><code class="java">/**
+ *函数功能：释放锁，
+ *如果失败，则抛异常并将此节点的类型设置为：CANCELLED，为之后从条件队列中移除此节点。
+*/
+final int fullyRelease(Node node) {
+    boolean failed = true;
+    try {
+
+        // 获取锁的状态
+        int savedState = getState();
+        // 释放锁
+        if (release(savedState)) {
+            failed = false;
+            return savedState;
+        } else {
+            // 失败则抛出异常
+            throw new IllegalMonitorStateException();
+        }
+    } finally {
+        // 如果释放失败，设置当前节点的状态是取消状态
+        if (failed)
+            node.waitStatus = Node.CANCELLED;
+    }
+}
+public final boolean release(int arg) {
+    // 调用tryRelease释放锁，如果释放成功，返回true
+    if (tryRelease(arg)) {
+        Node h = head;
+        // 唤醒后继阻塞的线程。
+        if (h != null &amp;&amp; h.waitStatus != 0)
+            unparkSuccessor(h);
+        return true;
+    }
+    return false;
+}
+</code></pre>
+<p>上面主要是释放线程获取的锁，也就是讲锁的状态设置为可以获取状态，释放成功则唤醒后继阻塞的线程。失败则抛出异常，并将当前线程对应的节点设置为取消状态。</p>
+<h4 id="isOnSyncQueue"><a href="#isOnSyncQueue" class="headerlink" title="isOnSyncQueue"></a>isOnSyncQueue</h4><p>这个函数用于判断当前节点是否可以重新获取锁，条件队列中的节点必须放在同步队列上才能重新获取锁。源码如下：</p>
+<pre><code class="java">final boolean isOnSyncQueue(Node node) {
+    // 如果节点状态为CONDITION，或者此节点没有前继节点，则表明还在条件队列上。
+    // 因为条件队列节点是通过nextWaiter来进行连接
+    if (node.waitStatus == Node.CONDITION || node.prev == null)
+        return false;
+    // 如果next属性不为空，则表明已经在等待获取锁的队列上，而不是在条件队列上
+    if (node.next != null) // If has successor, it must be on queue
+        return true;
+    // node.prev可以是非空的，而且还没有进入等待队列中，
+    // 因为将其放在等待队列中的CAS可能会失败。
+    // 所以我们必须从尾部遍历以确保它真的是在等待队列上。
+    // 这个方法总是队列的尾部附近调用，除非CAS失败的次数过多（这是不太可能的），
+    // 所以我们几乎不会遍历太多次数。
+    return findNodeFromTail(node);
+}
+
+// 在等待队列上发现线程对应的节点，则返回true
+private boolean findNodeFromTail(Node node) {
+    Node t = tail;
+    for (;;) {
+        if (t == node)
+            return true;
+        if (t == null)
+            return false;
+        t = t.prev;
+    }
+}
+</code></pre>
+<h4 id="checkInterruptWhileWaiting"><a href="#checkInterruptWhileWaiting" class="headerlink" title="checkInterruptWhileWaiting"></a>checkInterruptWhileWaiting</h4><p>检测中断信号，并返回中断产生的原因。1表示线程被中断，-1表示抛出异常而使得线程被中断。</p>
+<pre><code class="java">private int checkInterruptWhileWaiting(Node node) {
+    return Thread.interrupted() ?
+        (transferAfterCancelledWait(node) ? THROW_IE : REINTERRUPT) :
+    0;
+}
+final boolean transferAfterCancelledWait(Node node) {
+    // 设置当前节点的状态为0，如果设置成功，将节点插入等待队列
+    if (compareAndSetWaitStatus(node, Node.CONDITION, 0)) {
+        enq(node);
+        return true;
+    }
+    // 如果上面的设置节点状态失败，则可能产生了一个signal()，
+    // 那么在signal完成enq（）之前，线程不能继续操作。
+    // 不完全转移过程中的取消既罕见又短暂，所以只需旋转。
+    while (!isOnSyncQueue(node))
+        Thread.yield();
+    return false;
+}
+</code></pre>
+<p>至此，await中重要的函数已经分析完，其他的和获取公平锁一样，这里就不具体讲解。实际上，await就是讲等待队列上的节点单独放到一个条件队列上，如果希望再次获取锁，只有将此节点再次移动到等待队列上，那么当前线程就有机会获取到锁。</p>
+<h3 id="signal"><a href="#signal" class="headerlink" title="signal()"></a>signal()</h3><pre><code class="java">public final void signal() {
+    // 如果当前线程不是锁的拥有者，抛出非法操作异常
+    if (!isHeldExclusively())
+        throw new IllegalMonitorStateException();
+    Node first = firstWaiter;
+    // 如果条件队列中有等待获取锁的线程，唤醒后继线程
+    if (first != null)
+        doSignal(first);
+}
+</code></pre>
+<p>此方法干了两件事：取出Condition条件队列中的头结点，然后调用doSignal开始唤醒。</p>
+<pre><code class="java">private void doSignal(Node first) {
+    do {
+        // 修改头结点，完成旧头结点的移除工作
+        if ( (firstWaiter = first.nextWaiter) == null)
+            lastWaiter = null;
+        first.nextWaiter = null;
+        // 如果转移失败，则说明头结点在条件队列中被取消，
+        // 则继续操作下一个节点
+    } while (!transferForSignal(first) &amp;&amp;
+             (first = firstWaiter) != null);
+}
+final boolean transferForSignal(Node node) {
+
+    // 设置node节点的状态值为0，如果失败，说明已经被取消
+    if (!compareAndSetWaitStatus(node, Node.CONDITION, 0))
+        return false;
+
+    // 节点条件队列中的节点转移到等待队列中
+    Node p = enq(node);
+    int ws = p.waitStatus;
+
+    // 如果节点为取消状态或尝试设置waitstatus失败，
+    // 唤醒并重新设置等待节点（在这种情况下，waitstatus可能是短暂且无害的错误）
+    if (ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL))
+        LockSupport.unpark(node.thread);
+    return true;
+}
+</code></pre>
+<p>可以看到，正常情况 ws &gt; 0 || !compareAndSetWaitStatus(p, ws, Node.SIGNAL) 这个判断是不会为true的，所以，不会在这个时候唤醒该线程。但是如果此时被唤醒，但是因为前面还会判断当前节点是否可以获取锁来保证获取锁的正确性，因此在总体上不会出现安全问题。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本章以ReentrantLock的公平锁为例，分析了AbstractQueuedSynchronizer的Condition功能。<br>通过分析，可以看到，当线程在指定Condition对象上等待的时候，其实就是将线程包装成结点，加入了条件队列，然后阻塞。当线程被通知唤醒时，则是将条件队列中的结点转换成等待队列中的结点，之后的处理就和独占功能完全一样。</p>
+<p>除此之外，Condition还支持限时等待、非中断等待等功能，分析思路是一样的，可以自己去阅读AQS的源码，通过使用示例，加入调试断点一步步看内部的调用流程，主干理顺了之后，再看其它分支，其实是异曲同工的。</p>
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://segmentfault.com/a/1190000015807209" target="_blank" rel="noopener">Java多线程进阶（八）—— J.U.C之locks框架：AQS的Conditon等待(3)</a></li>
+<li><a href="https://www.cnblogs.com/skywang12345/p/java_threads_category.html" target="_blank" rel="noopener">Java多线程系列目录(共43篇)</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/d14480c0/">java线程系列 JUC锁 05  Condition条件</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月18日 - 11:56</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/d14480c0/" title="java线程系列 JUC锁 05  Condition条件">java线程系列 JUC锁 05  Condition条件</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/d14480c0/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Condition/" rel="tag">  <i class="fa fa-tag"></i> Condition</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/3a5a614f/" rel="next" title="Atomic">
+                <i class="fa fa-chevron-left"></i> Atomic
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/e7f5c004/" rel="prev" title="AbstractQueuedSynchronizer">
+                AbstractQueuedSynchronizer <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#简单介绍"><span class="nav-text">简单介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Condition函数示例"><span class="nav-text">Condition函数示例</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Condition示例"><span class="nav-text">Condition示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#示例1"><span class="nav-text">示例1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例2"><span class="nav-text">示例2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例3"><span class="nav-text">示例3</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#源码分析"><span class="nav-text">源码分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#await"><span class="nav-text">await()</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#addConditionWaiter"><span class="nav-text">addConditionWaiter</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fullyRelease"><span class="nav-text">fullyRelease</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#isOnSyncQueue"><span class="nav-text">isOnSyncQueue</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#checkInterruptWhileWaiting"><span class="nav-text">checkInterruptWhileWaiting</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#signal"><span class="nav-text">signal()</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/d14480c0/";
+        this.page.identifier = "posts/d14480c0/";
+        this.page.title = 'java线程系列 JUC锁 05  Condition条件';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="spring源码解析之 15BeanDefinition解析总结前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。 在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition的解析，BeanDefinition 注册。">
+<meta name="keywords" content="spring源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring源码解析之 15BeanDefinition解析总结">
+<meta property="og:url" content="http://fengxiutianya.top/posts/573290f9/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="spring源码解析之 15BeanDefinition解析总结前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。 在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition的解析，BeanDefinition 注册。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-11.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring源码解析之 15BeanDefinition解析总结">
+<meta name="twitter:description" content="spring源码解析之 15BeanDefinition解析总结前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。 在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition的解析，BeanDefinition 注册。">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-11.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/573290f9/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>spring源码解析之 15BeanDefinition解析总结 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/573290f9/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">spring源码解析之 15BeanDefinition解析总结
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-14 06:19:00" itemprop="dateCreated datePublished" datetime="2019-01-14T06:19:00+08:00">2019-01-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/573290f9/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/573290f9/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/573290f9/" class="leancloud_visitors" data-flag-title="spring源码解析之 15BeanDefinition解析总结">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">15k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">13 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="spring源码解析之-15BeanDefinition解析总结"><a href="#spring源码解析之-15BeanDefinition解析总结" class="headerlink" title="spring源码解析之 15BeanDefinition解析总结"></a>spring源码解析之 15BeanDefinition解析总结</h1><p>前面 13 篇博文从源码层次分析了 IOC 整个初始化过程，这篇就这些内容做一个总结将其连贯起来。</p>
+<p>在前文提过，IOC 容器的初始化过程分为三步骤：Resource 定位、BeanDefinition的解析，BeanDefinition 注册。<br><a id="more"></a></p>
+<p><img src="/images/pasted-11.png" alt="upload successful"></p>
+<ul>
+<li><strong>Resource 定位</strong>。我们一般用外部资源来描述 Bean 对象，所以在初始化 IOC 容器的第一步就是需要定位这个外部资源。</li>
+<li><strong>BeanDefinition 解析:</strong>。装载就是 BeanDefinition 的载入。BeanDefinitionReader 读取、解析 Resource 资源，也就是将用户定义的 Bean 表示成 IOC 容器的内部数据结构：BeanDefinition。在 IOC 容器内部维护着一个 BeanDefinition Map 的数据结构，在配置文件中每一个都对应着一个BeanDefinition对象。</li>
+<li><strong>BeanDefinition 注册:</strong>向IOC容器注册在第二步解析好的 BeanDefinition，这个过程是通过 BeanDefinitionRegistery 接口来实现的。在 IOC 容器内部其实是将第二个过程解析得到的 BeanDefinition 注入到一个 HashMap 容器中，IOC 容器就是通过这个 HashMap 来维护这些 BeanDefinition 的。在这里需要注意的一点是这个过程并没有完成依赖注入，依赖注册是发生在应用第一次调用 <code>getBean()</code> 向容器索要 Bean 时。当然我们可以通过设置预处理，即对某个 Bean 设置 lazyinit 属性，那么这个 Bean 的依赖注入就会在容器初始化的时候完成。</li>
+</ul>
+<p>还记得在博客<a href="https://taolove.top/posts/23/" target="_blank" rel="noopener">spring 源码解析之 04加载bean</a> 中提供的一段代码吗？这里我们同样也以这段代码作为我们研究 IOC 初始化过程的开端，如下：</p>
+<pre><code class="java">ClassPathResource resource = new ClassPathResource(&quot;bean.xml&quot;);
+DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
+XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);
+reader.loadBeanDefinitions(resource);
+</code></pre>
+<p>刚刚开始的时候可能对上面这几行代码不知道什么意思，现在应该就一目了然了。</p>
+<ul>
+<li><code>ClassPathResource resource = new ClassPathResource(&quot;bean.xml&quot;);</code>： 根据 Xml 配置文件创建 Resource 资源对象。ClassPathResource 是 Resource 接口的子类，bean.xml 文件中的内容是我们定义的 Bean 信息。</li>
+<li><code>DefaultListableBeanFactory factory = new DefaultListableBeanFactory();</code> 创建一个 BeanFactory。DefaultListableBeanFactory 是 BeanFactory 的一个子类，BeanFactory 作为一个接口，其实它本身是不具有独立使用的功能的，而 DefaultListableBeanFactory 则是真正可以独立使用的 IOC 容器，它是整个 Spring IOC 的始祖，在后续会有专门的文章来分析它。</li>
+<li><code>XmlBeanDefinitionReader reader = new XmlBeanDefinitionReader(factory);</code>：创建 XmlBeanDefinitionReader 读取器，用于载入 BeanDefinition 。</li>
+<li><code>reader.loadBeanDefinitions(resource);</code>：开启 Bean 的载入和注册进程，完成后的 Bean 放置在 IOC 容器中。</li>
+</ul>
+<h2 id="Resource-定位"><a href="#Resource-定位" class="headerlink" title="Resource 定位"></a>Resource 定位</h2><p>Spring 为了解决资源定位的问题，提供了两个接口：Resource、ResourceLoader，其中 Resource 接口是 Spring 统一资源的抽象接口，ResourceLoader 则是 Spring 资源加载的统一抽象。关于Resource、ResourceLoader 的更多知识请关注<a href="https://taolove.top/posts/22/" target="_blank" rel="noopener">spring源码解析之 03统一资源加载</a></p>
+<p>Resource 资源的定位需要 Resource 和 ResourceLoader 两个接口互相配合，在上面那段代码中 <code>new ClassPathResource(&quot;bean.xml&quot;)</code> 为我们定义了资源，那么 ResourceLoader 则是在什么时候初始化的呢？看 XmlBeanDefinitionReader 构造方法：</p>
+<pre><code class="java">    public XmlBeanDefinitionReader(BeanDefinitionRegistry registry) {
+        super(registry);
+    }
+</code></pre>
+<p>直接调用父类 AbstractBeanDefinitionReader ：</p>
+<pre><code class="java">protected AbstractBeanDefinitionReader(BeanDefinitionRegistry registry) {
+    Assert.notNull(registry, &quot;BeanDefinitionRegistry must not be null&quot;);
+    this.registry = registry;
+
+    // Determine ResourceLoader to use.
+    if (this.registry instanceof ResourceLoader) {
+        this.resourceLoader = (ResourceLoader) this.registry;
+    }
+    else {
+        this.resourceLoader = new PathMatchingResourcePatternResolver();
+    }
+
+    // Inherit Environment if possible
+    if (this.registry instanceof EnvironmentCapable) {
+        this.environment = ((EnvironmentCapable) this.registry).getEnvironment();
+    }
+    else {
+        this.environment = new StandardEnvironment();
+    }
+}
+</code></pre>
+<p>核心在于设置 resourceLoader 这段，如果设置了 ResourceLoader 则用设置的，否则使用 PathMatchingResourcePatternResolver ，该类是一个集大成者的 ResourceLoader。</p>
+<h2 id="BeanDefinition-的载入和解析"><a href="#BeanDefinition-的载入和解析" class="headerlink" title="BeanDefinition 的载入和解析"></a>BeanDefinition 的载入和解析</h2><p><code>reader.loadBeanDefinitions(resource);</code> 开启 BeanDefinition 的解析过程。如下：</p>
+<pre><code class="java">public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+    return loadBeanDefinitions(new EncodedResource(resource));
+}
+</code></pre>
+<p>在这个方法会将资源 resource 包装成一个 EncodedResource 实例对象，然后调用 <code>loadBeanDefinitions()</code> 方法，而将 Resource 封装成 EncodedResource 主要是为了对 Resource 进行编码，保证内容读取的正确性。</p>
+<pre><code class="java">public int loadBeanDefinitions(EncodedResource encodedResource) 
+    throws BeanDefinitionStoreException {
+    // 省略一些代码
+    try {
+        // 将资源文件转为 InputStream 的 IO 流
+        InputStream inputStream = encodedResource.getResource().getInputStream();
+        try {
+            // 从 InputStream 中得到 XML 的解析源
+            InputSource inputSource = new InputSource(inputStream);
+            if (encodedResource.getEncoding() != null) {
+                inputSource.setEncoding(encodedResource.getEncoding());
+            }
+
+            // 具体的读取过程
+            return doLoadBeanDefinitions(inputSource, 
+                                         encodedResource.getResource());
+        }
+        finally {
+            inputStream.close();
+        }
+    }
+    // 省略一些代码
+}
+</code></pre>
+<p>从 encodedResource 源中获取 xml 的解析源，调用 <code>doLoadBeanDefinitions()</code> 执行具体的解析过程。</p>
+<pre><code class="java">    protected int doLoadBeanDefinitions(InputSource inputSource, Resource resource)
+            throws BeanDefinitionStoreException {
+        try {
+            Document doc = doLoadDocument(inputSource, resource);
+            return registerBeanDefinitions(doc, resource);
+        }
+        // 省略很多catch代码
+</code></pre>
+<p>在该方法中主要做两件事：</p>
+<ol>
+<li><p>根据 xml 解析源获取相应的 Document 对象</p>
+</li>
+<li><p>调用 <code>registerBeanDefinitions()</code> 开启 BeanDefinition 的解析注册过程。</p>
+</li>
+</ol>
+<h3 id="转换为-Document-对象"><a href="#转换为-Document-对象" class="headerlink" title="转换为 Document 对象"></a>转换为 Document 对象</h3><p>调用 <code>doLoadDocument()</code> 会将 Bean 定义的资源转换为 Document 对象。</p>
+<pre><code class="java">    protected Document doLoadDocument(InputSource inputSource, Resource resource) 
+        throws Exception {
+        return this.documentLoader
+            .loadDocument(inputSource, getEntityResolver(), this.errorHandler,
+                getValidationModeForResource(resource), isNamespaceAware());
+    }
+</code></pre>
+<p><code>loadDocument()</code> 方法接受五个参数：</p>
+<ul>
+<li><strong>inputSource</strong>：加载 Document 的 Resource 源</li>
+<li><strong>entityResolver</strong>：解析文件的解析器</li>
+<li><strong>errorHandler</strong>：处理加载 Document 对象的过程的错误</li>
+<li><strong>validationMode</strong>：验证模式</li>
+<li><strong>namespaceAware</strong>：命名空间支持。如果要提供对 XML 名称空间的支持，则为true</li>
+</ul>
+<p>对于这五个参数，有两个参数需要重点关注下：entityResolver、validationMode。这两个参数分别在<a href="http://127.0.0.1:4000/posts/23/" target="_blank" rel="noopener">spring 源码解析之 04（上）加载bean</a>   和  <a href="http://127.0.0.1:4000/posts/35/" target="_blank" rel="noopener">spring源码解析之 04（下）获取验证模型</a> 中有详细的讲述。</p>
+<p><code>loadDocument()</code> 在类 DefaultDocumentLoader 中提供了实现，如下：</p>
+<pre><code class="java">    public Document loadDocument(InputSource inputSource, 
+                                 EntityResolver entityResolver,
+            ErrorHandler errorHandler, int validationMode, boolean namespaceAware) 
+        throws Exception {
+        // 创建文件解析工厂
+        DocumentBuilderFactory factory = 
+            createDocumentBuilderFactory(validationMode, namespaceAware);
+        if (logger.isDebugEnabled()) {
+            logger.debug(&quot;Using JAXP provider [&quot; + factory.getClass().getName() + &quot;]&quot;);
+        }
+        // 创建文档解析器
+        DocumentBuilder builder = 
+            createDocumentBuilder(factory, entityResolver, errorHandler);
+        // 解析 Spring 的 Bean 定义资源
+        return builder.parse(inputSource);
+    }
+</code></pre>
+<p>这到这里，就已经将定义的 Bean 资源文件，载入并转换为 Document 对象了，那么下一步就是如何将其解析为 Spring IOC 管理的 Bean 对象并将其注册到容器中。这个过程有方法 <code>registerBeanDefinitions()</code> 实现。如下：</p>
+<pre><code class="java">    public int registerBeanDefinitions(Document doc, Resource resource)
+        throws BeanDefinitionStoreException {
+       // 创建 BeanDefinitionDocumentReader 来对 xml 格式的BeanDefinition 解析
+        BeanDefinitionDocumentReader documentReader = 
+                    createBeanDefinitionDocumentReader();
+        // 获得容器中注册的Bean数量
+        int countBefore = getRegistry().getBeanDefinitionCount();
+
+        // 解析过程入口，这里使用了委派模式，BeanDefinitionDocumentReader只是个接口，
+        // 具体的解析实现过程有实现类DefaultBeanDefinitionDocumentReader完成
+        documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
+        return getRegistry().getBeanDefinitionCount() - countBefore;
+    }
+</code></pre>
+<p>首先创建 BeanDefinition 的解析器 BeanDefinitionDocumentReader，然后调用 <code>documentReader.registerBeanDefinitions()</code> 开启解析过程，这里使用的是委派模式，具体的实现由子类 DefaultBeanDefinitionDocumentReader 完成。</p>
+<pre><code class="java">    public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
+       // 获得XML描述符
+        this.readerContext = readerContext;
+        logger.debug(&quot;Loading bean definitions&quot;);
+
+        // 获得Document的根元素
+        Element root = doc.getDocumentElement();
+
+        // 解析根元素
+        doRegisterBeanDefinitions(root);
+    }
+</code></pre>
+<h3 id="对-Document-对象的解析"><a href="#对-Document-对象的解析" class="headerlink" title="对 Document 对象的解析"></a>对 Document 对象的解析</h3><p>从 Document 对象中获取根元素 root，然后调用 <code>doRegisterBeanDefinitions()</code> 开启真正的解析过程。</p>
+<pre><code class="java">    protected void doRegisterBeanDefinitions(Element root) {
+        BeanDefinitionParserDelegate parent = this.delegate;
+        this.delegate = createDelegate(getReaderContext(), root, parent);
+
+       // 省略部分代码
+
+        preProcessXml(root);
+        parseBeanDefinitions(root, this.delegate);
+        postProcessXml(root);
+
+        this.delegate = parent;
+    }
+</code></pre>
+<p><code>preProcessXml()</code>、<code>postProcessXml()</code> 为前置、后置增强处理，目前 Spring 中都是空实现， <code>parseBeanDefinitions()</code> 是对根元素 root 的解析注册过程。</p>
+<pre><code class="java">    protected void parseBeanDefinitions(Element root, 
+                                        BeanDefinitionParserDelegate delegate) {
+       // Bean定义的Document对象使用了Spring默认的XML命名空间
+        if (delegate.isDefaultNamespace(root)) {
+          // 获取Bean定义的Document对象根元素的所有子节点
+            NodeList nl = root.getChildNodes();
+            for (int i = 0; i &lt; nl.getLength(); i++) {
+                Node node = nl.item(i);
+                // 获得Document节点是XML元素节点 
+                if (node instanceof Element) {
+                    Element ele = (Element) node;
+                    // Bean定义的Document的元素节点使用的是Spring默认的XML命名空间
+                    if (delegate.isDefaultNamespace(ele)) {
+                       // 使用Spring的Bean规则解析元素节点（默认解析规则）
+                        parseDefaultElement(ele, delegate);
+                    }
+                    else {
+                       // 没有使用Spring默认的XML命名空间，则使用用户自定义的解析规则解析元素节点 
+                        delegate.parseCustomElement(ele);
+                    }
+                }
+            }
+        }
+        else {
+          // Document 的根节点没有使用Spring默认的命名空间，则使用用户自定义的解析规则解析
+            delegate.parseCustomElement(root);
+        }
+    }
+</code></pre>
+<p>迭代 root 元素的所有子节点，对其进行判断，若节点为默认命名空间，则ID调用 <code>parseDefaultElement()</code> 开启默认标签的解析注册过程，否则调用 <code>parseCustomElement()</code> 开启自定义标签的解析注册过程。</p>
+<h3 id="标签解析"><a href="#标签解析" class="headerlink" title="标签解析"></a>标签解析</h3><p>若定义的元素节点使用的是 Spring 默认命名空间，则调用 <code>parseDefaultElement()</code> 进行默认标签解析，如下：</p>
+<pre><code class="java">    private void parseDefaultElement(Element ele, 
+                                     BeanDefinitionParserDelegate delegate) {
+       // 如果元素节点是&lt;Import&gt;导入元素，进行导入解析
+        if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
+            importBeanDefinitionResource(ele);
+        }
+        // 如果元素节点是&lt;Alias&gt;别名元素，进行别名解析 
+        else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
+            processAliasRegistration(ele);
+        }
+        // 如果元素节点&lt;Bean&gt;元素，则进行Bean解析注册
+        else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
+            processBeanDefinition(ele, delegate);
+        }
+
+        // // 如果元素节点&lt;Beans&gt;元素，则进行Beans解析
+        else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
+            // recurse
+            doRegisterBeanDefinitions(ele);
+        }
+    }
+</code></pre>
+<p>对四大标签：import、alias、bean、beans 进行解析，其中 bean 标签的解析为核心工作。关于各个标签的解析过程见如下文章：</p>
+<ul>
+<li><a href="http://127.0.0.1:4000/posts/31/" target="_blank" rel="noopener">spring源码解析之  12alias、import、beans标签的解析</a></li>
+<li><a href="http://127.0.0.1:4000/posts/30/" target="_blank" rel="noopener">spring源码解析之   11bean标签：解析自定义标签</a></li>
+<li><a href="http://127.0.0.1:4000/posts/29/" target="_blank" rel="noopener">spring 源码解析之 10bean标签：constructor-arg、property子元素</a></li>
+<li><a href="http://127.0.0.1:4000/posts/28/" target="_blank" rel="noopener">spring源码解析之 09bean 标签：meta、lookup-method、replace-method</a></li>
+<li><a href="http://127.0.0.1:4000/posts/27/" target="_blank" rel="noopener">Spring源码解析之 08bean标签：BeanDefinition</a></li>
+<li><a href="http://127.0.0.1:4000/posts/26/" target="_blank" rel="noopener">spring源码解析之 07bean标签:开启解析进程</a></li>
+</ul>
+<p>对于默认标签则由 <code>parseCustomElement()</code> 负责解析。</p>
+<pre><code class="java">    public BeanDefinition parseCustomElement(Element ele) {
+        return parseCustomElement(ele, null);
+    }
+
+    public BeanDefinition parseCustomElement(Element ele, 
+                                             @Nullable BeanDefinition containingBd) {
+        String namespaceUri = getNamespaceURI(ele);
+        if (namespaceUri == null) {
+            return null;
+        }
+        NamespaceHandler handler = this.readerContext
+                    .getNamespaceHandlerResolver().resolve(namespaceUri);
+        if (handler == null) {
+            error(&quot;Unable to locate Spring NamespaceHandler for XML schema namespace [&quot; 
+                      + namespaceUri + &quot;]&quot;, ele);
+            return null;
+        }
+        return handler.parse(ele, new ParserContext(this.readerContext, this, 
+                                                    containingBd));
+    }
+</code></pre>
+<p>获取节点的 namespaceUri，然后根据该 namespaceuri 获取相对应的 Handler，调用 Handler 的 <code>parse()</code> 方法即完成自定义标签的解析和注入。想了解更多参考：<a href="http://127.0.0.1:4000/posts/32/" target="_blank" rel="noopener">spring源码解析之 13自定义标签解析</a></p>
+<h2 id="注册-BeanDefinition"><a href="#注册-BeanDefinition" class="headerlink" title="注册 BeanDefinition"></a>注册 BeanDefinition</h2><p>经过上面的解析，则将 Document 对象里面的 Bean 标签解析成了一个个的 BeanDefinition ，下一步则是将这些 BeanDefinition 注册到 IOC 容器中。动作的触发是在解析 Bean 标签完成后，如下：</p>
+<pre><code class="java">    protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+        BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
+        if (bdHolder != null) {
+            bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
+            try {
+                // Register the final decorated instance.
+                BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
+            }
+            catch (BeanDefinitionStoreException ex) {
+                getReaderContext().error(&quot;Failed to register bean definition with name &#39;&quot; +
+                        bdHolder.getBeanName() + &quot;&#39;&quot;, ele, ex);
+            }
+            // Send registration event.
+            getReaderContext().fireComponentRegistered(new BeanComponentDefinition(bdHolder));
+        }
+    }
+</code></pre>
+<p>调用 <code>BeanDefinitionReaderUtils.registerBeanDefinition()</code> 注册，其实这里面也是调用 BeanDefinitionRegistry 的 <code>registerBeanDefinition()</code>来注册 BeanDefinition ，不过最终的实现是在 DefaultListableBeanFactory 中实现，如下：</p>
+<pre><code class="java">@Override
+public void registerBeanDefinition(String beanName, BeanDefinition beanDefinition)
+    throws BeanDefinitionStoreException {
+
+    // 省略一堆校验
+
+    BeanDefinition oldBeanDefinition;
+
+    oldBeanDefinition = this.beanDefinitionMap.get(beanName);
+    // 省略一堆 if
+    this.beanDefinitionMap.put(beanName, beanDefinition);
+}
+else {
+    if (hasBeanCreationStarted()) {
+        // Cannot modify startup-time collection elements anymore (for stable iteration)
+        synchronized (this.beanDefinitionMap) {
+            this.beanDefinitionMap.put(beanName, beanDefinition);
+            List&lt;String&gt; updatedDefinitions = new ArrayList&lt;&gt;(this.beanDefinitionNames.size() + 1);
+            updatedDefinitions.addAll(this.beanDefinitionNames);
+            updatedDefinitions.add(beanName);
+            this.beanDefinitionNames = updatedDefinitions;
+            if (this.manualSingletonNames.contains(beanName)) {
+                Set&lt;String&gt; updatedSingletons = new LinkedHashSet&lt;&gt;(this.manualSingletonNames);
+                updatedSingletons.remove(beanName);
+                this.manualSingletonNames = updatedSingletons;
+            }
+        }
+    }
+    else {
+        // Still in startup registration phase
+        this.beanDefinitionMap.put(beanName, beanDefinition);
+        this.beanDefinitionNames.add(beanName);
+        this.manualSingletonNames.remove(beanName);
+    }
+    this.frozenBeanDefinitionNames = null;
+}
+
+if (oldBeanDefinition != null || containsSingleton(beanName)) {
+    resetBeanDefinition(beanName);
+}
+}
+</code></pre>
+<p>这段代码最核心的部分是这句 <code>this.beanDefinitionMap.put(beanName, beanDefinition)</code> ，所以注册过程也不是那么的高大上，就是利用一个 Map 的集合对象来存放，key 是 beanName，value 是 BeanDefinition。</p>
+<p>至此，整个 IOC 的初始化过程就已经完成了，从 Bean 资源的定位，转换为 Document 对象，接着对其进行解析，最后注册到 IOC 容器中，都已经完美地完成了。现在 IOC 容器中已经建立了整个 Bean 的配置信息，这些 Bean 可以被检索、使用、维护，他们是控制反转的基础，是后面注入 Bean 的依赖。</p>
+<p>更多阅读：</p>
+<ul>
+<li><a href="https://taolove.top/tags/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">spring源码解析</a></li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/48fb5eaf/" rel="bookmark">Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c51c4fa0/" rel="bookmark">Spring源码解析之 01环境搭建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e84d4767/" rel="bookmark">spring源码解析之 04（下）获取验证模型</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/20cd1d0c/" rel="bookmark">spring源码解析之 11bean标签：解析自定义标签</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/fa9db44e/" rel="bookmark">spring源码解析之 26深入分析Aware接口</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/573290f9/">spring源码解析之 15BeanDefinition解析总结</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月14日 - 06:19</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/573290f9/" title="spring源码解析之 15BeanDefinition解析总结">spring源码解析之 15BeanDefinition解析总结</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/573290f9/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring源码解析/" rel="tag">  <i class="fa fa-tag"></i> spring源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/9207285a/" rel="next" title=" spring 源码解析之 14注册解析的BeanDefinition">
+                <i class="fa fa-chevron-left"></i>  spring 源码解析之 14注册解析的BeanDefinition
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/e7edce6c/" rel="prev" title="spring源码解析之 16 开启bean的加载">
+                spring源码解析之 16 开启bean的加载 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spring源码解析之-15BeanDefinition解析总结"><span class="nav-text">spring源码解析之 15BeanDefinition解析总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Resource-定位"><span class="nav-text">Resource 定位</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BeanDefinition-的载入和解析"><span class="nav-text">BeanDefinition 的载入和解析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#转换为-Document-对象"><span class="nav-text">转换为 Document 对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#对-Document-对象的解析"><span class="nav-text">对 Document 对象的解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#标签解析"><span class="nav-text">标签解析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#注册-BeanDefinition"><span class="nav-text">注册 BeanDefinition</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/573290f9/";
+        this.page.identifier = "posts/573290f9/";
+        this.page.title = 'spring源码解析之 15BeanDefinition解析总结';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

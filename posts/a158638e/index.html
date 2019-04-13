@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="spring源码解析之 03统一资源加载概述 统一资源Resource 统一资源定位ResourceLoader  1. 统一资源Resourcejava中有一个标准类 java.net.URL，该类在 Java SE 中的定位为统一资源定位器（Uniform Resource Locator），但是我们知道它的实现基本只限于网络形式发布的资源的查找和定位。虽然可以通过注册特定的处理器来扩展处理不">
+<meta name="keywords" content="spring源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring源码解析之 03统一资源加载">
+<meta property="og:url" content="http://fengxiutianya.top/posts/a158638e/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="spring源码解析之 03统一资源加载概述 统一资源Resource 统一资源定位ResourceLoader  1. 统一资源Resourcejava中有一个标准类 java.net.URL，该类在 Java SE 中的定位为统一资源定位器（Uniform Resource Locator），但是我们知道它的实现基本只限于网络形式发布的资源的查找和定位。虽然可以通过注册特定的处理器来扩展处理不">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-6.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-6.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/pasted-8.png">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring源码解析之 03统一资源加载">
+<meta name="twitter:description" content="spring源码解析之 03统一资源加载概述 统一资源Resource 统一资源定位ResourceLoader  1. 统一资源Resourcejava中有一个标准类 java.net.URL，该类在 Java SE 中的定位为统一资源定位器（Uniform Resource Locator），但是我们知道它的实现基本只限于网络形式发布的资源的查找和定位。虽然可以通过注册特定的处理器来扩展处理不">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-6.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/a158638e/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>spring源码解析之 03统一资源加载 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/a158638e/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">spring源码解析之 03统一资源加载
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-14 03:39:00" itemprop="dateCreated datePublished" datetime="2019-01-14T03:39:00+08:00">2019-01-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/a158638e/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/a158638e/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/a158638e/" class="leancloud_visitors" data-flag-title="spring源码解析之 03统一资源加载">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">26k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">24 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="spring源码解析之-03统一资源加载"><a href="#spring源码解析之-03统一资源加载" class="headerlink" title="spring源码解析之 03统一资源加载"></a>spring源码解析之 03统一资源加载</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>统一资源Resource</li>
+<li>统一资源定位ResourceLoader</li>
+</ol>
+<h3 id="1-统一资源Resource"><a href="#1-统一资源Resource" class="headerlink" title="1. 统一资源Resource"></a>1. 统一资源Resource</h3><p>java中有一个标准类 <code>java.net.URL</code>，该类在 Java SE 中的定位为统一资源定位器（Uniform Resource Locator），但是我们知道它的实现基本只限于网络形式发布的资源的查找和定位。虽然可以通过注册特定的处理器来扩展处理不同的地址前缀，但是这通常比较麻烦，而且不易于使用。另外，实际上资源的定义比较广泛，除了网络形式的资源，还有以二进制形式存在的、以文件形式存在的、以字节流形式存在的等等。而且它可以存在于任何场所，比如网络、文件系统、应用程序中。所以 <code>java.net.URL</code> 的局限性迫使 Spring 必须实现自己的资源加载策略，该资源加载策略需要满足如下要求：</p>
+<ol>
+<li><strong>职能划分清楚</strong>：资源的定义和资源的加载应该要有一个清晰的界限；</li>
+<li><strong>统一的抽象</strong>：统一的资源定义和资源加载策略。资源加载后要返回统一的抽象给客户端，客户端要对资源进行怎样的处理，应该由抽象资源接口来界定。</li>
+</ol>
+<a id="more"></a>
+<p><code>org.springframework.core.io.Resource</code> 为 Spring 框架所有资源的抽象和访问接口，它继承 <code>org.springframework.core.io.InputStreamSource</code>接口。作为所有资源的统一抽象，Source 定义了一些通用的方法，由子类 <code>AbstractResource</code> 提供统一的默认实现。定义如下：</p>
+<pre><code class="java">public interface Resource extends InputStreamSource {
+
+    /**
+     * 资源是否存在
+     */
+    boolean exists();
+
+    /**
+     * 资源是否可读
+     */
+    default boolean isReadable() {
+        return true;
+    }
+
+    /**
+     * 资源所代表的句柄是否被一个stream打开了
+     */
+    default boolean isOpen() {
+        return false;
+    }
+
+    /**
+     * 是否为 File
+     */
+    default boolean isFile() {
+        return false;
+    }
+
+    /**
+     * 返回资源的URL的句柄
+     */
+    URL getURL() throws IOException;
+
+    /**
+     * 返回资源的URI的句柄
+     */
+    URI getURI() throws IOException;
+
+    /**
+     * 返回资源的File的句柄
+     */
+    File getFile() throws IOException;
+
+    /**
+     * 返回 ReadableByteChannel
+     */
+    default ReadableByteChannel readableChannel() throws IOException {
+        return Channels.newChannel(getInputStream());
+    }
+
+    /**
+     * 资源内容的长度
+     */
+    long contentLength() throws IOException;
+
+    /**
+     * 资源最后的修改时间
+     */
+    long lastModified() throws IOException;
+
+    /**
+     * 根据资源的相对路径创建新资源
+     */
+    Resource createRelative(String relativePath) throws IOException;
+
+    /**
+     * 资源的文件名
+     */
+    @Nullable
+    String getFilename();
+
+    /**
+     * 资源的描述
+     */
+    String getDescription();
+
+}
+</code></pre>
+<p><img src="/images/pasted-6.png" alt="resource"></p>
+<p>从上图可以看到，Resource 根据资源的不同类型提供不同的具体实现，如下：</p>
+<ul>
+<li>FileSystemResource：对 <code>java.io.File</code> 类型资源的封装，只要是File类能操作的资源，基本都可以使用FileSystemResource来代替。支持文件和 URL 的形式，实现 WritableResource 接口，且从 Spring Framework 5.0 开始，FileSystemResource 使用NIO API进行读/写交互</li>
+<li>ByteArrayResource：对字节数组提供的数据的封装。如果通过 InputStream 形式访问该类型的资源，该实现会根据字节数组的数据构造一个相应的 ByteArrayInputStream。</li>
+<li>UrlResource：对 <code>java.net.URL</code>类型资源的封装。内部委派 URL 进行具体的资源操作。</li>
+<li>ClassPathResource：class path 类型资源的实现。使用给定的 ClassLoader 或者给定的 Class 来加载资源。</li>
+<li>InputStreamResource：将给定的 InputStream 作为一种资源的 Resource 的实现类。</li>
+</ul>
+<p>AbstractResource 为 Resource 接口的默认实现，它实现了 Resource 接口的大部分的公共实现，作为 Resource 接口中的重中之重，其定义如下：</p>
+<pre><code class="java">public abstract class AbstractResource implements Resource {
+
+    /**
+     * 判断文件是否存在，若判断过程产生异常（因为会调用SecurityManager来判断），就关闭对应的流
+     */
+    @Override
+    public boolean exists() {
+        try {
+            return getFile().exists();
+        }
+        catch (IOException ex) {
+            // Fall back to stream existence: can we open the stream?
+            try {
+                InputStream is = getInputStream();
+                is.close();
+                return true;
+            }
+            catch (Throwable isEx) {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * 直接返回true，表示可读
+     */
+    @Override
+    public boolean isReadable() {
+        return true;
+    }
+
+    /**
+     * 直接返回 false，表示未被打开
+     */
+    @Override
+    public boolean isOpen() {
+        return false;
+    }
+
+    /**
+     *  直接返回false，表示不为 File
+     */
+    @Override
+    public boolean isFile() {
+        return false;
+    }
+
+    /**
+     * 抛出 FileNotFoundException 异常，交给子类实现
+     */
+    @Override
+    public URL getURL() throws IOException {
+        throw new FileNotFoundException(getDescription() + &quot; cannot be resolved to URL&quot;);
+    }
+
+    /**
+     * 基于 getURL() 返回的 URL 构建 URI
+     */
+    @Override
+    public URI getURI() throws IOException {
+        URL url = getURL();
+        try {
+            return ResourceUtils.toURI(url);
+        }
+        catch (URISyntaxException ex) {
+            throw new NestedIOException(&quot;Invalid URI [&quot; + url + &quot;]&quot;, ex);
+        }
+    }
+
+    /**
+     * 抛出 FileNotFoundException 异常，交给子类实现
+     */
+    @Override
+    public File getFile() throws IOException {
+        throw new FileNotFoundException(getDescription() + &quot; cannot be resolved to absolute file path&quot;);
+    }
+
+    /**
+     * 根据 getInputStream() 的返回结果构建 ReadableByteChannel
+     */
+    @Override
+    public ReadableByteChannel readableChannel() throws IOException {
+        return Channels.newChannel(getInputStream());
+    }
+
+    /**
+     * 获取资源的长度
+     *
+     * 这个资源内容长度实际就是资源的字节长度，通过全部读取一遍来判断
+     */
+    @Override
+    public long contentLength() throws IOException {
+        InputStream is = getInputStream();
+        try {
+            long size = 0;
+            byte[] buf = new byte[255];
+            int read;
+            while ((read = is.read(buf)) != -1) {
+                size += read;
+            }
+            return size;
+        }
+        finally {
+            try {
+                is.close();
+            }
+            catch (IOException ex) {
+            }
+        }
+    }
+
+    /**
+     * 返回资源最后的修改时间
+     */
+    @Override
+    public long lastModified() throws IOException {
+        long lastModified = getFileForLastModifiedCheck().lastModified();
+        if (lastModified == 0L) {
+            throw new FileNotFoundException(getDescription() +
+                    &quot; cannot be resolved in the file system for resolving its last-modified timestamp&quot;);
+        }
+        return lastModified;
+    }
+
+
+    protected File getFileForLastModifiedCheck() throws IOException {
+        return getFile();
+    }
+
+    /**
+     * 交给子类实现
+     */
+    @Override
+    public Resource createRelative(String relativePath) throws IOException {
+        throw new FileNotFoundException(&quot;Cannot create a relative resource for &quot; + getDescription());
+    }
+
+    /**
+     * 获取资源名称，默认返回 null
+     */
+    @Override
+    @Nullable
+    public String getFilename() {
+        return null;
+    }
+
+
+    /**
+     * 返回资源的描述
+     */
+    @Override
+    public String toString() {
+        return getDescription();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj == this ||
+            (obj instanceof Resource &amp;&amp; ((Resource) obj).getDescription().equals(getDescription())));
+    }
+
+    @Override
+    public int hashCode() {
+        return getDescription().hashCode();
+    }
+
+}
+</code></pre>
+<p>如果我们想要实现自定义的 Resource，记住不要实现 Resource 接口，而应该继承 AbstractResource 抽象类，然后根据当前的具体资源特性覆盖相应的方法即可。</p>
+<h3 id="2-统一资源定位：ResourceLoader"><a href="#2-统一资源定位：ResourceLoader" class="headerlink" title="2. 统一资源定位：ResourceLoader"></a>2. 统一资源定位：ResourceLoader</h3><p>一开始就说了 Spring 将资源的定义和资源的加载区分开了，Resource 定义了统一的资源，那资源的加载则由 ResourceLoader 来统一定义。</p>
+<p><code>org.springframework.core.io.ResourceLoader</code> 为 Spring 资源加载的统一抽象，具体的资源加载则由相应的实现类来完成，所以我们可以将 ResourceLoader 称作为统一资源定位器。其定义如下：</p>
+<pre><code class="java">public interface ResourceLoader {
+    String CLASSPATH_URL_PREFIX = ResourceUtils.CLASSPATH_URL_PREFIX;
+
+    Resource getResource(String location);
+
+    ClassLoader getClassLoader();
+}
+</code></pre>
+<p>ResourceLoader 接口提供两个方法：<code>getResource()</code>、<code>getClassLoader()</code>。</p>
+<p><code>getResource()</code>根据所提供资源的路径 location 返回 Resource 实例，但是它不确保该 Resource 一定存在，需要调用 <code>Resource.exist()</code>方法判断。该方法支持以下模式的资源加载：</p>
+<ul>
+<li>URL位置资源，如”file:C:/test.dat”</li>
+<li>ClassPath位置资源，如”classpath:test.dat”</li>
+<li>相对路径资源，如”WEB-INF/test.dat”，此时返回的Resource实例根据实现不同而不同</li>
+</ul>
+<p>该方法的主要实现是在其子类 DefaultResourceLoader 中实现，具体过程我们在分析 DefaultResourceLoader 时做详细说明。</p>
+<p><code>getClassLoader()</code> ：获取 ResourceLoader 对象使用的ClassLoader，在分析 Resource 时，提到了一个类 <code>ClassPathResource</code> ，这个类是可以根据指定的 ClassLoader 来加载资源的。</p>
+<p>作为 Spring 统一的资源加载器，它提供了统一的抽象，具体的实现则由相应的子类来负责实现，其类的类结构图如下：<br><img src="/images/pasted-6.png" alt="resourceloader"></p>
+<h4 id="DefaultResourceLoader"><a href="#DefaultResourceLoader" class="headerlink" title="DefaultResourceLoader"></a>DefaultResourceLoader</h4><p>DefaultResourceLoader 是 ResourceLoader 的默认实现，它接收 ClassLoader 作为构造函数的参数或者使用不带参数的构造函数，在使用不带参数的构造函数时，使用的 ClassLoader 为默认的 ClassLoader（一般为<code>Thread.currentThread().getContextClassLoader()</code>），可以通过 <code>ClassUtils.getDefaultClassLoader()</code>获取。当然也可以调用 <code>setClassLoader()</code>方法进行后续设置。如下</p>
+<pre><code class="java"> public DefaultResourceLoader() {
+        this.classLoader = ClassUtils.getDefaultClassLoader();
+    }
+
+    public DefaultResourceLoader(@Nullable ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public void setClassLoader(@Nullable ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    @Nullable
+    public ClassLoader getClassLoader() {
+        return (this.classLoader != null ? this.classLoader : 
+                ClassUtils.getDefaultClassLoader());
+    }
+</code></pre>
+<p>ResourceLoader 中最核心的方法为 <code>getResource()</code>,它根据提供的 location 返回相应的 Resource，而 DefaultResourceLoader对该方法提供了核心实现(它的两个子类都没有提供覆盖该方法，所以可以断定ResourceLoader 的资源加载策略就封装 DefaultResourceLoader中)，如下：</p>
+<pre><code class="java">    public Resource getResource(String location) {
+        Assert.notNull(location, &quot;Location must not be null&quot;);
+
+        for (ProtocolResolver protocolResolver : this.protocolResolvers) {
+            Resource resource = protocolResolver.resolve(location, this);
+            if (resource != null) {
+                return resource;
+            }
+        }
+
+        if (location.startsWith(&quot;/&quot;)) {
+            return getResourceByPath(location);
+        }
+        else if (location.startsWith(CLASSPATH_URL_PREFIX)) {
+            return new 
+                ClassPathResource(location.substring(CLASSPATH_URL_PREFIX.length()), 
+                                         getClassLoader());
+        }
+        else {
+            try {
+                // Try to parse the location as a URL...
+                URL url = new URL(location);
+                return (ResourceUtils.isFileURL(url) ? 
+                        new FileUrlResource(url) : new UrlResource(url));
+            }
+            catch (MalformedURLException ex) {
+                // No URL -&gt; resolve as resource path.
+                return getResourceByPath(location);
+            }
+        }
+    }
+</code></pre>
+<p>首先通过 ProtocolResolver 来加载资源，成功返回 Resource，否则调用如下逻辑：</p>
+<ul>
+<li>首先委托给<code>ProtocolResolver</code>来进行解析，这个下面会说明。</li>
+</ul>
+<ul>
+<li>若 location 以<code>/</code> 开头，则调用 <code>getResourceByPath()</code>构造 ClassPathContextResource 类型资源并返回。</li>
+<li>若 location 以<code>classpath:</code> 开头，则构造 ClassPathResource 类型资源并返回，在构造该资源时，通过 <code>getClassLoader()</code>获取当前的 ClassLoader。</li>
+<li>构造 URL ，尝试通过它进行资源定位，若没有抛出 MalformedURLException 异常，则判断是否为 FileURL , 如果是则构造 FileUrlResource 类型资源，否则构造 UrlResource。若在加载过程中抛出 MalformedURLException 异常，则委派 <code>getResourceByPath()</code> 实现资源定位加载。</li>
+</ul>
+<p>这里有一点要注意的是，返回了resource不代表这个资源存在，和前面介绍resource一样，需要通过exitsts来确认文件的存在。</p>
+<p>ProtocolResolver ，用户自定义协议资源解决策略，作为 DefaultResourceLoader 的 SPI，它允许用户自定义资源加载协议，而不需要继承 ResourceLoader 的子类。在介绍 Resource 时，提到如果要实现自定义 Resource，我们只需要继承 DefaultResource 即可，但是有了 ProtocolResolver 后，我们不需要直接继承 DefaultResourceLoader，改为实现 ProtocolResolver 接口也可以实现自定义的 ResourceLoader。<br>ProtocolResolver 接口，仅有一个方法 <code>Resource resolve(String location, ResourceLoader resourceLoader)</code>，该方法接收两个参数：资源路径location，指定的加载器 ResourceLoader，返回为相应的 Resource 。在 Spring 中你会发现该接口并没有实现类，它需要用户自定义，自定义的 Resolver 如何加入 Spring 体系呢？调用 <code>DefaultResourceLoader.addProtocolResolver()</code> 即可，如下：</p>
+<pre><code class="java">    public void addProtocolResolver(ProtocolResolver resolver) {
+        Assert.notNull(resolver, &quot;ProtocolResolver must not be null&quot;);
+        this.protocolResolvers.add(resolver);
+    }
+</code></pre>
+<p>下面是我写的一个简单ProtocolResolver的demo，演示了使用方式，如果你希望添加自定义的文件格式解析，可以向下面这样添加。</p>
+<pre><code class="java">   /**
+     * 测试ProtocolResolver
+     */
+    public static void main(String[] args) {
+        DefaultResourceLoader defaultResourceLoader = new DefaultResourceLoader();
+        defaultResourceLoader.getProtocolResolvers().forEach(System.out::println);
+
+        defaultResourceLoader.addProtocolResolver(new 
+                CustomerResourceProtocolResolver());
+        System.out.println(defaultResourceLoader.getResource(&quot;/Users/zhangke/HTTP请求.jmx&quot;).exists());
+    }
+
+    static class CustomerResourceProtocolResolver implements ProtocolResolver {
+
+        @Override
+        public Resource resolve(String location, ResourceLoader resourceLoader) {
+            FileSystemResource fileSystemResource = new FileSystemResource(location);
+            return fileSystemResource;
+        }
+    }
+</code></pre>
+<p>下面示例是演示 DefaultResourceLoader 加载资源的具体策略，代码如下（该示例参考《Spring 解密》 P89）：</p>
+<pre><code class="java">        ResourceLoader resourceLoader = new DefaultResourceLoader();
+
+        Resource fileResource1 = 
+            resourceLoader.getResource(&quot;D:/Users/chenming673/Documents/spark.txt&quot;);
+        System.out.println(&quot;fileResource1 is FileSystemResource:&quot; 
+                           + (fileResource1 instanceof FileSystemResource));
+        Resource fileResource2 = 
+            resourceLoader.getResource(&quot;/Users/chenming673/Documents/spark.txt&quot;);
+        System.out.println(&quot;fileResource2 is ClassPathResource:&quot; 
+                           + (fileResource2 instanceof ClassPathResource));
+        Resource urlResource1 = resourceLoader
+                    .getResource(&quot;file:/Users/chenming673/Documents/spark.txt&quot;);
+        System.out.println(&quot;urlResource1 is UrlResource:&quot; 
+                           + (urlResource1 instanceof UrlResource));
+
+        Resource urlResource2 = resourceLoader.getResource(&quot;http://www.baidu.com&quot;);
+        System.out.println(&quot;urlResource1 is urlResource:&quot; 
+                           + (urlResource2 instanceof  UrlResource));
+</code></pre>
+<p>运行结果：</p>
+<pre><code>fileResource1 is FileSystemResource:false
+fileResource2 is ClassPathResource:true
+urlResource1 is UrlResource:true
+urlResource1 is urlResource:true
+</code></pre><p>其实对于 fileResource1 我们更加希望是 FileSystemResource 资源类型，但是事与愿违，它是 ClassPathResource 类型。在<code>getResource()</code>资源加载策略中，我们知道 <code>D:/Users/chenming673/Documents/spark.txt</code>资源其实在该方法中没有相应的资源类型，那么它就会在抛出 MalformedURLException 异常时通过 <code>getResourceByPath()</code> 构造一个 ClassPathResource 类型的资源。而指定有协议前缀的资源路径，则通过 URL 就可以定义，所以返回的都是UrlResource类型。</p>
+<h4 id="FileSystemResourceLoader"><a href="#FileSystemResourceLoader" class="headerlink" title="FileSystemResourceLoader"></a>FileSystemResourceLoader</h4><p>从上面的示例我们看到，其实 DefaultResourceLoader 对<code>getResourceByPath(String)</code>方法处理其实不是很恰当，这个时候我们可以使用 FileSystemResourceLoader ，它继承 DefaultResourceLoader 且覆写了 <code>getResourceByPath(String)</code>，使之从文件系统加载资源并以 FileSystemResource 类型返回，这样我们就可以得到想要的资源类型，如下：</p>
+<pre><code class="java">    @Override
+    protected Resource getResourceByPath(String path) {
+        if (path.startsWith(&quot;/&quot;)) {
+            path = path.substring(1);
+        }
+        return new FileSystemContextResource(path);
+    }
+</code></pre>
+<p>FileSystemContextResource 为 FileSystemResourceLoader 的内部类，它继承 FileSystemResource。</p>
+<pre><code class="java">    private static class FileSystemContextResource 
+        extends FileSystemResource implements ContextResource {
+
+        public FileSystemContextResource(String path) {
+            super(path);
+        }
+
+        @Override
+        public String getPathWithinContext() {
+            return getPath();
+        }
+    }
+</code></pre>
+<p>在构造器中也是调用 FileSystemResource 的构造方法来构造 FileSystemResource 的。</p>
+<p>如果将上面的示例将 DefaultResourceLoader 改为 FileSystemContextResource ，则 fileResource1 则为 FileSystemResource。</p>
+<h4 id="ResourcePatternResolver"><a href="#ResourcePatternResolver" class="headerlink" title="ResourcePatternResolver"></a>ResourcePatternResolver</h4><p>ResourceLoader 的 <code>Resource getResource(String location)</code> 每次只能根据 location 返回一个 Resource，当需要加载多个资源时，我们除了多次调用 <code>getResource()</code> 外别无他法。ResourcePatternResolver 是 ResourceLoader 的扩展，它支持根据指定的资源路径匹配模式每次返回多个 Resource 实例，其定义如下：</p>
+<pre><code class="java">public interface ResourcePatternResolver extends ResourceLoader {
+    String CLASSPATH_ALL_URL_PREFIX = &quot;classpath*:&quot;;
+
+    Resource[] getResources(String locationPattern) throws IOException;
+}
+</code></pre>
+<p>ResourcePatternResolver 在 ResourceLoader 的基础上增加了 <code>getResources(String locationPattern)</code>，以支持根据路径匹配模式返回多个 Resource 实例，同时也新增了一种新的协议前缀 <code>classpath*:</code>，该协议前缀由其子类负责实现。</p>
+<p><code>PathMatchingResourcePatternResolver</code> 为 <code>ResourcePatternResolver</code> 最常用的子类，它除了支持 <code>ResourceLoader</code> 和 <code>ResourcePatternResolver</code> 新增的 <code>classpath*:</code>前缀外，还支持 Ant 风格的路径匹配模式。</p>
+<p>这里先介绍什么是Ant风格的路径匹配模式，主要由以下规则，</p>
+<ul>
+<li>？匹配一个字符</li>
+<li><code>*</code>匹配0个或多个字符</li>
+<li>** 在路径中匹配0个或多个文件夹</li>
+<li>{spring;[a-z]+}，匹配正则表达式<code>[a-z]+</code>并将结果存在名为<code>spring</code>变量中。</li>
+</ul>
+<p>例子</p>
+<ul>
+<li><code>com/t?st.jsp</code> —匹配 <code>com/test.jsp</code> 、 <code>com/tast.jsp</code> 、<code>com/txst.jsp</code></li>
+<li><code>com/*.jsp</code> — 匹配com目录线面所有的l <code>.jsp</code> 文件</li>
+<li><code>com/**/test.jsp</code> —匹配com目录还有子目录下所有的 <code>test.jsp</code></li>
+<li><code>org/springframework/**/*.jsp</code> — 匹配 <code>org/springframework</code> 目录和子目录下所有的 <code>.jsp</code> </li>
+<li><code>org/**/servlet/bla.jsp</code> — 匹配<code>org/springframework/servlet/bla.jsp</code> 、<code>org/springframework/testing/servlet/bla.jsp</code> 、 <code>org/servlet/bla.jsp</code></li>
+<li><code>com/{filename:\\w+}.jsp</code> 匹配 <code>com/test.jsp</code> 并且将值 <code>test</code> 付给 <code>filename</code>变量</li>
+</ul>
+<p>在spring经常使用<code>AntPathMatcher</code>来进行操作这些ant风格的路径匹配模式</p>
+<p>小案例如下</p>
+<pre><code class="java">/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-01-08 17:44
+ *      email  : 398757724@qq.com
+ *      Desc   : ant 风格小案例
+ ***************************************/
+public class AntPathMatcherStudy {
+    public static void main(String[] args) {
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+
+        // com/t?st.jsp — matches com/test.jsp but also com/tast.jsp or com/txst.jsp
+        System.out.println(antPathMatcher.match(&quot;com/t?st.jsp&quot;, &quot;com/test.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;com/t?st.jsp&quot;, &quot;com/tast.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;com/t?st.jsp&quot;, &quot;com/txst.jsp&quot;));
+
+
+        // com/*.jsp — matches all .jsp files in the com directory
+        System.out.println(antPathMatcher.match(&quot;com/*.jsp&quot;, &quot;com/test.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;com/*.jsp&quot;, &quot;com/tast.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;com/*.jsp&quot;, &quot;com/txst.jsp&quot;));
+
+
+        //org/springframework/**/*.jsp — matches all .jsp files underneath the org/springframework path
+        System.out.println(antPathMatcher.match(&quot;org/springframework/**/*.jsp&quot;, &quot;org/springframework/com/test.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;org/springframework/**/*.jsp&quot;, &quot;org/springframework/test/com/tast.jsp&quot;));
+        System.out.println(antPathMatcher.match(&quot;org/springframework/**/*.jsp&quot;, &quot;org/springframework/ddd/txst.jsp&quot;));
+
+        // com/{filename:\\w+}.jsp will match com/test.jsp and assign the value test to the filename variable
+        System.out.println(antPathMatcher.extractUriTemplateVariables(&quot;/test/{spring:[a-z]+}/test.jsp&quot;, &quot;/test/test/test.jsp&quot;));
+
+    }
+</code></pre>
+<p>运行结果</p>
+<pre><code class="java">true
+true
+true
+true
+true
+true
+true
+true
+true
+{spring=test}
+</code></pre>
+<p>PathMatchingResourcePatternResolver 提供了三个构造方法，如下：</p>
+<pre><code class="java">    public PathMatchingResourcePatternResolver() {
+        this.resourceLoader = new DefaultResourceLoader();
+    }
+
+    public PathMatchingResourcePatternResolver(ResourceLoader resourceLoader) {
+        Assert.notNull(resourceLoader, &quot;ResourceLoader must not be null&quot;);
+        this.resourceLoader = resourceLoader;
+    }
+
+    public PathMatchingResourcePatternResolver(@Nullable ClassLoader classLoader) {
+        this.resourceLoader = new DefaultResourceLoader(classLoader);
+    }
+</code></pre>
+<p>PathMatchingResourcePatternResolver 在实例化的时候，可以指定一个 ResourceLoader，如果不指定的话，它会在内部构造一个 DefaultResourceLoader。</p>
+<p><strong>Resource getResource(String location)</strong></p>
+<pre><code class="java">    @Override
+    public Resource getResource(String location) {
+        return getResourceLoader().getResource(location);
+    }
+</code></pre>
+<p><code>getResource()</code> 方法直接委托给相应的 ResourceLoader 来实现，所以如果我们在实例化的 PathMatchingResourcePatternResolver 的时候，如果不知道 ResourceLoader ，那么在加载资源时，其实就是 DefaultResourceLoader 的过程。其实在下面介绍的 <code>Resource[] getResources(String locationPattern)</code> 也相同，只不过返回的资源时多个而已。</p>
+<pre><code class="java"> public Resource[] getResources(String locationPattern) throws IOException {
+        Assert.notNull(locationPattern, &quot;Location pattern must not be null&quot;);
+
+        // 以 classpath*: 开头
+        if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
+            // 路径包含通配符，PathMatcher默认是AntPathMatcher
+            if (getPathMatcher().isPattern(
+                locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
+                return findPathMatchingResources(locationPattern);
+            } else {
+                // 路径不包含通配符
+                return findAllClassPathResources(
+                    locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()));
+            }
+        } else {
+            int prefixEnd = (locationPattern.startsWith(&quot;war:&quot;) ?
+              locationPattern.indexOf(&quot;*/&quot;) + 1 : locationPattern.indexOf(&#39;:&#39;) + 1);
+            // 路径包含通配符
+            if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
+                return findPathMatchingResources(locationPattern);
+            }else {
+                // 不包含通配符也不是以Classpath*：开头，返回指定resource
+                return new Resource[{getResourceLoader().getResource(locationPattern)};
+            }
+        }
+    }
+</code></pre>
+<p>处理逻辑如下<br><img src="/images/pasted-8.png" alt="pathResourceLoader 逻辑图"></p>
+<p>下面就 <code>findAllClassPathResources()</code>、<code>findAllClassPathResources()</code> 做详细分析。</p>
+<p><strong>findAllClassPathResources()</strong></p>
+<p>当 locationPattern 以 <code>classpath*:</code> 开头但是不包含通配符，则调用<code>findAllClassPathResources()</code> 方法加载资源。该方法返回 classes 路径下和所有 jar 包中的所有相匹配的资源。</p>
+<pre><code class="java"> protected Resource[] findAllClassPathResources(String location) throws IOException {
+        String path = location;
+        if (path.startsWith(&quot;/&quot;)) {
+            path = path.substring(1);
+        }
+        Set&lt;Resource&gt; result = doFindAllClassPathResources(path);
+        if (logger.isDebugEnabled()) {
+            logger.debug(&quot;Resolved classpath location 
+                                 [&quot; + location + &quot;] to resources &quot; + result);
+        }
+        return result.toArray(new Resource[0]);
+    }
+</code></pre>
+<p>真正执行加载的是在 <code>doFindAllClassPathResources()</code>方法，如下：</p>
+<pre><code class="java">    protected Set&lt;Resource&gt; doFindAllClassPathResources(String path) 
+        throws IOException {
+        Set&lt;Resource&gt; result = new LinkedHashSet&lt;&gt;(16);
+        ClassLoader cl = getClassLoader();
+        Enumeration&lt;URL&gt; resourceUrls = (cl != null ? cl.getResources(path) : 
+                                         ClassLoader.getSystemResources(path));
+        while (resourceUrls.hasMoreElements()) {
+            URL url = resourceUrls.nextElement();
+            result.add(convertClassLoaderURL(url));
+        }
+        if (&quot;&quot;.equals(path)) {
+            addAllClassLoaderJarRoots(cl, result);
+        }
+        return result;
+    }
+</code></pre>
+<p><code>doFindAllClassPathResources()</code> 根据 ClassLoader 加载路径下的所有资源。在加载资源过程中，如果在构造 <code>PathMatchingResourcePatternResolver</code> 实例的时候如果传入了 <code>ClassLoader</code>，则调用其 <code>getResources()</code>，否则调用<code>ClassLoader.getSystemResources(path)</code>。 <code>ClassLoader.getResources()</code>如下:</p>
+<pre><code class="java">    public Enumeration&lt;URL&gt; getResources(String name) throws IOException {
+        @SuppressWarnings(&quot;unchecked&quot;)
+        Enumeration&lt;URL&gt;[] tmp = (Enumeration&lt;URL&gt;[]) new Enumeration&lt;?&gt;[2];
+        if (parent != null) {
+            tmp[0] = parent.getResources(name);
+        } else {
+            tmp[0] = getBootstrapResources(name);
+        }
+        tmp[1] = findResources(name);
+
+        return new CompoundEnumeration&lt;&gt;(tmp);
+    }
+</code></pre>
+<p>看到这里是不是就已经一目了然了？如果当前父类加载器不为 null，则通过父类向上迭代获取资源，否则调用 <code>getBootstrapResources()</code>。这里是不是特别熟悉。</p>
+<p>若path为空时，则调用 <code>addAllClassLoaderJarRoots()</code>方法。该方法主要是加载路径下得所有 jar 包，方法较长也没有什么实际意义就不贴出来了。不过最后结果在每个jar后面都添加<strong>!/</strong>的原因是java官方规定的，可以看这个连接<a href="https://docs.oracle.com/javase/tutorial/deployment/jar/apiindex.html" target="_blank" rel="noopener">jar 中出现!/的原因</a></p>
+<p>通过上面的分析，我们知道 <code>findAllClassPathResources()</code> 其实就是利用 ClassLoader 来加载指定路径下的资源，不过它是在 class 路径下和 jar 包中。如果我们传入的路径为空或者 <code>/</code>，则会调用 <code>addAllClassLoaderJarRoots()</code> 方法加载所有的 jar 包。</p>
+<p><strong>findAllClassPathResources()</strong></p>
+<p>当 locationPattern 以 <code>classpath*:</code>开头且当中包含了通配符，则调用该方法进行资源加载。如下：</p>
+<pre><code class="java">protected Resource[] findPathMatchingResources(String locationPattern) throws IOException {
+        // 确定跟路径
+        String rootDirPath = determineRootDir(locationPattern);
+        String subPattern = locationPattern.substring(rootDirPath.length());
+
+        // 获取根据路径下得资源
+        Resource[] rootDirResources = getResources(rootDirPath);
+
+        Set&lt;Resource&gt; result = new LinkedHashSet&lt;&gt;(16);
+        for (Resource rootDirResource : rootDirResources) {
+            rootDirResource = resolveRootDirResource(rootDirResource);
+            URL rootDirUrl = rootDirResource.getURL();
+            // bundle 资源类型
+            if (equinoxResolveMethod != null &amp;&amp; 
+                        rootDirUrl.getProtocol().startsWith(&quot;bundle&quot;)) {
+                URL resolvedUrl = (URL)ReflectionUtils.invokeMethod(
+                    equinoxResolveMethod, null, rootDirUrl);
+                if (resolvedUrl != null) {
+                    rootDirUrl = resolvedUrl;
+                }
+                rootDirResource = new UrlResource(rootDirUrl);
+            }
+
+            // VFS 资源
+            if (rootDirUrl.getProtocol().startsWith(ResourceUtils.URL_PROTOCOL_VFS)) {
+                result.addAll(
+                    VfsResourceMatchingDelegate.findMatchingResources(rootDirUrl, 
+                                                  subPattern, getPathMatcher()));
+            }
+
+            // Jar
+            else if (ResourceUtils.isJarURL(rootDirUrl) || 
+                     isJarResource(rootDirResource)) {
+                result.addAll(doFindPathMatchingJarResources(rootDirResource, 
+                                                             rootDirUrl, subPattern));
+            }
+            else {
+                result.addAll(doFindPathMatchingFileResources(rootDirResource, 
+                                                              subPattern));
+            }
+        }
+        if (logger.isDebugEnabled()) {
+            logger.debug(&quot;Resolved location pattern [&quot; + locationPattern + &quot;] to 
+                         resources &quot; + result);
+        }
+        return result.toArray(new Resource[0]);
+    }
+</code></pre>
+<p>方法有点儿长，但是思路还是很清晰的，主要分两步：</p>
+<ol>
+<li>确定目录，获取该目录下得所有资源</li>
+<li>在所获得的所有资源中进行迭代匹配获取我们想要的资源。</li>
+</ol>
+<p>在这个方法里面我们要关注两个方法，一个是 <code>determineRootDir()</code>,一个是 <code>doFindPathMatchingFileResources()</code>。</p>
+<p><code>determineRootDir()</code>主要是用于确定根路径，如下：</p>
+<pre><code class="java">    protected String determineRootDir(String location) {
+        int prefixEnd = location.indexOf(&#39;:&#39;) + 1;
+        int rootDirEnd = location.length();
+        while (rootDirEnd &gt; prefixEnd &amp;&amp; 
+               getPathMatcher().isPattern(location.substring(prefixEnd, rootDirEnd))) {
+            rootDirEnd = location.lastIndexOf(&#39;/&#39;, rootDirEnd - 2) + 1;
+        }
+        if (rootDirEnd == 0) {
+            rootDirEnd = prefixEnd;
+        }
+        return location.substring(0, rootDirEnd);
+    }
+</code></pre>
+<p>该方法一定要给出一个确定的根目录。该根目录用于确定文件的匹配的起始点，将根目录位置的资源解析为 <code>java.io.File</code>并将其传递到 <code>retrieveMatchingFiles()</code>，其余为知用于模式匹配，找出我们所需要的资源。</p>
+<p>确定根路径如下:</p>
+<table>
+<thead>
+<tr>
+<th>原路径</th>
+<th>确定根路径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classpath*:test/cc*/spring-*.xml</code></td>
+<td><code>classpath*:test/</code></td>
+</tr>
+<tr>
+<td><code>classpath*:test/aa/spring-*.xml</code></td>
+<td><code>classpath*:test/aa/</code></td>
+</tr>
+</tbody>
+</table>
+<p>确定根路径后，则调用 <code>getResources()</code> 方法获取该路径下得所有资源，然后迭代资源获取符合条件的资源。</p>
+<p>至此 Spring 整个资源记载过程已经分析完毕。下面简要总结下：</p>
+<ul>
+<li>Spring 提供了 Resource 和 ResourceLoader 来统一抽象整个资源及其定位。使得资源与资源的定位有了一个更加清晰的界限，并且提供了合适的 Default 类，使得自定义实现更加方便和清晰。</li>
+<li>AbstractResource 为 Resource 的默认实现，它对 Resource 接口做了一个统一的实现，子类继承该类后只需要覆盖相应的方法即可，同时对于自定义的 Resource 我们也是继承该类。</li>
+<li>DefaultResourceLoader 同样也是 ResourceLoader 的默认实现，在自定 ResourceLoader 的时候我们除了可以继承该类外还可以实现 ProtocolResolver 接口来实现自定资源加载协议。</li>
+<li>DefaultResourceLoader 每次只能返回单一的资源，所以 Spring 针对这个提供了另外一个接口 ResourcePatternResolver ，该接口提供了根据指定的 locationPattern 返回多个资源的策略。其子类 PathMatchingResourcePatternResolver 是一个集大成者的 ResourceLoader ，因为它即实现了 <code>Resource getResource(String location)</code> 也实现了 <code>Resource[] getResources(String locationPattern)</code>。</li>
+</ul>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/48fb5eaf/" rel="bookmark">Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c51c4fa0/" rel="bookmark">Spring源码解析之 01环境搭建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e84d4767/" rel="bookmark">spring源码解析之 04（下）获取验证模型</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/20cd1d0c/" rel="bookmark">spring源码解析之 11bean标签：解析自定义标签</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/fa9db44e/" rel="bookmark">spring源码解析之 26深入分析Aware接口</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/a158638e/">spring源码解析之 03统一资源加载</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月14日 - 03:39</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/a158638e/" title="spring源码解析之 03统一资源加载">spring源码解析之 03统一资源加载</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/a158638e/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring源码解析/" rel="tag">  <i class="fa fa-tag"></i> spring源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/e3ecb02e/" rel="next" title="Java NIO之浅谈内存映射文件原理与DirectMemory">
+                <i class="fa fa-chevron-left"></i> Java NIO之浅谈内存映射文件原理与DirectMemory
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/f89484e0/" rel="prev" title="spring 源码解析之 04（上）加载bean">
+                spring 源码解析之 04（上）加载bean <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#spring源码解析之-03统一资源加载"><span class="nav-text">spring源码解析之 03统一资源加载</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概述"><span class="nav-text">概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-统一资源Resource"><span class="nav-text">1. 统一资源Resource</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-统一资源定位：ResourceLoader"><span class="nav-text">2. 统一资源定位：ResourceLoader</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#DefaultResourceLoader"><span class="nav-text">DefaultResourceLoader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#FileSystemResourceLoader"><span class="nav-text">FileSystemResourceLoader</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#ResourcePatternResolver"><span class="nav-text">ResourcePatternResolver</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/a158638e/";
+        this.page.identifier = "posts/a158638e/";
+        this.page.title = 'spring源码解析之 03统一资源加载';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

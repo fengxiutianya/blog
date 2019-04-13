@@ -1,0 +1,1868 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="概要  TreeMap介绍 TreeMap源码解析 TreeMap遍历方式 TreeMap示例">
+<meta name="keywords" content="集合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java 集合系列13 TreeMap源码解析和使用示例">
+<meta property="og:url" content="http://fengxiutianya.top/posts/7b22f4ce/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="概要  TreeMap介绍 TreeMap源码解析 TreeMap遍历方式 TreeMap示例">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java 集合系列13 TreeMap源码解析和使用示例">
+<meta name="twitter:description" content="概要  TreeMap介绍 TreeMap源码解析 TreeMap遍历方式 TreeMap示例">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/7b22f4ce/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Java 集合系列13 TreeMap源码解析和使用示例 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/7b22f4ce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">Java 集合系列13 TreeMap源码解析和使用示例
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-04 22:58:00" itemprop="dateCreated datePublished" datetime="2019-03-04T22:58:00+08:00">2019-03-04</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/collections/" itemprop="url" rel="index"><span itemprop="name">collections</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/7b22f4ce/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/7b22f4ce/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/7b22f4ce/" class="leancloud_visitors" data-flag-title="Java 集合系列13 TreeMap源码解析和使用示例">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">13k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">12 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><blockquote>
+<ol>
+<li>TreeMap介绍</li>
+<li>TreeMap源码解析</li>
+<li>TreeMap遍历方式</li>
+<li>TreeMap示例</li>
+</ol>
+</blockquote>
+<a id="more"></a>
+<h3 id="1-TreeMap介绍"><a href="#1-TreeMap介绍" class="headerlink" title="1. TreeMap介绍"></a>1. TreeMap介绍</h3><blockquote>
+<p>TreeMap 是一个<strong>有序的key-value集合</strong>，它是通过红黑树实现的。<br>TreeMap <strong>继承于AbstractMap</strong>，所以它是一个Map，即一个key-value集合。<br>TreeMap 实现了NavigableMap接口，意味着它<strong>支持一系列的导航方法。</strong>比如返回有序的key集合。<br>TreeMap 实现了Cloneable接口，意味着<strong>它能被克隆</strong>。<br>TreeMap 实现了java.io.Serializable接口，意味着<strong>它支持序列化</strong>。</p>
+<p>TreeMap基于<strong>红黑树（Red-Black tree）实现</strong>。该映射根据<strong>其键的自然顺序进行排序</strong>，或者根据<strong>创建映射时提供的 Comparator 进行排序</strong>，具体取决于使用的构造方法。</p>
+<p>TreeMap的基本操作 containsKey、get、put 和 remove 的时间复杂度是 log(n) 。<br>另外，TreeMap是<strong>非同步</strong>的。 它的iterator 方法返回的<strong>迭代器是fail-fast</strong>的。</p>
+<pre><code class="java">
+// 构造函数
+TreeMap()  //默认构造函数
+TreeMap(Comparator&lt;? super K&gt; compartor)//指定比比较器来构造TreeMap
+TreeMap(Map&lt;? extends K,? extends V&gt; m) //使用指定的Map初始化TreeMap，插入到当前Map
+TreeMap(SortedMap&lt;K,? extends V&gt; m)  //指定类型的SortedMap来构造
+//API
+
+//SortedMap 接口定义的函数
+      //返回key使用的排序接口，或者使用自然顺序
+Comparator&lt;? super K&gt; comparator() 
+Set&lt;Map.Entry&lt;K,V&gt;&gt;   entrySet() //包含在此Map种的一个Entry的Set集
+K firstKey()   //返回key值最小的map，
+SortedMap&lt;K,V&gt; headMap(K toKey) // 返回key值小于tokey的子集
+Set&lt;K&gt;    keySet()  //返回map中key的Set集合
+K    lastKey()  //返回此集合中最大的key值
+SortedMap&lt;K,V&gt;    subMap(K fromKey, K toKey) //[fromKey,toKey)
+SortedMap&lt;K,V&gt;    tailMap(K fromKey) //返回 &gt;= fromKey 子集
+Collection&lt;V&gt;    values()  //返回当前集合value的Collection集合
+
+//NavigableMap 接口定义的函数
+
+Map.Entry&lt;K, V&gt; ceilingEntry(K key);//返回的Entry满足key2&gt;=key，选取key2中最小Entry返回
+K ceilingKey(K key); //返回的key满足：key2 &gt;= key，选取key2中最小的key返回
+Map.Entry&lt;K, V&gt; floorEntry(K key);//返回的Entry满足key&gt;=key2然后选取key2中最大Entry返回
+K floorKey(K key);//返回的key满足key&gt;=key2然后选取key2中最大的key返回
+
+Map.Entry&lt;K, V&gt; firstEntry(); // 返回最小的key-value键值对
+Map.Entry&lt;K, V&gt; lastEntry(); // 返回最大的key-value键值对
+Map.Entry&lt;K, V&gt; pollFirstEntry();   //删除并返回最小的key-value键值对
+Map.Entry&lt;K, V&gt; pollLastEntry(); //删除并返回最大的key-value键值对
+
+Map.Entry&lt;K, V&gt; lowerEntry(K key)//返回的Entry满足,key&gt;key2,返回比指定key小的键中最大的Entry
+K lowerKey(K key); //返回的key满足下面的条件,key&gt;key2,返回比指定key小的键中最大的键
+Map.Entry&lt;K, V&gt; higherEntry(K key) //返回的Entry满足key2&gt;key,然后选取key2中最小的Entry返回
+K higherKey(K key) //返回的key满足key2&gt;key,然后选取key2中最小的key返回
+
+NavigableSet&lt;K&gt; descendingKeySet();  //返回当前Map的逆序排序的key的Set集合
+NavigableMap&lt;K, V&gt; descendingMap();  //返回当前Map的逆序排序的Entry的Map集合
+NavigableSet&lt;K&gt; navigableKeySet();  //返回一个可导航的Key的Set集合
+//返回从fromKey到toKey之间的可导航的子集和。
+//其中fromInclusive和toInclusive是确定fromkey和toKey是否返回
+NavigableMap&lt;K, V&gt; subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive);
+SortedMap&lt;K, V&gt; subMap(K fromKey, K toKey); //相当于subMap(fromKey, true, toKey, false)
+
+//返回小于或等于（如果inclusive是true）tokey的子集和
+NavigableMap&lt;K, V&gt; headMap(K toKey, boolean inclusive);
+// 相当于 headMap(toKey, false)
+SortedMap&lt;K, V&gt; headMap(K toKey);
+
+//返回小于或等于（如果inclusive是true）tokey的子集和
+NavigableMap&lt;K, V&gt; tailMap(K fromKey, boolean inclusive);
+//相当于tailMap(fromKey, true)
+SortedMap&lt;K, V&gt; tailMap(K fromKey);
+
+
+void clear()  //清空当前Map
+Object clone() //克隆当前对象
+boolean    containsKey(Object key)  //是否包含指定的key
+boolean    containsValue(Object value) //是否包含指定的value
+Set&lt;Map.Entry&lt;K,V&gt;&gt;    entrySet()  //返回当前Map的键值对
+Set&lt;K&gt;    keySet()                //返回的当前key值的Set集合
+V put(K key, V value)  //插入指定的key-value键值对
+void putAll(Map&lt;? extends K,? extends V&gt; map)   //插入指定的Map键值对
+V    get(Object key)  //得到指定key对应的value值
+V remove(Object key) //删除指定的k，并返回value
+V replace(K key,V value)  //key匹配时，
+V replace(K key,V value,V oldValue) //key和value同时匹配
+int size() //返回集合大小
+
+
+
+void forEach(BiConsumer&lt;? super K,? super V&gt; action)
+void    replaceAll(BiFunction&lt;? super K,? super V,? extends V&gt; function)
+</code></pre>
+</blockquote>
+<h3 id="2-TreeMap源码解析"><a href="#2-TreeMap源码解析" class="headerlink" title="2. TreeMap源码解析"></a>2. TreeMap源码解析</h3><blockquote>
+<pre><code>
+</code></pre><p>TreeMap是根据红黑树来实现。其他的函数都是根据红黑树的基础来实现，因此如果想深入了解里面的函数，最好还是看看红黑树是什么。</p>
+</blockquote>
+<h3 id="3-TreeMap遍历方式"><a href="#3-TreeMap遍历方式" class="headerlink" title="3. TreeMap遍历方式"></a>3. TreeMap遍历方式</h3><blockquote>
+<h3 id="1-按照正序遍历"><a href="#1-按照正序遍历" class="headerlink" title="1. 按照正序遍历"></a>1. 按照正序遍历</h3><blockquote>
+<p><strong>1. 遍历TreeMap的键值对</strong></p>
+<p>第一步：根据entrySet()获取TreeMap的“键值对”的Set集合。<br>第二步：通过Iterator迭代器遍历“第一步”得到的集合。</p>
+<pre><code>// 假设map是TreeMap对象
+// map中的key是String类型，value是Integer类型
+Integer integ = null;
+Iterator iter = map.entrySet().iterator();
+while(iter.hasNext()) {
+   Map.Entry entry = (Map.Entry)iter.next();
+   // 获取key
+   key = (String)entry.getKey();
+       // 获取value
+   integ = (Integer)entry.getValue();
+}
+</code></pre><p><strong>2. 遍历TreeMap的键</strong></p>
+<p>第一步：根据keySet()获取TreeMap的“键”的Set集合。</p>
+<p>第二步：通过Iterator迭代器遍历“第一步”得到的集合。</p>
+<pre><code>// 假设map是TreeMap对象
+// map中的key是String类型，value是Integer类型
+String key = null;
+Integer integ = null;
+Iterator iter = map.keySet().iterator();
+while (iter.hasNext()) {
+       // 获取key
+   key = (String)iter.next();
+       // 根据key，获取value
+   integ = (Integer)map.get(key);
+}
+</code></pre><p><strong>3. 遍历TreeMap的值</strong></p>
+<p>第一步：根据value()获取TreeMap的“值”的集合。<br>第二步：通过Iterator迭代器遍历“第一步”得到的集合。</p>
+<pre><code>// 假设map是TreeMap对象
+// map中的key是String类型，value是Integer类型
+Integer value = null;
+Collection c = map.values();
+Iterator iter= c.iterator();
+while (iter.hasNext()) {
+   value = (Integer)iter.next();
+}
+</code></pre></blockquote>
+<h3 id="2-按照逆序返回"><a href="#2-按照逆序返回" class="headerlink" title="2. 按照逆序返回"></a>2. 按照逆序返回</h3><blockquote>
+<p><strong>1. 按照逆序返回键值</strong></p>
+<p>第一步：根据descendingKeySet获取TreeMap的“值”的逆序集合。<br>第二步：通过Iterator迭代器遍历“第一步”得到的集合。</p>
+<pre><code>Set&lt;String&gt; set = treeMap.descendingKeySet();
+       Iterator&lt;String&gt; iterator = set.iterator();
+       while (iterator.hasNext())
+           iterator.next();
+</code></pre><p><strong>2. 按照逆序返回键值对</strong></p>
+<p>第一步：根据descendingMap获取TreeMap的NavigableMap。</p>
+<p>第二部：通过entrySet得到逆序的键值对集合。</p>
+<p>第二步：通过Iterator迭代器遍历“第一步”得到的集合。</p>
+<pre><code>NavigableMap&lt;String, Integer&gt; nav = treeMap.descendingMap();
+       Iterator&lt;Map.Entry&lt;String, Integer&gt;&gt; iterator = nav.entrySet().iterator();
+       while (iterator.hasNext())
+           iterator.next();
+</code></pre></blockquote>
+<pre><code>package Collections.cnblog.collection.map;
+
+import java.util.*;
+import java.util.function.Consumer;
+
+/**************************************
+*      Author : zhangke
+*      Date   : 2018/3/29 21:06
+*      Desc   : TreeMap 遍历
+***************************************/
+public class TreeMapIteratortest {
+
+   public static void main(String[] args) {
+       TreeMap&lt;String, Integer&gt; treeMap = new TreeMap&lt;&gt;();
+       for (int i = 0; i &lt; 10000; i++) {
+           treeMap.put(String.valueOf(i), i);
+       }
+       testTime((t) -&gt; {
+           System.out.println(&quot;ByEntrySet&quot;);
+           iteratorByDescEntrySet(t);
+       }, treeMap);
+
+       testTime((t) -&gt; {
+           System.out.println(&quot;ByKeySet&quot;);
+           iteratorByKeySet(t);
+       }, treeMap);
+
+       testTime((t) -&gt; {
+           System.out.println(&quot;value&quot;);
+           iteratorByValue(t);
+       }, treeMap);
+       testTime((t) -&gt; {
+           System.out.println(&quot;ByDescKeySet&quot;);
+           iteratorByDescKey(t);
+       }, treeMap);
+       testTime((t) -&gt; {
+           System.out.println(&quot;ByDescEntrySet&quot;);
+           iteratorByDescEntrySet(t);
+       }, treeMap);
+
+
+   }
+
+   public static void testTime(Consumer&lt;TreeMap&lt;String, Integer&gt;&gt; c,
+                               TreeMap&lt;String, Integer&gt; l) {
+       long start = System.currentTimeMillis();
+       c.accept(l);
+       long end = System.currentTimeMillis();
+       System.out.println(end - start);
+   }
+
+   public static void iteratorByEntrySet(TreeMap&lt;String, Integer&gt; treeMap) {
+       Set&lt;Map.Entry&lt;String, Integer&gt;&gt; set = treeMap.entrySet();
+       Iterator&lt;Map.Entry&lt;String, Integer&gt;&gt; iterator = set.iterator();
+       while (iterator.hasNext())
+           iterator.next();
+
+   }
+
+   public static void iteratorByKeySet(TreeMap&lt;String, Integer&gt; treeMap) {
+
+       Set&lt;String&gt; set = treeMap.keySet();
+       Iterator&lt;String&gt; iterator = set.iterator();
+       while (iterator.hasNext())
+           iterator.next();
+   }
+
+   public static void iteratorByValue(TreeMap&lt;String, Integer&gt; treeMap) {
+       Collection&lt;Integer&gt; collection = treeMap.values();
+       Iterator&lt;Integer&gt; iterator = collection.iterator();
+       while (iterator.hasNext())
+           iterator.next();
+
+   }
+
+   public static void iteratorByDescKey(TreeMap&lt;String, Integer&gt; treeMap) {
+
+       Set&lt;String&gt; set = treeMap.descendingKeySet();
+       Iterator&lt;String&gt; iterator = set.iterator();
+       while (iterator.hasNext())
+           iterator.next();
+   }
+
+   public static void iteratorByDescEntrySet(TreeMap&lt;String, Integer&gt; treeMap) {
+       NavigableMap&lt;String, Integer&gt; nav = treeMap.descendingMap();
+       Iterator&lt;Map.Entry&lt;String, Integer&gt;&gt; iterator = nav.entrySet().iterator();
+       while (iterator.hasNext())
+           iterator.next();
+
+   }
+}
+</code></pre></blockquote>
+<h3 id="4-TreeMap示例"><a href="#4-TreeMap示例" class="headerlink" title="4. TreeMap示例"></a>4. TreeMap示例</h3><blockquote>
+<pre><code class="java">package Collections.cnblog.collection.map;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
+
+/**************************************
+*      Author : zhangke
+*      Date   : 2018/3/29 21:28
+*      Desc   : TreeMap常用API测试
+***************************************/
+public class TreeMapTest {
+
+   public static void main(String[] args) {
+       testTreeMapAPI();
+       testNavigableMapAPIs();
+   }
+
+
+   /**
+    * Map常用API
+    */
+   public static void testTreeMapAPI() {
+
+       //初始化随机种子
+       Random r = new Random();
+
+       //新建TreeMap
+       TreeMap&lt;String, Integer&gt; treeMap = new TreeMap();
+
+       //添加操作
+       treeMap.put(&quot;one&quot;, r.nextInt(100));
+       treeMap.put(&quot;two&quot;, r.nextInt(100));
+       treeMap.put(&quot;three&quot;, r.nextInt(100));
+       treeMap.put(null, null);
+       System.out.println(&quot;API 测试&quot;);
+
+       // 打印出TreeMap
+       System.out.println(treeMap);
+
+       //通过Iterator遍历TreeMAp
+       Iterator iterator = treeMap.entrySet().iterator();
+       while (iterator.hasNext()) {
+           Map.Entry&lt;String, Integer&gt; entry = (Map.Entry) iterator.next();
+           System.out.println(entry.getKey() + &quot; &quot; + entry.getValue());
+
+       }
+
+
+       //TreeMAp的键值对个数
+       System.out.println(&quot;size:&quot; + treeMap.size());
+
+       //containsKey(Object Key):是否包含key
+       System.out.println(&quot;contains key two:&quot; + treeMap.containsKey(&quot;two&quot;));
+       System.out.println(&quot;contains key five:&quot; + treeMap.containsKey(&quot;five&quot;));
+
+       //containsvalue(Object value）:是否包含值value
+       System.out.println(&quot;contains value 0:&quot; + treeMap.containsValue(1));
+
+
+       //remove(Object Key)
+       treeMap.remove(&quot;three&quot;);
+
+       //清空TreeMap
+       treeMap.clear();
+       System.out.println(&quot;isEmpty:&quot; + treeMap.isEmpty());
+
+   }
+
+   /**
+    * 测试导航函数
+    */
+   public static void testNavigableMapAPIs() {
+       // 新建TreeMap
+       TreeMap&lt;String, Integer&gt; treeMap = new TreeMap();
+       // 添加“键值对”
+       treeMap.put(&quot;a&quot;, 101);
+       treeMap.put(&quot;b&quot;, 102);
+       treeMap.put(&quot;c&quot;, 103);
+       treeMap.put(&quot;d&quot;, 104);
+       treeMap.put(&quot;e&quot;, 105);
+
+
+       //descendingKeySet :按照key值的逆序输出所有的键值
+       System.out.println(&quot;descendingKeySet：&quot; + treeMap.descendingKeySet());
+
+       //descendingMap :按照key值逆序输出所有的键值对
+       System.out.println(&quot;descendingMap ： &quot; + treeMap.descendingMap());
+
+       //获取key值最小的键值对
+       System.out.println(&quot;firstEntry ：&quot; + treeMap.firstEntry());
+       System.out.println(&quot;firstKey&quot; + treeMap.firstKey());
+
+       //返回最大的键值对
+       System.out.println(&quot;lastKey&quot; + treeMap.lastKey());
+       System.out.println(&quot;lastEntry&quot; + treeMap.lastEntry());
+
+       //返回比指定key值小于或等于的最大的key值
+       System.out.println(&quot;floorKey ：&quot; + treeMap.floorKey(&quot;b&quot;));
+       System.out.println(&quot;floorEntry ：&quot; + treeMap.floorEntry(&quot;b&quot;));
+
+       //ceilingEntry(K key) 返回比key值大或等于的key值中最小的键值对
+       System.out.println(&quot;ceilingEntry:&quot; + treeMap.ceilingEntry(&quot;b&quot;));
+
+       //ceilingKey(K key) 返回比key值大或等于的key值中最小的键值
+       System.out.println(&quot;ceilingKey:&quot; + treeMap.ceilingKey(&quot;b&quot;));
+
+
+       //返回严格大于指定key值的最小key值
+       System.out.println(&quot;higherEntry : &quot; + treeMap.higherEntry(&quot;b&quot;));
+       System.out.println(&quot;higherKey : &quot; + treeMap.higherKey(&quot;b&quot;));
+
+       //返回严格小于指定key值的键值对中最大的key值
+       System.out.println(&quot;lowerKey : &quot; + treeMap.lowerKey(&quot;b&quot;));
+       System.out.println(&quot;lowerEntry : &quot; + treeMap.lowerEntry(&quot;b&quot;));
+
+       //返回一个可导航的KeySet集合
+       System.out.println(treeMap.navigableKeySet());
+
+
+       // 测试 headMap(K toKey)  返回严格小于key值的集合,下面俩个结果一样
+       System.out.println(&quot;HeapMap&quot;);
+       System.out.println(&quot;HeadMap&quot; + treeMap.headMap(&quot;c&quot;));
+       System.out.println(treeMap.headMap(&quot;c&quot;, true));
+
+
+       //返回小于等于key值的集合
+       System.out.println(treeMap.headMap(&quot;c&quot;, false));
+
+       // 返回大于指定key值的集合
+       System.out.println(&quot;tailMap&quot;);
+       System.out.println(treeMap.tailMap(&quot;c&quot;));
+       System.out.println(treeMap.tailMap(&quot;c&quot;, true));
+       // 返回大于或等于指定key值的集合
+
+       System.out.println(treeMap.tailMap(&quot;c&quot;, false));
+
+
+       //删除最小的Entry
+       System.out.println(&quot;pollFirstEntry :&quot; + treeMap.pollFirstEntry());
+       //删除最大的Entry
+       System.out.println(&quot;pollLastEntry :&quot; + treeMap.pollLastEntry());
+       System.out.println(treeMap);
+
+   }
+
+}
+</code></pre>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/2d62f277/" rel="bookmark">Java 集合系列01之 总体框架</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ab3cc2a5/" rel="bookmark">Java 集合系列07之 Stack源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/719892b8/" rel="bookmark">Java 集合系列09之 Map架构</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8ab0f653/" rel="bookmark">Java集合系列14 之WeakHashMap源码解析和使用示例</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/8af04eac/" rel="bookmark">Java 集合系列16之 Set架构</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/7b22f4ce/">Java 集合系列13 TreeMap源码解析和使用示例</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年03月04日 - 22:58</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/7b22f4ce/" title="Java 集合系列13 TreeMap源码解析和使用示例">Java 集合系列13 TreeMap源码解析和使用示例</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/7b22f4ce/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/集合/" rel="tag">  <i class="fa fa-tag"></i> 集合</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/a1f8bf2d/" rel="next" title="Java集合系列 12之 HashTable详细介绍和使用示例">
+                <i class="fa fa-chevron-left"></i> Java集合系列 12之 HashTable详细介绍和使用示例
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/8ab0f653/" rel="prev" title="Java集合系列14 之WeakHashMap源码解析和使用示例">
+                Java集合系列14 之WeakHashMap源码解析和使用示例 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-TreeMap介绍"><span class="nav-text">1. TreeMap介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-TreeMap源码解析"><span class="nav-text">2. TreeMap源码解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-TreeMap遍历方式"><span class="nav-text">3. TreeMap遍历方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-按照正序遍历"><span class="nav-text">1. 按照正序遍历</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-按照逆序返回"><span class="nav-text">2. 按照逆序返回</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-TreeMap示例"><span class="nav-text">4. TreeMap示例</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/7b22f4ce/";
+        this.page.identifier = "posts/7b22f4ce/";
+        this.page.title = 'Java 集合系列13 TreeMap源码解析和使用示例';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

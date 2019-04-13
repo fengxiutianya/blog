@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="java多线程系列-JUC线程池之 01 线程池架构概要  线程池整体架构介绍 简单示例">
+<meta name="keywords" content="JUC,线程池">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java多线程系列-JUC线程池之 01 线程池架构">
+<meta property="og:url" content="http://fengxiutianya.top/posts/984191f2/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="java多线程系列-JUC线程池之 01 线程池架构概要  线程池整体架构介绍 简单示例">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.336Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java多线程系列-JUC线程池之 01 线程池架构">
+<meta name="twitter:description" content="java多线程系列-JUC线程池之 01 线程池架构概要  线程池整体架构介绍 简单示例">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/984191f2/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>java多线程系列-JUC线程池之 01 线程池架构 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/984191f2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">java多线程系列-JUC线程池之 01 线程池架构
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2018-07-23 14:07:00" itemprop="dateCreated datePublished" datetime="2018-07-23T14:07:00+08:00">2018-07-23</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/Executors/" itemprop="url" rel="index"><span itemprop="name">Executors</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/984191f2/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/984191f2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/984191f2/" class="leancloud_visitors" data-flag-title="java多线程系列-JUC线程池之 01 线程池架构">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.9k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">9 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="java多线程系列-JUC线程池之-01-线程池架构"><a href="#java多线程系列-JUC线程池之-01-线程池架构" class="headerlink" title="java多线程系列-JUC线程池之 01 线程池架构"></a>java多线程系列-JUC线程池之 01 线程池架构</h1><h3 id="概要"><a href="#概要" class="headerlink" title="概要"></a>概要</h3><blockquote>
+<ol>
+<li>线程池整体架构介绍</li>
+<li>简单示例<a id="more"></a>
+</li>
+</ol>
+</blockquote>
+<h3 id="1-线程池整体架构介绍"><a href="#1-线程池整体架构介绍" class="headerlink" title="1. 线程池整体架构介绍"></a>1. 线程池整体架构介绍</h3><blockquote>
+<h3 id="1-Executor"><a href="#1-Executor" class="headerlink" title="1. Executor"></a>1. Executor</h3><blockquote>
+<p>Executor将任务的执行和任务的创建分离开来。他提供了执行的接口，是来执行任务的。只要提交的任务实现了Runnable接口，就可以将此任务交给Executor来执行，这个接口只包含一个函数，代码如下:</p>
+<pre><code>public interface Executor{
+    //在未来执行给定的任务
+    void    execute(Runnable command)
+}
+</code></pre></blockquote>
+<h3 id="2-ExecutorService"><a href="#2-ExecutorService" class="headerlink" title="2. ExecutorService"></a>2. ExecutorService</h3><blockquote>
+<p>现在可以通过Executor来实现任务的运行。通常Executor的实现通常会创建线程来执行任务。但JVM只有在所有非守护线程全部终止后才会退出，因此如果无法正确的关闭Executor，那么JVM将无法结束。</p>
+<p>关闭任务的方式：</p>
+<ol>
+<li>直接关闭，相当于断开电源</li>
+<li>执行完所有当前线程上执行的任务，不在接收新的任务。然后关闭</li>
+</ol>
+<p>此时Executor接口定义的方法不足以满足这些要求的实现，所以有了ExecutorService接口。添加了一些用于生命周期管理的方法（同时还有一些用于任务提交的便利方法）：</p>
+<pre><code class="java">// 请求关闭、发生超时或者当前线程中断，无论哪一个首先发生之后，都将导致阻塞，直到所有任务完成执行。
+boolean awaitTermination(long timeout, TimeUnit unit)
+
+// 执行给定的任务，当所有任务完成时，返回保持任务状态和结果的 Future 列表。
+&lt;T&gt; List&lt;Future&lt;T&gt;&gt; invokeAll(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks)
+// 执行给定的任务，当所有任务完成或超时期满时（无论哪个首先发生），返回保持任务状态和结果的 Future 列表。
+&lt;T&gt; List&lt;Future&lt;T&gt;&gt; invokeAll(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks, long timeout, TimeUnit unit)
+// 执行给定的任务，如果某个任务已成功完成（也就是未抛出异常），则返回其结果。
+&lt;T&gt; T invokeAny(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks)
+// 执行给定的任务，如果在给定的超时期满前某个任务已成功完成（也就是未抛出异常），则返回其结果。
+&lt;T&gt; T invokeAny(Collection&lt;? extends Callable&lt;T&gt;&gt; tasks, long timeout, TimeUnit unit)
+
+
+// 如果此执行程序已关闭，则返回 true。
+boolean isShutdown()
+// 如果关闭后所有任务都已完成，则返回 true。
+boolean isTerminated()
+
+
+// 启动一次顺序关闭，执行以前提交的任务，但不接受新任务。
+void shutdown()
+// 试图停止所有正在执行的活动任务，暂停处理正在等待的任务，并返回等待执行的任务列表。
+List&lt;Runnable&gt; shutdownNow()
+
+
+// 提交一个返回值的任务用于执行，返回一个表示任务的未决结果的 Future。
+&lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task)
+// 提交一个 Runnable 任务用于执行，并返回一个表示该任务的 Future。
+Future&lt;?&gt; submit(Runnable task)
+// 提交一个 Runnable 任务用于执行，并返回一个表示该任务的 Future。
+&lt;T&gt; Future&lt;T&gt; submit(Runnable task, T result)
+</code></pre>
+<p>ExecutorService的生命周期有三种状态：运行、关闭和已终止。</p>
+<ol>
+<li><p>在初始创建时处于运行状态，</p>
+</li>
+<li><p>shutdown方法将执行平缓的关闭状态：不在接收新的任务，同时等待已经提交的任务执行完成，包括那些还未开始执行的任务</p>
+</li>
+<li><p>shutdownNow方法将执行粗暴的关闭过程，将尝试取消所有运行中的任务。</p>
+<p>通过isTerminated来确定线程池是否终止，终止后不同拒绝策略有不同的返回结果的方式。</p>
+</li>
+</ol>
+</blockquote>
+<h3 id="3-AbstractExecutorService"><a href="#3-AbstractExecutorService" class="headerlink" title="3. AbstractExecutorService"></a><strong>3. AbstractExecutorService</strong></h3><blockquote>
+<p>AbstractExecutorService是一个抽象类，它实现了ExecutorService接口。AbstractExecutorService存在的目的是为ExecutorService中的函数接口提供了默认实现。方便我们定制线程池。这个类的方法和ExecutorService一样，所有就不列出来，后面再分析线程池源码时我会在来说这个类。</p>
+</blockquote>
+<h3 id="4-ThreadPoolExecutor"><a href="#4-ThreadPoolExecutor" class="headerlink" title="4.ThreadPoolExecutor"></a>4.<strong>ThreadPoolExecutor</strong></h3><blockquote>
+<p>ThreadPoolExecutor就是大名鼎鼎的”线程池”，它继承于AbstractExecutorService抽象类。是线程池的主要实现类，也是我们后面关注的重点，因此就现在这里提一下，后面会仔细讲。</p>
+</blockquote>
+<h3 id="5-ScheduledExecutorService"><a href="#5-ScheduledExecutorService" class="headerlink" title="5. ScheduledExecutorService"></a>5. <strong>ScheduledExecutorService</strong></h3><blockquote>
+<p>ScheduledExecutorService是一个接口，它继承于于ExecutorService。它相当于提供了”延时”和”周期执行”功能的ExecutorService。 ScheduledExecutorService提供了相应的函数接口，可以安排任务在给定的延迟后执行，也可以让任务周期的执行。</p>
+<p><strong>ScheduledExecutorService函数列表</strong></p>
+<pre><code class="Java">// 创建并执行在给定延迟后启用的 ScheduledFuture。
+&lt;V&gt; ScheduledFuture&lt;V&gt; schedule(Callable&lt;V&gt; callable, long delay, TimeUnit unit)
+// 创建并执行在给定延迟后启用的一次性操作。
+ScheduledFuture&lt;?&gt; schedule(Runnable command, long delay, TimeUnit unit)
+// 创建并执行一个在给定初始延迟后首次启用的定期操作，后续操作具有给定的周期；也就是将在 initialDelay 后开始执行，然后在 initialDelay+period 后执行，接着在 initialDelay + 2 * period 后执行，依此类推。
+ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
+// 创建并执行一个在给定初始延迟后首次启用的定期操作，随后，在每一次执行终止和下一次执行开始之间都存在给定的延迟。
+ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit)
+</code></pre>
+</blockquote>
+<h3 id="6-ScheduledThreadPoolExecutor"><a href="#6-ScheduledThreadPoolExecutor" class="headerlink" title="6. ScheduledThreadPoolExecutor"></a>6. <strong>ScheduledThreadPoolExecutor</strong></h3><blockquote>
+<p>ScheduledThreadPoolExecutor继承于ThreadPoolExecutor，并且实现了ScheduledExecutorService接口。它相当于提供了”延时”和”周期执行”功能的ExecutorService。 ScheduledThreadPoolExecutor类似于Timer，但是在高并发程序中，ScheduledThreadPoolExecutor的性能要优于Timer。</p>
+<p>在没有此接口之前，我们使用Timer来做定时任务，Timer定时任务的缺陷：</p>
+<ol>
+<li>执行定时任务时，只创建一个线程，因此如果某个任务执行时间过长，会导致其他定时任务的执行周期加长</li>
+<li>由于只创建了一个线程，当这个线程因为异常关闭之后，其他定时任务就无法启动。（这个问题称之为线程泄漏）</li>
+</ol>
+<p>因此在5.0 之后很少使用这个类来做定时任务，换成了ScheduledThreadPoolExecutor来做定时任务。</p>
+<p>同时要构建自己的调度任务还需要队列的支持，这时可以使用DelayQueue，他实现了BlockingQueue，并为ScheduledThreadPoolExecutor提供调度功能，DelayQUeue管理者一组Delayed对象，每个Delayed对象都有一个相应的延迟时间。在DelayQueue中，只有某个元素逾期后，才能从这个队列中take操作。</p>
+<p>参数列表</p>
+<pre><code class="Java">// 使用给定核心池大小创建一个新 ScheduledThreadPoolExecutor。
+ScheduledThreadPoolExecutor(int corePoolSize)
+// 使用给定初始参数创建一个新 ScheduledThreadPoolExecutor。
+ScheduledThreadPoolExecutor(int corePoolSize, RejectedExecutionHandler handler)
+// 使用给定的初始参数创建一个新 ScheduledThreadPoolExecutor。
+ScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory)
+// 使用给定初始参数创建一个新 ScheduledThreadPoolExecutor。
+ScheduledThreadPoolExecutor(int corePoolSize, ThreadFactory threadFactory, RejectedExecutionHandler handler)
+
+// 修改或替换用于执行 callable 的任务。
+protected &lt;V&gt; RunnableScheduledFuture&lt;V&gt; decorateTask(Callable&lt;V&gt; callable, RunnableScheduledFuture&lt;V&gt; task)
+// 修改或替换用于执行 runnable 的任务。
+protected &lt;V&gt; RunnableScheduledFuture&lt;V&gt; decorateTask(Runnable runnable, RunnableScheduledFuture&lt;V&gt; task)
+// 使用所要求的零延迟执行命令。
+void execute(Runnable command)
+// 获取有关在此执行程序已 shutdown 的情况下、是否继续执行现有定期任务的策略。
+boolean getContinueExistingPeriodicTasksAfterShutdownPolicy()
+// 获取有关在此执行程序已 shutdown 的情况下是否继续执行现有延迟任务的策略。
+boolean getExecuteExistingDelayedTasksAfterShutdownPolicy()
+// 返回此执行程序使用的任务队列。
+BlockingQueue&lt;Runnable&gt; getQueue()
+// 从执行程序的内部队列中移除此任务（如果存在），从而如果尚未开始，则其不再运行。
+boolean remove(Runnable task)
+// 创建并执行在给定延迟后启用的 ScheduledFuture。
+&lt;V&gt; ScheduledFuture&lt;V&gt; schedule(Callable&lt;V&gt; callable, long delay, TimeUnit unit)
+// 创建并执行在给定延迟后启用的一次性操作。
+ScheduledFuture&lt;?&gt; schedule(Runnable command, long delay, TimeUnit unit)
+// 创建并执行一个在给定初始延迟后首次启用的定期操作，后续操作具有给定的周期；也就是将在 initialDelay 后开始执行，然后在 initialDelay+period 后执行，接着在 initialDelay + 2 * period 后执行，依此类推。
+ScheduledFuture&lt;?&gt; scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit)
+// 创建并执行一个在给定初始延迟后首次启用的定期操作，随后，在每一次执行终止和下一次执行开始之间都存在给定的延迟。
+ScheduledFuture&lt;?&gt; scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit)
+// 设置有关在此执行程序已 shutdown 的情况下是否继续执行现有定期任务的策略。
+void setContinueExistingPeriodicTasksAfterShutdownPolicy(boolean value)
+// 设置有关在此执行程序已 shutdown 的情况下是否继续执行现有延迟任务的策略。
+void setExecuteExistingDelayedTasksAfterShutdownPolicy(boolean value)
+// 在以前已提交任务的执行中发起一个有序的关闭，但是不接受新任务。
+void shutdown()
+// 尝试停止所有正在执行的任务、暂停等待任务的处理，并返回等待执行的任务列表。
+List&lt;Runnable&gt; shutdownNow()
+// 提交一个返回值的任务用于执行，返回一个表示任务的未决结果的 Future。
+&lt;T&gt; Future&lt;T&gt; submit(Callable&lt;T&gt; task)
+// 提交一个 Runnable 任务用于执行，并返回一个表示该任务的 Future。
+Future&lt;?&gt; submit(Runnable task)
+// 提交一个 Runnable 任务用于执行，并返回一个表示该任务的 Future。
+&lt;T&gt; Future&lt;T&gt; submit(Runnable task, T result)
+</code></pre>
+</blockquote>
+<h3 id="7-Executors"><a href="#7-Executors" class="headerlink" title="7. Executors"></a>7. Executors</h3><blockquote>
+<p>Executors是个静态工厂类。它通过静态工厂方法返回ExecutorService、ScheduledExecutorService、ThreadFactory 和 Callable 等类的对象。</p>
+<pre><code class="java">// 返回 Callable 对象，调用它时可运行给定特权的操作并返回其结果。
+static Callable&lt;Object&gt; callable(PrivilegedAction&lt;?&gt; action)
+// 返回 Callable 对象，调用它时可运行给定特权的异常操作并返回其结果。
+static Callable&lt;Object&gt; callable(PrivilegedExceptionAction&lt;?&gt; action)
+// 返回 Callable 对象，调用它时可运行给定的任务并返回 null。
+static Callable&lt;Object&gt; callable(Runnable task)
+// 返回 Callable 对象，调用它时可运行给定的任务并返回给定的结果。
+static &lt;T&gt; Callable&lt;T&gt; callable(Runnable task, T result)
+// 返回用于创建新线程的默认线程工厂。
+static ThreadFactory defaultThreadFactory()
+// 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。
+static ExecutorService newCachedThreadPool()
+// 创建一个可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们，并在需要时使用提供的 ThreadFactory 创建新线程。
+static ExecutorService newCachedThreadPool(ThreadFactory threadFactory)
+// 创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程。
+static ExecutorService newFixedThreadPool(int nThreads)
+// 创建一个可重用固定线程数的线程池，以共享的无界队列方式来运行这些线程，在需要时使用提供的 ThreadFactory 创建新线程。
+static ExecutorService newFixedThreadPool(int nThreads, ThreadFactory threadFactory)
+// 创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。
+static ScheduledExecutorService newScheduledThreadPool(int corePoolSize)
+// 创建一个线程池，它可安排在给定延迟后运行命令或者定期地执行。
+static ScheduledExecutorService newScheduledThreadPool(int corePoolSize, ThreadFactory threadFactory)
+// 创建一个使用单个 worker 线程的 Executor，以无界队列方式来运行该线程。
+static ExecutorService newSingleThreadExecutor()
+// 创建一个使用单个 worker 线程的 Executor，以无界队列方式来运行该线程，并在需要时使用提供的 ThreadFactory 创建新线程。
+static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory)
+// 创建一个单线程执行程序，它可安排在给定延迟后运行命令或者定期地执行。
+static ScheduledExecutorService newSingleThreadScheduledExecutor()
+// 创建一个单线程执行程序，它可安排在给定延迟后运行命令或者定期地执行。
+static ScheduledExecutorService newSingleThreadScheduledExecutor(ThreadFactory threadFactory)
+// 返回 Callable 对象，调用它时可在当前的访问控制上下文中执行给定的 callable 对象。
+static &lt;T&gt; Callable&lt;T&gt; privilegedCallable(Callable&lt;T&gt; callable)
+// 返回 Callable 对象，调用它时可在当前的访问控制上下文中，使用当前上下文类加载器作为上下文类加载器来执行给定的 callable 对象。
+static &lt;T&gt; Callable&lt;T&gt; privilegedCallableUsingCurrentClassLoader(Callable&lt;T&gt; callable)
+// 返回用于创建新线程的线程工厂，这些新线程与当前线程具有相同的权限。
+static ThreadFactory privilegedThreadFactory()
+// 返回一个将所有已定义的 ExecutorService 方法委托给指定执行程序的对象，但是使用强制转换可能无法访问其他方法。
+static ExecutorService unconfigurableExecutorService(ExecutorService executor)
+// 返回一个将所有已定义的 ExecutorService 方法委托给指定执行程序的对象，但是使用强制转换可能无法访问其他方法。
+static ScheduledExecutorService unconfigurableScheduledExecutorService(ScheduledExecutorService executor)
+</code></pre>
+</blockquote>
+</blockquote>
+<h3 id="2-简单示例"><a href="#2-简单示例" class="headerlink" title="2. 简单示例"></a>2. 简单示例</h3><blockquote>
+<pre><code class="java">import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+
+public class ThreadPoolDemo1 {
+
+   public static void main(String[] args) {
+       // 创建一个可重用固定线程数的线程池
+       ExecutorService pool = Executors.newFixedThreadPool(2);
+       // 创建实现了Runnable接口对象，Thread对象当然也实现了Runnable接口
+       Thread ta = new MyThread();
+       Thread tb = new MyThread();
+       Thread tc = new MyThread();
+       Thread td = new MyThread();
+       Thread te = new MyThread();
+       // 将线程放入池中进行执行
+       pool.execute(ta);
+       pool.execute(tb);
+       pool.execute(tc);
+       pool.execute(td);
+       pool.execute(te);
+       // 关闭线程池
+       pool.shutdown();
+   }
+}
+
+class MyThread extends Thread {
+
+   @Override
+   public void run() {
+       System.out.println(Thread.currentThread().getName()+ &quot; is running.&quot;);
+   }
+}
+</code></pre>
+<p><strong>运行结果</strong>：</p>
+<pre><code>pool-1-thread-1 is running.
+pool-1-thread-2 is running.
+pool-1-thread-1 is running.
+pool-1-thread-2 is running.
+pool-1-thread-1 is running.
+</code></pre><p><strong>结果说明</strong>：<br>主线程中创建了线程池pool，线程池的容量是2。即，线程池中最多能同时运行2个线程。<br>紧接着，将ta,tb,tc,td,te这3个线程添加到线程池中运行。<br>最后，通过shutdown()关闭线程池。</p>
+</blockquote>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/a1d13062/" rel="bookmark">java多线程系列-JUC线程池之03 ThreadPoolExecutor 线程池的创建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/d4c4bc29/" rel="bookmark">java多线程系列-JUC线程池之04 Future 和Callable</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/ca60f1d2/" rel="bookmark">java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/931a340/" rel="bookmark">Java CompletableFuture 详解</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/6d00129c/" rel="bookmark">自旋锁</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/984191f2/">java多线程系列-JUC线程池之 01 线程池架构</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2018年07月23日 - 14:07</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/984191f2/" title="java多线程系列-JUC线程池之 01 线程池架构">java多线程系列-JUC线程池之 01 线程池架构</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/984191f2/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JUC/" rel="tag">  <i class="fa fa-tag"></i> JUC</a>
+          
+            <a href="/tags/线程池/" rel="tag">  <i class="fa fa-tag"></i> 线程池</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/1354fe55/" rel="next" title="java多线程系列 08 ThreadLocal">
+                <i class="fa fa-chevron-left"></i> java多线程系列 08 ThreadLocal
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/ca60f1d2/" rel="prev" title="java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析">
+                java多线程系列-JUC线程池之02 ThreadPoolExecutor 执行流程分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#java多线程系列-JUC线程池之-01-线程池架构"><span class="nav-text">java多线程系列-JUC线程池之 01 线程池架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#概要"><span class="nav-text">概要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-线程池整体架构介绍"><span class="nav-text">1. 线程池整体架构介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-Executor"><span class="nav-text">1. Executor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-ExecutorService"><span class="nav-text">2. ExecutorService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-AbstractExecutorService"><span class="nav-text">3. AbstractExecutorService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-ThreadPoolExecutor"><span class="nav-text">4.ThreadPoolExecutor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-ScheduledExecutorService"><span class="nav-text">5. ScheduledExecutorService</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-ScheduledThreadPoolExecutor"><span class="nav-text">6. ScheduledThreadPoolExecutor</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-Executors"><span class="nav-text">7. Executors</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-简单示例"><span class="nav-text">2. 简单示例</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/984191f2/";
+        this.page.identifier = "posts/984191f2/";
+        this.page.title = 'java多线程系列-JUC线程池之 01 线程池架构';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>

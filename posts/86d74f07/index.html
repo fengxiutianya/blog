@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="从上篇文章中我们可以得知，如果从单例缓存中没有获取到单例 bean，则会说明是下面俩种情况发生：  该bean的scope是singleton ,但是没有初始化完成 该bean的scope不是singleton  本篇文章就来进行这部分的分析，这里先讲循环依赖检测、parentBeanFactory与依赖处理，剩下的scope处理，主要在下一篇文章中讲解，本文所分析的具体源码如下：">
+<meta name="keywords" content="spring源码解析">
+<meta property="og:type" content="article">
+<meta property="og:title" content="spring源码解析之 18parentBeanFactory 与依赖处理">
+<meta property="og:url" content="http://fengxiutianya.top/posts/86d74f07/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="从上篇文章中我们可以得知，如果从单例缓存中没有获取到单例 bean，则会说明是下面俩种情况发生：  该bean的scope是singleton ,但是没有初始化完成 该bean的scope不是singleton  本篇文章就来进行这部分的分析，这里先讲循环依赖检测、parentBeanFactory与依赖处理，剩下的scope处理，主要在下一篇文章中讲解，本文所分析的具体源码如下：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-04-13T09:25:05.344Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="spring源码解析之 18parentBeanFactory 与依赖处理">
+<meta name="twitter:description" content="从上篇文章中我们可以得知，如果从单例缓存中没有获取到单例 bean，则会说明是下面俩种情况发生：  该bean的scope是singleton ,但是没有初始化完成 该bean的scope不是singleton  本篇文章就来进行这部分的分析，这里先讲循环依赖检测、parentBeanFactory与依赖处理，剩下的scope处理，主要在下一篇文章中讲解，本文所分析的具体源码如下：">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/86d74f07/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>spring源码解析之 18parentBeanFactory 与依赖处理 | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/86d74f07/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">spring源码解析之 18parentBeanFactory 与依赖处理
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-15 03:32:00" itemprop="dateCreated datePublished" datetime="2019-01-15T03:32:00+08:00">2019-01-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-13 17:25:05" itemprop="dateModified" datetime="2019-04-13T17:25:05+08:00">2019-04-13</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/86d74f07/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/86d74f07/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/86d74f07/" class="leancloud_visitors" data-flag-title="spring源码解析之 18parentBeanFactory 与依赖处理">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">9.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>从上篇文章中我们可以得知，如果从单例缓存中没有获取到单例 bean，则会说明是下面俩种情况发生：</p>
+<ol>
+<li>该bean的scope是singleton ,但是没有初始化完成</li>
+<li>该bean的scope不是singleton</li>
+</ol>
+<p>本篇文章就来进行这部分的分析，这里先讲循环依赖检测、parentBeanFactory与依赖处理，剩下的scope处理，主要在下一篇文章中讲解，本文所分析的具体源码如下：<br><a id="more"></a></p>
+<pre><code class="java">/**
+  * 只有个在单例情况下才会尝试解决循环依赖，原型模式情况下，
+  * 如果存在A中有B的属性，B中有A的属性，那么当依赖注入的时候，
+  * 就会产生当A还未创建完的时候因为B的创建在此返回创建A，造成
+  * 循环依赖，也就是下面这种情况
+  */            
+if (isPrototypeCurrentlyInCreation(beanName)) {
+    throw new BeanCurrentlyInCreationException(beanName);
+}
+
+// 如果beanDefinitionMap中也就是在所有已加载的类中不包括beanName
+// 则会尝试从parentBeanFactory中检测
+BeanFactory parentBeanFactory = getParentBeanFactory();
+
+// containsBeanDefinition 用于检测当前BeanFactory
+// 是否包含beanName的BeanDefinition
+if (parentBeanFactory != null &amp;&amp; !containsBeanDefinition(beanName)) {
+    // 递归到BeanFactory中寻找,这点和下面的创建过程大体类型，只不过委托给父类来查找
+    String nameToLookup = originalBeanName(name);
+    if (parentBeanFactory instanceof AbstractBeanFactory) {
+        return ((AbstractBeanFactory) parentBeanFactory).doGetBean(
+            nameToLookup, requiredType, args, typeCheckOnly);
+    } else if (args != null) {
+        // 带有args的处理
+        return (T) parentBeanFactory.getBean(nameToLookup, args);
+    } else if (requiredType != null) {
+        // 带有特定类型的处理
+        return parentBeanFactory.getBean(nameToLookup, requiredType);
+    } else {
+        return (T) parentBeanFactory.getBean(nameToLookup);
+    }
+}
+
+// 如果不是仅仅做类型检查则是创建bean，这里要进行记录
+if (!typeCheckOnly) {
+    markBeanAsCreated(beanName);
+}
+
+try {
+    // 将存储xml配置文件的GernericBeanDefinition转换为RootBeanDefinition
+    // 如果指定BeanName是子Bean的话同时会合并父类的相关属性
+    final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+    checkMergedBeanDefinition(mbd, beanName, args);
+
+    // 若存在依赖则需要递归实例化依赖的bean
+    // 这里的getDependsOn返回的是对应bean属性depend-on设置的值
+    String[] dependsOn = mbd.getDependsOn();
+    if (dependsOn != null) {
+        for (String dep : dependsOn) {
+            if (isDependent(beanName, dep)) {
+               。。。。省略异常
+            }
+            // 缓存依赖调用
+            registerDependentBean(dep, beanName);
+            try {
+                getBean(dep);
+            } catch (NoSuchBeanDefinitionException ex) {
+                省略异常
+            }
+        }
+    }
+</code></pre>
+<p>这段代码主要处理流程如下：</p>
+<ol>
+<li>检测当前beanName对应的bean是否是Prototype循环依赖，如果是，则抛出 BeanCurrentlyInCreationException 异常。</li>
+<li>如果beanDefinitionMap中不存在beanName对应的BeanDefinition，前面说过BeanFactory是有继承体系的，可以从父BeanFactory中获取，也即是上面尝试从 parentBeanFactory 中加载。</li>
+<li>判断是否为类型检查，如果不是，需要标记处理。</li>
+<li>从mergedBeanDefinitions中获取beanName对应的RootBeanDefinition，如果这个BeanDefinition是子 Bean的话，则会合并父类的相关属性。</li>
+<li>依赖处理，这里的依赖是指depend-on属性指定的依赖，和后面说道的内部依赖不一样。</li>
+</ol>
+<h3 id="检测当前bean是否是Prototype类型的循环依赖"><a href="#检测当前bean是否是Prototype类型的循环依赖" class="headerlink" title="检测当前bean是否是Prototype类型的循环依赖"></a><strong>检测当前bean是否是Prototype类型的循环依赖</strong></h3><p>在前面就提过，Spring 只解决单例模式下的循环依赖，对于原型模式的循环依赖则是抛出 BeanCurrentlyInCreationException 异常，所以首先检查该 beanName 是否处于原型模式下的循环依赖。如下：</p>
+<pre><code class="java">if (isPrototypeCurrentlyInCreation(beanName)) {
+    throw new BeanCurrentlyInCreationException(beanName);
+}
+</code></pre>
+<p>调用 <code>isPrototypeCurrentlyInCreation()</code> 判断当前 bean 是否正在创建，如下：</p>
+<pre><code class="java">protected boolean isPrototypeCurrentlyInCreation(String beanName) {
+    Object curVal = this.prototypesCurrentlyInCreation.get();
+    return (curVal != null &amp;&amp;
+            (curVal.equals(beanName) || 
+             (curVal instanceof Set &amp;&amp; ((Set&lt;?&gt;) curVal).contains(beanName))));
+}
+</code></pre>
+<p>其实检测逻辑和单例模式一样，一个集合存放着正在创建的bean，从该集合中进行判断即可，只不过单例模式的集合为Set全局共享 ，而原型模式的则是ThreadLocal，线程私有，这也比较好理解，因为原型毕竟在需要的时候在创建，而且每个线程处理不同的逻辑，所以需要不同的对象，因此用ThreadLocal拉保存当前线程对应的正在创建的bean实例。prototypesCurrentlyInCreation 定义如下：</p>
+<pre><code class="java">private final ThreadLocal&lt;Object&gt; prototypesCurrentlyInCreation = 
+        new NamedThreadLocal&lt;&gt;(&quot;Prototype beans currently in creation&quot;);
+</code></pre>
+<p>这里只是判断，你可能会疑惑这是什么时候加入进去的。后面再讲创建不同作用域的bean实例时会说到。</p>
+<h3 id="检查父类-BeanFactory"><a href="#检查父类-BeanFactory" class="headerlink" title="检查父类 BeanFactory"></a><strong>检查父类 BeanFactory</strong></h3><p>若 <code>containsBeanDefinition</code> 中不存在 beanName 相对应的 BeanDefinition，则从 parentBeanFactory 中获取，这个是因为BeanFactory是可以有集成体系。源码如下：</p>
+<pre><code class="java">// 获取 parentBeanFactory
+BeanFactory parentBeanFactory = getParentBeanFactory();
+// parentBeanFactory 不为空且 beanDefinitionMap 中不存该 name 的 BeanDefinition
+if (parentBeanFactory != null &amp;&amp; !containsBeanDefinition(beanName)) {
+    // 确定原始 beanName
+    String nameToLookup = originalBeanName(name);
+    // 若为 AbstractBeanFactory 类型，委托父类处理
+    if (parentBeanFactory instanceof AbstractBeanFactory) {
+        return ((AbstractBeanFactory) parentBeanFactory).doGetBean(
+            nameToLookup, requiredType, args, typeCheckOnly);
+    }
+    else if (args != null) {
+        // 委托给构造函数 getBean() 处理
+        return (T) parentBeanFactory.getBean(nameToLookup, args);
+    }
+    else {
+        // 没有 args，委托给标准的 getBean() 处理
+        return parentBeanFactory.getBean(nameToLookup, requiredType);
+    }
+}
+</code></pre>
+<p>整个过程较为简单，都是委托 parentBeanFactory 的 <code>getBean()</code> 进行处理，只不过在获取之前对 name 进行简单的处理，主要是想获取原始的beanName，也就是传进来的name如下：</p>
+<pre><code class="java">protected String originalBeanName(String name) {
+    String beanName = transformedBeanName(name);
+    if (name.startsWith(FACTORY_BEAN_PREFIX)) {
+        beanName = FACTORY_BEAN_PREFIX + beanName;
+    }
+    return beanName;
+}
+</code></pre>
+<p><code>transformedBeanName()</code> 是对 name 进行转换，获取真正的 beanName，因为我们传递的可能是 aliasName（这个过程在上一篇博客中分析 <code>transformedBeanName()</code> 有详细说明），如果 name 是以 “&amp;” 开头的，则加上 “&amp;”，因为在 <code>transformedBeanName()</code> 将 “&amp;” 去掉了，这里加上。</p>
+<h3 id="类型检查"><a href="#类型检查" class="headerlink" title="类型检查"></a><strong>类型检查</strong></h3><p>参数 typeCheckOnly 是用来判断调用 <code>getBean()</code> 是否为类型检查获取 bean。如果不是仅做类型检查则是创建bean，则需要调用 <code>markBeanAsCreated()</code> 记录：</p>
+<pre><code class="java">protected void markBeanAsCreated(String beanName) {
+    // 没有创建
+    if (!this.alreadyCreated.contains(beanName)) {
+        // 加上全局锁
+        synchronized (this.mergedBeanDefinitions) {
+            // 再次检查一次：DCL 双检查模式
+            if (!this.alreadyCreated.contains(beanName)) {
+                // 从 mergedBeanDefinitions中删除beanName，
+                // 并在下次访问时重新创建它。
+                clearMergedBeanDefinition(beanName);
+                // 添加到已创建bean集合中
+                this.alreadyCreated.add(beanName);
+            }
+        }
+    }
+}
+</code></pre>
+<h3 id="获取-RootBeanDefinition"><a href="#获取-RootBeanDefinition" class="headerlink" title="获取 RootBeanDefinition"></a><strong>获取 RootBeanDefinition</strong></h3><pre><code class="java">final RootBeanDefinition mbd = getMergedLocalBeanDefinition(beanName);
+</code></pre>
+<p>调用 <code>getMergedLocalBeanDefinition()</code> 获取相对应的 BeanDefinition，如下：</p>
+<pre><code class="java">protected RootBeanDefinition getMergedLocalBeanDefinition(String beanName) 
+    throws BeansException {
+    // 快速从缓存中获取，如果不为空，则直接返回
+    RootBeanDefinition mbd = this.mergedBeanDefinitions.get(beanName);
+    if (mbd != null) {
+        return mbd;
+    }
+    // 获取 RootBeanDefinition，
+    // 如果返回的 BeanDefinition 是子类 bean 的话，则合并父类相关属性
+    return getMergedBeanDefinition(beanName, getBeanDefinition(beanName));
+}
+</code></pre>
+<p>首先直接从mergedBeanDefinitions缓存中获取相应的RootBeanDefinition，如果存在则直接返回，不存在则调用 <code>getMergedBeanDefinition()</code> 获取RootBeanDefinition，若获取的 BeanDefinition 为子 BeanDefinition，则需要合并父类的相关属性。具体的合并过程这里就不细说，如果你感兴趣的话可以仔细研究。</p>
+<h3 id="处理depend-on依赖"><a href="#处理depend-on依赖" class="headerlink" title="处理depend-on依赖"></a><strong>处理depend-on依赖</strong></h3><p>如果一个bean有依赖bean的话，那么在初始化该bean时是需要先初始化它所依赖的 bean。</p>
+<pre><code class="java">// 获取依赖。
+// 在初始化 bean 时解析 depends-on 标签时设置
+String[] dependsOn = mbd.getDependsOn();
+if (dependsOn != null) {
+    // 迭代依赖
+    for (String dep : dependsOn) {
+        // 检验依赖的bean 是否已经注册给当前bean获取其他传递依赖bean
+        if (isDependent(beanName, dep)) {
+           。。。。异常
+        }
+        // 注册到依赖bean中
+        registerDependentBean(dep, beanName);
+        try {
+            // 调用 getBean 初始化依赖bean
+            getBean(dep);
+        }
+        catch (NoSuchBeanDefinitionException ex) {
+          。。。。省略异常
+        }
+    }
+}
+</code></pre>
+<p>这段代码逻辑是：通过迭代的方式依次对依赖 bean 进行检测、校验，如果检测通过，则调用 <code>getBean()</code> 实例化依赖 bean。</p>
+<p><code>isDependent()</code> 是校验是否存在循环依赖，也就是A-&gt;B，B-&gt;C，C-&gt;A这种情况。</p>
+<pre><code class="java">protected boolean isDependent(String beanName, String dependentBeanName) {
+    synchronized (this.dependentBeanMap) {
+        return isDependent(beanName, dependentBeanName, null);
+    }
+}
+</code></pre>
+<p>同步加锁给 dependentBeanMap 对象，然后调用 <code>isDependent()</code> 校验。dependentBeanMap 对象保存的是依赖之间的映射关系：beanName – &gt; 依赖beanName的集合</p>
+<pre><code class="java">private boolean isDependent(String beanName, String dependentBeanName,
+                            @Nullable Set&lt;String&gt; alreadySeen) {
+    if (alreadySeen != null &amp;&amp; alreadySeen.contains(beanName)) {
+        return false;
+    }
+    String canonicalName = canonicalName(beanName);
+    Set&lt;String&gt; dependentBeans = this.dependentBeanMap.get(canonicalName);
+    if (dependentBeans == null) {
+        return false;
+    }
+    if (dependentBeans.contains(dependentBeanName)) {
+        return true;
+    }
+    for (String transitiveDependency : dependentBeans) {
+        if (alreadySeen == null) {
+            alreadySeen = new HashSet&lt;&gt;();
+        }
+        alreadySeen.add(beanName);
+        if (isDependent(transitiveDependency, dependentBeanName, alreadySeen)) {
+            return true;
+        }
+    }
+    return false;
+}
+</code></pre>
+<p>如果不存在循环依赖，则调用 <code>registerDependentBean()</code> 将该依赖进行记录，便于在销毁依赖bean之前对其进行销毁。</p>
+<pre><code class="java">public void registerDependentBean(String beanName, String dependentBeanName) {
+    String canonicalName = canonicalName(beanName);
+
+    synchronized (this.dependentBeanMap) {
+        Set&lt;String&gt; dependentBeans =
+            this.dependentBeanMap.computeIfAbsent(canonicalName, 
+                                                  k -&gt; new LinkedHashSet&lt;&gt;(8));
+        if (!dependentBeans.add(dependentBeanName)) {
+            return;
+        }
+    }
+
+    synchronized (this.dependenciesForBeanMap) {
+        Set&lt;String&gt; dependenciesForBean =
+            this.dependenciesForBeanMap.computeIfAbsent(dependentBeanName,
+                                                        k -&gt; new LinkedHashSet&lt;&gt;(8));
+        dependenciesForBean.add(canonicalName);
+    }
+}
+</code></pre>
+<p>其实将就是该映射关系保存到两个集合中：dependentBeanMap、dependenciesForBeanMap。</p>
+<p>最后调用 <code>getBean()</code> 实例化依赖 bean。</p>
+<p>至此，加载 bean 的第二个部分也分析完毕了，下篇开始分析第三个部分：不同作用域bean的创建。</p>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/48fb5eaf/" rel="bookmark">Spring源码解析之 08bean标签：BeanDefinition简单介绍与bean节点解析</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/c51c4fa0/" rel="bookmark">Spring源码解析之 01环境搭建</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/e84d4767/" rel="bookmark">spring源码解析之 04（下）获取验证模型</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/20cd1d0c/" rel="bookmark">spring源码解析之 11bean标签：解析自定义标签</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/fa9db44e/" rel="bookmark">spring源码解析之 26深入分析Aware接口</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/86d74f07/">spring源码解析之 18parentBeanFactory 与依赖处理</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年01月15日 - 03:32</p>
+  <p><span>最后更新:</span>2019年04月13日 - 17:25</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/86d74f07/" title="spring源码解析之 18parentBeanFactory 与依赖处理">spring源码解析之 18parentBeanFactory 与依赖处理</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/86d74f07/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/spring源码解析/" rel="tag">  <i class="fa fa-tag"></i> spring源码解析</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/cce70190/" rel="next" title="spring源码解析之 17缓存中获取单例bean">
+                <i class="fa fa-chevron-left"></i> spring源码解析之 17缓存中获取单例bean
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/posts/24d11232/" rel="prev" title="spring源码解析之 19 不同Scope实例的创建">
+                spring源码解析之 19 不同Scope实例的创建 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">142</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">34</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">54</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#检测当前bean是否是Prototype类型的循环依赖"><span class="nav-text">检测当前bean是否是Prototype类型的循环依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#检查父类-BeanFactory"><span class="nav-text">检查父类 BeanFactory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#类型检查"><span class="nav-text">类型检查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取-RootBeanDefinition"><span class="nav-text">获取 RootBeanDefinition</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#处理depend-on依赖"><span class="nav-text">处理depend-on依赖</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.2m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">18:49</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/86d74f07/";
+        this.page.identifier = "posts/86d74f07/";
+        this.page.title = 'spring源码解析之 18parentBeanFactory 与依赖处理';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+
+
+
+
+
+</body>
+</html>
