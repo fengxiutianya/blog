@@ -5,7 +5,6 @@ else
     git config  user.email "398757724@qq.com"
     git config  user.name "zhangke"
     hexo clean
-    git add --all
-    git commit -m $1
+    git commit -am $1
     git push origin master:master
 fi
