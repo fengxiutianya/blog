@@ -105,13 +105,13 @@
 
 
 
-  <meta name="description" content="Http的演进之路之二声明，此系列文章转载自lonnieZ http的演进之路HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入ho">
-<meta name="keywords" content="http">
+  <meta name="description" content="HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入host Chunked编码传输 更全面的Cache机制 引入OPTIONS, P">
+<meta name="keywords" content="http,http1.1">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Http的演进之路之二">
 <meta property="og:url" content="http://fengxiutianya.top/posts/d860bebc/index.html">
 <meta property="og:site_name" content="枫秀天涯">
-<meta property="og:description" content="Http的演进之路之二声明，此系列文章转载自lonnieZ http的演进之路HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入ho">
+<meta property="og:description" content="HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入host Chunked编码传输 更全面的Cache机制 引入OPTIONS, P">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://fengxiutianya.top/images/pasted-211.png">
 <meta property="og:image" content="http://fengxiutianya.top/images/pasted-212.png">
@@ -132,10 +132,10 @@
 <meta property="og:image" content="http://fengxiutianya.top/images/pasted-231.png">
 <meta property="og:image" content="http://fengxiutianya.top/images/pasted-232.png">
 <meta property="og:image" content="http://fengxiutianya.top/images/pasted-233.png">
-<meta property="og:updated_time" content="2019-04-18T13:10:27.804Z">
+<meta property="og:updated_time" content="2019-04-18T15:52:13.681Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Http的演进之路之二">
-<meta name="twitter:description" content="Http的演进之路之二声明，此系列文章转载自lonnieZ http的演进之路HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入ho">
+<meta name="twitter:description" content="HTTP/1.1仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：  默认长连接机制 Pipeline机制 header中引入host Chunked编码传输 更全面的Cache机制 引入OPTIONS, P">
 <meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-211.png">
 
 
@@ -440,7 +440,7 @@
                 
               
 
-              <time title="创建时间：2019-03-10 08:23:00" itemprop="dateCreated datePublished" datetime="2019-03-10T08:23:00+08:00">2019-03-10</time>
+              <time title="创建时间：2019-03-10 08:45:00" itemprop="dateCreated datePublished" datetime="2019-03-10T08:45:00+08:00">2019-03-10</time>
             
 
             
@@ -457,7 +457,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 23:52:13" itemprop="dateModified" datetime="2019-04-18T23:52:13+08:00">2019-04-18</time>
               
             
           </span>
@@ -565,7 +565,7 @@
       
 
       
-        <h1 id="Http的演进之路之二"><a href="#Http的演进之路之二" class="headerlink" title="Http的演进之路之二"></a>Http的演进之路之二</h1><h2 id="声明，此系列文章转载自lonnieZ-http的演进之路"><a href="#声明，此系列文章转载自lonnieZ-http的演进之路" class="headerlink" title="声明，此系列文章转载自lonnieZ http的演进之路"></a>声明，此系列文章转载自<a href="https://www.zhihu.com/people/lonniez/activities" target="_blank" rel="noopener">lonnieZ http的演进之路</a></h2><h2 id="HTTP-1-1"><a href="#HTTP-1-1" class="headerlink" title="HTTP/1.1"></a><strong>HTTP/1.1</strong></h2><p>仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：</p>
+        <h2 id="HTTP-1-1"><a href="#HTTP-1-1" class="headerlink" title="HTTP/1.1"></a><strong>HTTP/1.1</strong></h2><p>仅仅在HTTP/1.0公布后的几个月，HTTP/1.1发布了，她是目前主流HTTP协议的版本，也是目前为止使用最为广泛、延用时间最为久远的HTTP版本，以至于随后的近10年时间里都没有新的HTTP协议版本发布。对比之前的版本，其主要更新如下：</p>
 <ul>
 <li>默认长连接机制</li>
 <li>Pipeline机制</li>
@@ -578,15 +578,7 @@
 <h2 id="keep-alive"><a href="#keep-alive" class="headerlink" title="keep-alive"></a>keep-alive</h2><p>又是keep-alive，她已经在HTTP/1.0中诞生了，但由于当时没有写入标准，因此这次特意提出来强调。为何keep-alive会被反复提到。可以通过下图看出keep-alive的重要性。在HTTP/0.9的时代，由于网页内容相对简单，需要向服务器申请的资源以及对应的次数相对较少，每发起一次http请求就会建立一次连接，每次建连都会涉及tcp的三次握手过程，同时建连前还需要向dns服务器查询相关的IP地址。</p>
 <p>随着互联网的迅猛发展，网页资源也越来越多，HTTP/1.0的出现正是解决了浏览器与服务器间传递非html类型文件的需求，但随之而来的是请求次数的增多。由于每个资源的下载都需要重新建立连接，每次建连都包含tcp的三次握手，完成数据传递后又通过tcp的四次挥手关闭连接，周而复始，访问一个较为复杂的网页会消耗大量的时间。虽然在HTTP/1.0中引入了长连接的机制，但由于未加入标准，因此此时仍然是每个资源会重新建立一次连接。</p>
 <p>好在HTTP/1.1的及时出现将长连接加入了标准并作为默认实现，服务器端也按照协议保持客户端的长连接状态。一个Web Server上的多个资源都可以通过这一条连接多个request的方式一一得到。这样可以极大的节省在建连和关闭连接过程中消耗的时间，越复杂的网站节省的时间越多。</p>
-<p>基于HTTP的工作原理，后面又有了针对DNS和Connection的优化，不过这都是后话了。</p>
-<p><img src="/images/pasted-211.png" alt="upload successful"></p>
-<p>为了进一步说明keep-alive的重要性，在此进行了一次测试，分别以Keep-Alive的方式和非Keep-Alive的方式对<a href="http://link.zhihu.com/?target=http%3A//api.yunos.com" target="_blank" rel="noopener">http://api.yunos.com</a>访问5次、10次、15次、20次。以下是测试数据的对比：</p>
-<p><img src="/images/pasted-212.png" alt="upload successful"></p>
-<p>从上面的数据可以看出，随着访问次数增长Close与Keep-Alive的时间差距越来越大，除了平均耗时上的差异，还有一组方差数据的对比：</p>
-<p><img src="/images/pasted-214.png" alt="upload successful"></p>
-<p>从方差数据来看，Close模式的波动要大于Keep-Alive模式。我们再从另一个角度看这个问题，从下面的数据可以看出：一个网络请求过程中DNS和Connection建连的过程会耗费很大的时间：</p>
-<p><img src="/images/pasted-215.png" alt="upload successful"></p>
-<p>从上面的这些数据可以看出长连接对于网络访问速度的重要性，这也是为何我们在多个场合提及Keep-Alive机制。包括后续的许多优化都是针对DNS、Connection建连这两个方面进行的。</p>
+<p>基于HTTP的工作原理，后面又有了针对DNS和Connection的优化，不过这都是后话了。<br>Http0.9 到Http1.1的请求示意图如下：<br><img src="/images/pasted-211.png" alt="upload successful"><br>为了进一步说明keep-alive的重要性，在此进行了一次测试，分别以Keep-Alive的方式和非Keep-Alive的方式对<a href="http://api.yunos.com" target="_blank" rel="noopener">http://api.yunos.com</a>访问5次、10次、15次、20次。以下是测试数据的对比：<br><img src="/images/pasted-212.png" alt="upload successful"><br>从上面的数据可以看出，随着访问次数增长Close与Keep-Alive的时间差距越来越大，除了平均耗时上的差异，还有一组方差数据的对比：<br><img src="/images/pasted-214.png" alt="upload successful"><br>从方差数据来看，Close模式的波动要大于Keep-Alive模式。我们再从另一个角度看这个问题，从下面的数据可以看出：一个网络请求过程中DNS和Connection建连的过程会耗费很大的时间：<br><img src="/images/pasted-215.png" alt="upload successful"><br>从上面的这些数据可以看出长连接对于网络访问速度的重要性，这也是为何我们在多个场合提及Keep-Alive机制。包括后续的许多优化都是针对DNS、Connection建连这两个方面进行的。</p>
 <h2 id="tcp中的keep-alive"><a href="#tcp中的keep-alive" class="headerlink" title="tcp中的keep-alive"></a>tcp中的keep-alive</h2><p>上面讲述了很多关于HTTP/1.1中Keep-Alive的特性，这里需要强调的一点是此处的Keep-Alive不同于TCP层的Keep-Alive。Http层的Keep-Alive主要是保持Client端与Server端的连接不会因为一次request请求的结束而被关闭，以此来实现连接复用的目的。而TCP层的Keep-Alive则更像一种保鲜机制，即当连接建立后，相关socket可以定期向对端发送心跳包来检查连接是否还有效，用户可以设置相关的参数，包括多久开始发送、每次发送的间隔、发送次数等。如果一直没有收到对端的响应，则认为连接已经断开并释放相关资源。正常的TCP关闭流程会通知对方连接已经关闭，但是如果是一些意外情况，例如拔掉网线、有一端设备宕机或重启，此时正在执行recv或者send操作的一方就会因为没有任何连接中断的通知而一直等待下去。为了解决这个问题，引入了TCP的Keep-Alive机制。</p>
 <p>一般情况下TCP的Keep-Alive机制是关闭的且默认参数不一定满足每个用户的需求，需要用户自行调整：</p>
 <pre><code class="http">// 打开Keep-Alive机制。默认是关闭的。 
@@ -615,48 +607,25 @@ echo 5 &gt; /proc/sys/net/ipv4/tcp_keepalive_intvl
 // 设置发送次数
 echo 2 &gt; /proc/sys/net/ipv4/tcp_keepalive_probes
 </code></pre>
-<p>以下是下载一个文件过程中拔掉网线的抓包记录。我代码中设置的keepalive_time为45秒，interval为5秒，count为9次。从抓包中可以看到从14:53:33开始断网，45秒以后，也就是14:54:18开始第一次keep-alive检查，间隔5秒后，也就是14:54:23秒开始第二次keep-alive检查，以此类推，一共经历了9次keep-alive。即断网后经历了45+5*9=90s也就是14:53:33后的90秒14:54:03后宣告网络已断开，此链接不再有效。</p>
-<p><img src="/images/pasted-217.png" alt="upload successful"></p>
-<p>具体tcp的保活机制可以参考这篇文章<a href>tcp保活机制</a></p>
-<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><p>pipeline机制是在<strong>一条connection</strong>上多个http request不需要等待response就可以连续发送的技术。之前的request请求需要等待response返回后才能发起下一个request，而pipeline则废除了这项限制，新的request可以不必等待之前request的response返回就可以立即发送：</p>
-<p><img src="/images/pasted-219.png" alt="upload successful"></p>
-<p>从上图中可以看出，在使用pipeline机制后，客户端无需等待上一个资源返回后就可以在同一条连接上申请下一个资源。由此可见pipeline技术可以提高每条connection的使用效率，在理想情况下，所有资源的获取仅仅需要一个RTT时长（Round Trip Time），而非pipeline的情况下，所有资源获取需要N个RTT时长（N表示资源个数）。</p>
-<p>在理想情况下，所有资源的获取仅仅需要一个RTT时长，这看上去是非常大的优化和诱惑，但为何主流浏览器上默认下该功能都是关闭状态呢？答案只有一个：<a href="http://link.zhihu.com/?target=https%3A//en.wikipedia.org/wiki/Head-of-line_blocking" target="_blank" rel="noopener">队头阻塞</a>。我们上面仅看到了client端可以不必等待上一个response返回即可发送下一个request，但在server端必须根据收到的request的顺序来返回response，这个是因为HTTP是一个无状态的协议，每条request无法知道哪条response是返回给他的。可以参见HTTP/1.1的<a href="http://link.zhihu.com/?target=https%3A//www.w3.org/Protocols/rfc2616/rfc2616-sec8.html" target="_blank" rel="noopener">RFC2616</a>中这条解释：</p>
+<p>以下是下载一个文件过程中拔掉网线的抓包记录。我代码中设置的keepalive_time为45秒，interval为5秒，count为9次。从抓包中可以看到从14:53:33开始断网，45秒以后，也就是14:54:18开始第一次keep-alive检查，间隔5秒后，也就是14:54:23秒开始第二次keep-alive检查，以此类推，一共经历了9次keep-alive。即断网后经历了45+5*9=90s也就是14:53:33后的90秒14:54:03后宣告网络已断开，此链接不再有效。<br><img src="/images/pasted-217.png" alt="upload successful"><br>具体tcp的保活机制可以参考这篇文章<a href="/posts/b56667c1/">tcp保活机制</a></p>
+<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><p>pipeline机制是在<strong>一条connection</strong>上多个http request不需要等待response就可以连续发送的技术。之前的request请求需要等待response返回后才能发起下一个request，而pipeline则废除了这项限制，新的request可以不必等待之前request的response返回就可以立即发送：<br><img src="/images/pasted-219.png" alt="upload successful"><br>从上图中可以看出，在使用pipeline机制后，客户端无需等待上一个资源返回后就可以在同一条连接上申请下一个资源。由此可见pipeline技术可以提高每条connection的使用效率，在理想情况下，所有资源的获取仅仅需要一个RTT时长（Round Trip Time），而非pipeline的情况下，所有资源获取需要N个RTT时长（N表示资源个数）。<br>在理想情况下，所有资源的获取仅仅需要一个RTT时长，这看上去是非常大的优化和诱惑，但为何主流浏览器上默认下该功能都是关闭状态呢？答案只有一个：<a href="http://en.wikipedia.org/wiki/Head-of-line_blocking" target="_blank" rel="noopener">队头阻塞</a>。我们上面仅看到了client端可以不必等待上一个response返回即可发送下一个request，但在server端必须根据收到的request的顺序来返回response，这个是因为HTTP是一个无状态的协议，每条request无法知道哪条response是返回给他的。可以参见HTTP/1.1的<a href="www.w3.org/Protocols/rfc2616/rfc2616-sec8.html">RFC2616</a>中这条解释：</p>
 <blockquote>
 <p>8.1.2.2 Pipelining A client that supports persistent connections MAY “pipeline” its requests (i.e., send multiple requests without waiting for each response). A server MUST send its responses to those requests in the same order that the requests were received.</p>
 </blockquote>
-<p>从这个解释可以看出，如果server端来处理pipeline请求的时候出现问题，那么排在后面的request都会被block。以下是一些产品使用pipeline后产生的问题：<a href="http://link.zhihu.com/?target=http%3A//bytes.schibsted.com/safari-on-ios-5-randomly-switches-images/" target="_blank" rel="noopener">Safari使用pipeline后发生了图片互换</a>，<a href="http://link.zhihu.com/?target=https%3A//github.com/AFNetworking/AFNetworking/issues/528" target="_blank" rel="noopener">AFNetworking在下载文件时遇到的问题</a>。因此，如果既想要在一个Connection连接中传递多种数据，又想要避免队头阻塞的问题，那么后面讲到的HTTP/2会解决这个问题。</p>
-<p><img src="/images/pasted-220.png" alt="upload successful"></p>
-<p>从上图可以看到虽然开启了pipeline功能，资源仍然是OneByOne的被接收到的。而HTTP/2的Multiplexing功能则可以真正意义上实现数据的同时发送与同时接收，不用再被队头阻塞限制。不过HTTP/2也只是解决了应用层协议的队头阻塞问题，而传层的队头阻塞问题没有被解决（TCP的队头阻塞），因此就有了QUIC协议，这也是后话了。</p>
-<p>此外关于pipeline还需要注意的是：</p>
+<p>从这个解释可以看出，如果server端来处理pipeline请求的时候出现问题，那么排在后面的request都会被block。以下是一些产品使用pipeline后产生的问题：<a href="bytes.schibsted.com/safari-on-ios-5-randomly-switches-images/">Safari使用pipeline后发生了图片互换</a>，<a href="github.com/AFNetworking/AFNetworking/issues/528">AFNetworking在下载文件时遇到的问题</a>。因此，如果既想要在一个Connection连接中传递多种数据，又想要避免队头阻塞的问题，那么后面讲到的HTTP/2会解决这个问题。<br><img src="/images/pasted-220.png" alt="upload successful"><br>从上图可以看到虽然开启了pipeline功能，资源仍然是OneByOne的被接收到的。而HTTP/2的Multiplexing功能则可以真正意义上实现数据的同时发送与同时接收，不用再被队头阻塞限制。不过HTTP/2也只是解决了应用层协议的队头阻塞问题，而传层的队头阻塞问题没有被解决（TCP的队头阻塞），因此就有了QUIC协议，这也是后话了。<br>此外关于pipeline还需要注意的是：</p>
 <ul>
-<li>只有幂等的方法才能使用pipeline，例如GET和HEAD请求。而由于POST是非幂等的，因此不能使用pipeline；关于幂等性可以参见<a href="http://link.zhihu.com/?target=https%3A//blog.csdn.net/zjkC050818/article/details/78799386" target="_blank" rel="noopener">这里</a>。谓幂等就是 多次执行对资源的影响，和一次执行对资源的影响相同。<br>幂等保证在pipeline中的所有请求可以不必关心发送次序和到达服务器后执行的次序，即使多次请求，返回的结果一直是一样的。反之，若其中包含了不幂等的请求，两个请求，第一个是更新用户张三信息，第二请求是获取更新后的张三最新信息。 他们是按照次序顺序在服务器端执行的：1先执行，2紧接着执行。 但是<strong>后一个请求不会等前一个请求完成才执行</strong>， 即可能 获取张三最新信息的2号请求先<strong>执行完成</strong>，这样返回的信息就不是期望的了。</li>
+<li>只有幂等的方法才能使用pipeline，例如GET和HEAD请求。而由于POST是非幂等的，因此不能使用pipeline；关于幂等性可以参见<a href="blog.csdn.net/zjkC050818/article/details/78799386">这里</a>。谓幂等就是多次执行对资源的影响，和一次执行对资源的影响相同。幂等保证在pipeline中的所有请求可以不必关心发送次序和到达服务器后执行的次序，即使多次请求，返回的结果一直是一样的。反之，若其中包含了不幂等的请求，两个请求，第一个是更新用户张三信息，第二请求是获取更新后的张三最新信息。 他们是按照次序顺序在服务器端执行的：1先执行，2紧接着执行。 但是<strong>后一个请求不会等前一个请求完成才执行</strong>， 即可能 获取张三最新信息的2号请求先<strong>执行完成</strong>，这样返回的信息就不是期望的了。</li>
 <li>新建立的连接由于无法得知服务端是否支持HTTP/1.1，因此也不能使用pipeline，即只能重用之前的连接时才能使用pipeline</li>
 </ul>
-<p>具体的可以看这篇文章<a href>Http pipeline</a></p>
-<h2 id="并行连接"><a href="#并行连接" class="headerlink" title="并行连接"></a>并行连接</h2><p>上面讲到的pipeline技术在队头阻塞的情况下并不能真正意义上提高加载资源的速度。为了解决这个问题，我们又想到了通过在浏览器端同时开启多个http connection的方式从服务端获取数据资源以提升访问速度。它的过程如下图所示。从图中我们可以看到客户端在启动的时候同时开启了三条connection同时向服务端发起请求，这三条connection互相之间是独立的，因此客户端可以通过这三条connection去下载服务端的资源。</p>
-<p><img src="/images/pasted-222.png" alt="upload successful"></p>
-<p>我们通过chrome浏览器在访问水木社区的时候可以看到，它在访问<a href="http://link.zhihu.com/?target=http%3A//images.newsmth.net" target="_blank" rel="noopener">http://images.newsmth.net</a>这个域名的时候，同时开启了六个connection下载相关资源。</p>
-<p><img src="/images/pasted-223.png" alt="upload successful"></p>
-<p>从下图可以看到每个连接都会包含DNS解析的时间和建立connection的时间。</p>
-<p><img src="/images/pasted-224.png" alt="upload successful"></p>
-<p>下面是抓包的数据，可以看出从浏览器侧同时发出了六个http request请求。</p>
-<p><img src="/images/pasted-225.png" alt="upload successful"></p>
-<p>从代码的角度来看，在Chrome中设置了每一个域名最多同时可以对应六条连接。关于为何设置为六条连接可以参见<a href="http://link.zhihu.com/?target=http%3A//crbug.com/12066" target="_blank" rel="noopener">这里</a>看一下Chromium小组对此的解释。即并行连接的个数并非越多越好，这是因为每个并行连接的建立过程都会完成一次完整的DNS解析和TCP握手过程，这个过程是比较耗时和消耗资源的。此外，对于带宽有限的客户端，用户使用单连接下载一个资源的时候会占满所有带宽。如果此时开启多个连接，那么所有连接将会抢占（或平分）有限的带宽，这个过程其实并未真正对性能有所提升，反而会因为建立connection的过程而消耗很多资源。还有，过多的connection也会提升服务器端的负担。综上所述，浏览器中并行的connection不会很多。</p>
-<pre><code class="text">// Default to allow up to 6 connections per host. Experiment and tuning may
-// try other values (greater than 0).  Too large may cause many problems, such
-// as home routers blocking the connections!?!?  See http://crbug.com/12066.
-//
-// WebSocket connections are long-lived, and should be treated differently
-// than normal other connections. Use a limit of 255, so the limit for wss will
-// be the same as the limit for ws. Also note that Firefox uses a limit of 200.
-// See http://crbug.com/486800
+<p>具体的可以看这篇文章<a href="/posts/6fbc205f/">Http pipeline</a></p>
+<h2 id="并行连接"><a href="#并行连接" class="headerlink" title="并行连接"></a>并行连接</h2><p>上面讲到的pipeline技术在队头阻塞的情况下并不能真正意义上提高加载资源的速度。为了解决这个问题，我们又想到了通过在浏览器端同时开启多个http connection的方式从服务端获取数据资源以提升访问速度。它的过程如下图所示。从图中我们可以看到客户端在启动的时候同时开启了三条connection同时向服务端发起请求，这三条connection互相之间是独立的，因此客户端可以通过这三条connection去下载服务端的资源。<br><img src="/images/pasted-222.png" alt="upload successful"><br>我们通过chrome浏览器在访问水木社区的时候可以看到，它在访问<a href="http://images.newsmth.net" target="_blank" rel="noopener">http://images.newsmth.net</a>这个域名的时候，同时开启了六个connection下载相关资源。<br><img src="/images/pasted-223.png" alt="upload successful"><br>从下图可以看到每个连接都会包含DNS解析的时间和建立connection的时间。<br><img src="/images/pasted-224.png" alt="upload successful"><br>下面是抓包的数据，可以看出从浏览器侧同时发出了六个http request请求。<br><img src="/images/pasted-225.png" alt="upload successful"><br>从代码的角度来看，在Chrome中设置了每一个域名最多同时可以对应六条连接。关于为何设置为六条连接可以参见<a href="http://crbug.com/12066" target="_blank" rel="noopener">这里</a>看一下Chromium小组对此的解释。即并行连接的个数并非越多越好，这是因为每个并行连接的建立过程都会完成一次完整的DNS解析和TCP握手过程，这个过程是比较耗时和消耗资源的。此外，对于带宽有限的客户端，用户使用单连接下载一个资源的时候会占满所有带宽。如果此时开启多个连接，那么所有连接将会抢占（或平分）有限的带宽，这个过程其实并未真正对性能有所提升，反而会因为建立connection的过程而消耗很多资源。还有，过多的connection也会提升服务器端的负担。综上所述，浏览器中并行的connection不会很多。</p>
+<pre><code class="text">Default to allow up to 6 connections per host. Experiment and tuning may try other values (greater than 0).  Too large may cause many problems, such as home routers blocking the connections!?!?  See http://crbug.com/12066.WebSocket connections are long-lived, and should be treated differently than normal other connections. Use a limit of 255, so the limit for wss will be the same as the limit for ws. Also note that Firefox uses a limit of 200.See http://crbug.com/486800
 int g_max_sockets_per_group[] = {
   6,  // NORMAL_SOCKET_POOL
   255 // WEBSOCKET_SOCKET_POOL
 };
 </code></pre>
-<h2 id="host头域"><a href="#host头域" class="headerlink" title="host头域"></a>host头域</h2><p>在请求头域中新增了<a href="http://link.zhihu.com/?target=https%3A//developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host" target="_blank" rel="noopener">Host</a>字段，其用来指定服务器的域名。有了Host字段，在同一台服务器上就可以搭建不同的网站了，这也为后来虚拟化的发展打下了基础。</p>
+<h2 id="host头域"><a href="#host头域" class="headerlink" title="host头域"></a>host头域</h2><p>在请求头域中新增了<a href="http://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Host" target="_blank" rel="noopener">Host</a>字段，其用来指定服务器的域名。有了Host字段，在同一台服务器上就可以搭建不同的网站了，这也为后来虚拟化的发展打下了基础。</p>
 <pre><code class="text">Host: www.alibaba-inc.com
 </code></pre>
 <h2 id="cache机制"><a href="#cache机制" class="headerlink" title="cache机制"></a>cache机制</h2><p>Cache不仅可以提高用户的访问速率，在移动端设备上还可以为用户极大节省流量。因此，在HTTP/1.1中新增了很多与Cache相关的头域并围绕这些头域设计了更灵活、更丰富的Cache机制。</p>
@@ -666,14 +635,11 @@ int g_max_sockets_per_group[] = {
 <li>在本地判断Cache资源是否已经过期</li>
 <li>向服务端发起问询，查看已过期的Cache资源是否在服务端发生了变化</li>
 </ol>
-<p>在此列出了Cache相关的头域已经他们所对应的功能：</p>
-<p><img src="/images/pasted-226.png" alt="upload successful"></p>
-<p>Cache-Control</p>
-<p>Cache-Control是Cache最重要的策略机制，通过Cache-Control与不同值的组合可以实现Cache的存储策略、访问策略以及过期策略。当指定使用public时，表明Cache资源可以被所有用户访问。它实现了上面提到的第一个功能。</p>
-<pre><code class="text">Cache-Control: public
+<p>在此列出了Cache相关的头域已经他们所对应的功能：<br><img src="/images/pasted-226.png" alt="upload successful"><br><strong>Cache-Control</strong><br>Cache-Control是Cache最重要的策略机制，通过Cache-Control与不同值的组合可以实现Cache的存储策略、访问策略以及过期策略。当指定使用public时，表明Cache资源可以被所有用户访问。它实现了上面提到的第一个功能。</p>
+<pre><code class="http">Cache-Control: public
 </code></pre>
 <p>当指定使用private时，表明Cache资源仅可以对指定用户使用，对其他用户发来的请求，缓存服务器不会返回缓存。它实现了上面提到的第一个功能。</p>
-<pre><code class="text">Cache-Control: private
+<pre><code class="public">Cache-Control: private
 </code></pre>
 <p>当使用no-store的时候，表示资源不要进行缓存。它实现了上面提到的第一个功能。</p>
 <pre><code class="text">Cache-Control: no-store
@@ -725,6 +691,9 @@ that
 </code></pre>
 <p>以下是一个具体的示例：</p>
 <p><img src="/images/pasted-233.png" alt="upload successful"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="https://www.zhihu.com/people/lonniez/activities" target="_blank" rel="noopener">lonnieZ http的演进之路</a></li>
+</ol>
 
       
     </div>
@@ -790,8 +759,8 @@ that
   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <p><span>本文标题:</span><a href="/posts/d860bebc/">Http的演进之路之二</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
-  <p><span>发布时间:</span>2019年03月10日 - 08:23</p>
-  <p><span>最后更新:</span>2019年04月18日 - 21:10</p>
+  <p><span>发布时间:</span>2019年03月10日 - 08:45</p>
+  <p><span>最后更新:</span>2019年04月18日 - 23:52</p>
   <p><span>原始链接:</span>
      <a href="/posts/d860bebc/" title="Http的演进之路之二">Http的演进之路之二</a>
     <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/d860bebc/" aria-label="复制成功！"></i></span>
@@ -830,6 +799,8 @@ that
           
             <a href="/tags/http/" rel="tag">  <i class="fa fa-tag"></i> http</a>
           
+            <a href="/tags/http1-1/" rel="tag">  <i class="fa fa-tag"></i> http1.1</a>
+          
         </div>
       
 
@@ -841,8 +812,8 @@ that
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/posts/cb0c26ea/" rel="next" title="Http的演进之路之五">
-                <i class="fa fa-chevron-left"></i> Http的演进之路之五
+              <a href="/posts/e3e09015/" rel="next" title="Http的演进之路之一">
+                <i class="fa fa-chevron-left"></i> Http的演进之路之一
               </a>
             
           </div>
@@ -851,8 +822,8 @@ that
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/posts/d6ee44af/" rel="prev" title="Http的演进之路之四">
-                Http的演进之路之四 <i class="fa fa-chevron-right"></i>
+              <a href="/posts/9a3c28b1/" rel="prev" title="Http的演进之路之三">
+                Http的演进之路之三 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -932,7 +903,7 @@ that
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">149</span>
+                    <span class="site-state-item-count">151</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1180,7 +1151,17 @@ that
                     
                       
                     
-                    <span class="site-state-item-count">69</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">74</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1238,7 +1219,7 @@ that
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Http的演进之路之二"><span class="nav-text">Http的演进之路之二</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#声明，此系列文章转载自lonnieZ-http的演进之路"><span class="nav-text">声明，此系列文章转载自lonnieZ http的演进之路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-1-1"><span class="nav-text">HTTP/1.1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#keep-alive"><span class="nav-text">keep-alive</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp中的keep-alive"><span class="nav-text">tcp中的keep-alive</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline"><span class="nav-text">pipeline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并行连接"><span class="nav-text">并行连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#host头域"><span class="nav-text">host头域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cache机制"><span class="nav-text">cache机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pragma"><span class="nav-text">Pragma</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Expires"><span class="nav-text">Expires</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Last-Modified"><span class="nav-text">Last-Modified</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ETag"><span class="nav-text">ETag</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chunked机制"><span class="nav-text">chunked机制</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#HTTP-1-1"><span class="nav-text">HTTP/1.1</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#keep-alive"><span class="nav-text">keep-alive</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#tcp中的keep-alive"><span class="nav-text">tcp中的keep-alive</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline"><span class="nav-text">pipeline</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#并行连接"><span class="nav-text">并行连接</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#host头域"><span class="nav-text">host头域</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cache机制"><span class="nav-text">cache机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pragma"><span class="nav-text">Pragma</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Expires"><span class="nav-text">Expires</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Last-Modified"><span class="nav-text">Last-Modified</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ETag"><span class="nav-text">ETag</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#chunked机制"><span class="nav-text">chunked机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
             
 
           </div>
@@ -1281,7 +1262,7 @@ that
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:18</span>
+    <span title="站点阅读时长">19:22</span>
   
 </div>
 
