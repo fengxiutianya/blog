@@ -66,7 +66,7 @@ public class SerialGC {
 
 ```
 上面的日志信息会显示很多的信息，下面依次来介绍上面的俩条日志，第一条发生在年轻代，第二条发生在老年代。
-### 年轻代
+### 年轻代（Minor GC）
 ```
 2019-04-17T20:02:57.654+0800: 0.078: [GC (Allocation Failure) 2019-04-17T20:02:57.654+0800: 0.078: [DefNew: 5643K->360K(9216K), 0.0028108 secs] 5643K->4456K(19456K), 0.0028533 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
 ```
@@ -103,7 +103,7 @@ public class SerialGC {
 8. `[Times: user=0.01 sys=0.00, real=0.01 secs]`：GC持续的时间，从不同的角度来测量：
     1. user:GC垃圾回收器在用户态花费的时间
     2.  sys：GC垃圾回收器在核心太花费的时间
-    3.  real：GC垃圾回收器真正在CPU上执行的时间。因为Serial是单线程应用，因此这里real=user+sys。并且这个时间也可以代表你的应用被暂停的时间。
+    3.  real：GC垃圾回收器执行的时间。因为Serial是单线程应用，因此这里real=user+sys。并且这个时间也可以代表你的应用被暂停的时间。
 
 与年轻代垃圾回收的区别很明显 - 除了Young Generation之外，在此GC执行期间，Old Generation和Metaspace也被清理干净。GC执行之前和之后的内存布局看起来如下图所示：
 
