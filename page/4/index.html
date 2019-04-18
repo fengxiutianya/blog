@@ -375,6 +375,257 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/ad8369f2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/posts/ad8369f2/" class="post-title-link" itemprop="url">java线程系列 JUC锁 06 阻塞原语LockSupport</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-18 12:56:00" itemprop="dateCreated datePublished" datetime="2019-03-18T12:56:00+08:00">2019-03-18</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/" itemprop="url" rel="index"><span itemprop="name">juc</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/juc/lock/" itemprop="url" rel="index"><span itemprop="name">lock</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/ad8369f2/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/ad8369f2/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/ad8369f2/" class="leancloud_visitors" data-flag-title="java线程系列 JUC锁 06 阻塞原语LockSupport">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">11k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">10 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>用法简介</li>
+<li>源码分析</li>
+<li>底层实现原理</li>
+</ol>
+<h3 id="1-用法简介"><a href="#1-用法简介" class="headerlink" title="1. 用法简介"></a>1. 用法简介</h3><p>LockSupport是用来创建锁和其他同步器的基本<strong>线程阻塞</strong>原语。LockSupport 提供park()和unpark()方法实现阻塞线程和解除线程阻塞。每个使用LockSupport的线程都与一个许可(permit)关联，permit相当于开关，默认是0，调用一次unpark就加1变成1，调用一次park会消费permit, 也就是将1变成0，同时park立即返回。再次调用park会变成block（因为permit为0，会阻塞在这里，直到permit变为1）, 这时调用unpark会把permit置为1。每个线程都有一个相关的permit, permit最多只有一个，重复调用unpark也不会积累。</p>
+<p>park()和unpark()不会有Thread.suspend和Thread.resume所可能引发的死锁问题。这个死锁问题的产生是由于Thread.resume在Thread.suspend之前调用，使得线程忽略了解除阻塞的信号，而使得线程一直被阻塞。而LockSupport由于许可的存在，调用park的线程和另一个试图将其unpark的线程之间的竞争将保持活性。不会因为前后调用的顺序而产生死锁</p>
+<p>如果调用线程被中断，则park方法会返回。同时park也拥有可以设置超时时间的版本。<br>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/posts/ad8369f2/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </p></div>
+
+    
+
+    
+    
+    
+
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/e7f5c004/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -437,7 +688,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1029,7 +1280,7 @@ return (t &gt; 0) ? t : t + 0x7fffffff;
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1273,7 +1524,7 @@ return (t &gt; 0) ? t : t + 0x7fffffff;
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1989,7 +2240,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2233,7 +2484,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2488,7 +2739,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2725,7 +2976,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2976,7 +3227,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -3220,7 +3471,7 @@ String  toString()
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -3377,258 +3628,6 @@ String  toString()
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/5d34b48/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="枫秀天涯">
-      <meta itemprop="description" content="java,spring,分布式,数据库">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫秀天涯">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/posts/5d34b48/" class="post-title-link" itemprop="url">Spring4 @Enable*注解的工作原理</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-11 06:46:00" itemprop="dateCreated datePublished" datetime="2019-03-11T06:46:00+08:00">2019-03-11</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/posts/5d34b48/#comments" itemprop="discussionUrl">
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/5d34b48/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/posts/5d34b48/" class="leancloud_visitors" data-flag-title="Spring4 @Enable*注解的工作原理">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数：</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">4.6k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">4 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="Spring4-Enable-注解的工作原理"><a href="#Spring4-Enable-注解的工作原理" class="headerlink" title="Spring4 @Enable*注解的工作原理"></a>Spring4 @Enable*注解的工作原理</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
-<li>简介</li>
-<li>实现原理</li>
-</ol>
-<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>在使用SpringBoot的时候，我们经常看到一些<code>@Enable*</code>之类的开启对某些特性的支持。类如下面举的例子</p>
-<ol>
-<li>@EnableAspectJAutoProxy 开启对AspectJ自动代理的支持</li>
-<li>@EnableAsync 开启异步方法的支持</li>
-<li>@EnableScheduling 开启计划任务的支持</li>
-<li>@EnableWebMvc 开启Web MVC的配置支持。</li>
-<li>@EnableConfigurationProperties开启对@ConfigurationProperties注解配置Bean的支持。</li>
-<li>@EnableJpaRepositories 开启对Spring Data JPA Repository的支持。</li>
-<li>@EnableTransactionManagement 开启注解式事务的支持。</li>
-<li>@EnableCaching开启注解式的缓存支持。</li>
-</ol>
-<p>通过简单的<code>@Enable*</code>来开启一项功能的支持，从而避免自己配置大量的代码，大大降低使用难度。那么这个神奇的功能的实现原理是什么呢？下面来研究一下。<br>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/posts/5d34b48/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </p></div>
-
-    
-
-    
-    
-    
-
-      
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -3678,7 +3677,7 @@ String  toString()
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">148</span>
+                    <span class="site-state-item-count">149</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3924,7 +3923,9 @@ String  toString()
                     
                       
                     
-                    <span class="site-state-item-count">68</span>
+                      
+                    
+                    <span class="site-state-item-count">69</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -4008,7 +4009,7 @@ String  toString()
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:07</span>
+    <span title="站点阅读时长">19:18</span>
   
 </div>
 

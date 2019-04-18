@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-CN">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+  
+  
+    
+    
+      
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link rel="stylesheet" href="/lib/pace/themes/blue/pace-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":true,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: true,
+    tabs: true,
+    motion: {"enable":true,"async":true,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: 'AQT4XGM95O',
+      apiKey: 'd55e0adb332e8d9ef9023a6b4afd46f1',
+      indexName: 'my',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"请输入搜索内容","hits_empty":"没有发现和 ${query} 有关的内容","hits_stats":"在 ${time} ms 内发现 ${hits} "}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
+<meta name="keywords" content="JVM,GC,GC日志,CMS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GC日志详解3之CMS">
+<meta property="og:url" content="http://fengxiutianya.top/posts/f38ed32c/index.html">
+<meta property="og:site_name" content="枫秀天涯">
+<meta property="og:description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://fengxiutianya.top/images/cms-1.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/g1-07-591x187.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/cms-3.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/cms-4.png">
+<meta property="og:image" content="http://fengxiutianya.top/images/g1-10-591x187.png">
+<meta property="og:updated_time" content="2019-04-18T13:10:27.788Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GC日志详解3之CMS">
+<meta name="twitter:description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
+<meta name="twitter:image" content="http://fengxiutianya.top/images/cms-1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://fengxiutianya.top/posts/f38ed32c/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>GC日志详解3之CMS | 枫秀天涯</title>
+  
+
+
+
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-136781627-1');
+  </script>
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">枫秀天涯</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-about">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+
+      
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>搜索</a>
+        </li>
+      
+    </ul>
+  
+
+  
+
+  
+    <div class="site-search">
+      
+  
+  <div class="algolia-popup popup search-popup">
+    <div class="algolia-search">
+      <div class="algolia-search-input-icon">
+        <i class="fa fa-search"></i>
+      </div>
+      <div class="algolia-search-input" id="algolia-search-input"></div>
+    </div>
+
+    <div class="algolia-results">
+      <div id="algolia-stats"></div>
+      <div id="algolia-hits"></div>
+      <div id="algolia-pagination" class="algolia-pagination"></div>
+    </div>
+
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+  </div>
+
+
+
+
+    </div>
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+            
+
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+    <div class="reading-progress-bar"></div>
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/f38ed32c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">GC日志详解3之CMS
+
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-18 15:14:47 / 修改时间：21:10:27" itemprop="dateCreated datePublished" datetime="2019-04-18T15:14:47+08:00">2019-04-18</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/f38ed32c/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/f38ed32c/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/f38ed32c/" class="leancloud_visitors" data-flag-title="GC日志详解3之CMS">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">11 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是<strong>标记-清除</strong>算法。</p>
+<p>CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用<strong>标记-拷贝</strong>来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行来执行。但是应该注意，它仍然与应用程序线程竞争CPU时间。默认情况下，此GC算法使用的线程数等于计算机物理核心数的1/4。</p>
+<p>如果您的主要目标是延迟，这种组合在多核机器上是一个不错的选择。减少单个GC暂停的持续时间会直接影响终端用户使用应用程序的感受，从而使他们感觉应用程序响应更快。由于大多数时候GC消耗了一些CPU资源而没有执行应用程序的代码，因此CMS垃圾回收器通常比只运行Parallel GC的垃圾回收器的吞吐量要差一些。<br><a id="more"></a></p>
+<h2 id="正文"><a href="#正文" class="headerlink" title="正文"></a>正文</h2><p>如果想要使用这中搭配方式，需要在运行java程序时使用下面参数：</p>
+<pre><code>      -XX:+UseParNewGC -  -XX:+UseConcMarkSweepGC
+</code></pre><p>测试代码如下：</p>
+<pre><code class="java">/**************************************
+ *      Author : zhangke
+ *      Date   : 2019-02-20 11:34
+ *      email  : 398757724@qq.com
+ *      Desc   : 年轻代使用ParNew 老年代使用CMS
+ *
+ *      -verbose:gc -Xms20M -Xmx20M -Xmn10M
+ *      -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps
+ *      -XX:MaxTenuringThreshold=1
+ *      -XX:+UseParNewGC   -XX:+UseConcMarkSweepGC
+ *
+ ***************************************/
+public class CMS {
+    private static final int _1MB = 1024 * 1024;
+
+    public static void main(String[] args) throws InterruptedException {
+        byte[] allocation1, allocation2, allocation3, allocation4;
+        allocation1 = new byte[4 * _1MB];
+        allocation2 = new byte[3 * _1MB];
+        allocation3 = new byte[4 * _1MB];
+        allocation4 = new byte[2 * _1MB];
+        allocation1[0] = &#39;d&#39;;
+        allocation2[1] = &#39;d&#39;;
+        // 防止GC日志输出不完，应用就结束
+        Thread.sleep(10);
+    }
+}
+</code></pre>
+<p>输出日志信息如下：</p>
+<pre><code>2019-04-18T15:38:27.114+0800: 0.112: [GC (Allocation Failure) 2019-04-18T15:38:27.114+0800: 0.112: [ParNew: 5640K-&gt;376K(9216K), 0.0099638 secs] 5640K-&gt;4474K(19456K), 0.0100193 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+
+2019-04-18T15:38:27.126+0800: 0.124: [GC (Allocation Failure) 2019-04-18T15:38:27.126+0800: 0.124: [ParNew (promotion failed): 7699K-&gt;7322K(9216K), 0.0095832 secs]2019-04-18T15:38:27.136+0800: 0.134: [CMS: 7496K-&gt;7487K(10240K), 0.0045668 secs] 11797K-&gt;11621K(19456K), [Metaspace: 3006K-&gt;3006K(1056768K)], 0.0142215 secs] [Times: user=0.02 sys=0.00, real=0.02 secs] 
+
+2019-04-18T15:38:27.141+0800: 0.139: [GC (CMS Initial Mark) [1 CMS-initial-mark: 7487K(10240K)] 13833K(19456K), 0.0002405 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark-start]
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.142+0800: 0.140: [GC (CMS Final Remark) [YG occupancy: 6345 K (9216 K)]2019-04-18T15:38:27.142+0800: 0.140: [Rescan (parallel) , 0.0006864 secs]2019-04-18T15:38:27.142+0800: 0.140: [weak refs processing, 0.0001303 secs]2019-04-18T15:38:27.142+0800: 0.140: [class unloading, 0.0003487 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub symbol table, 0.0003745 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub string table, 0.0002689 secs][1 CMS-remark: 7487K(10240K)] 13833K(19456K), 0.0019541 secs] [Times: user=0.01 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><h3 id="年轻代（Minor-GC）"><a href="#年轻代（Minor-GC）" class="headerlink" title="年轻代（Minor GC）"></a>年轻代（Minor GC）</h3><p>日志信息如下：</p>
+<pre><code>2019-04-18T15:38:27.114+0800: 0.112: [GC (Allocation Failure) 2019-04-18T15:38:27.114+0800: 0.112: [ParNew: 5640K-&gt;376K(9216K), 0.0099638 secs] 5640K-&gt;4474K(19456K), 0.0100193 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+</code></pre><p>按照显示的顺序来进行介绍：</p>
+<ol>
+<li><code>2019-04-18T15:38:27.114+0800</code>：GC开始的时间</li>
+<li><code>0.112</code>：GC开始相对于JVM启动的开始时间，单位是秒</li>
+<li><code>GC</code>:标记用于辨别是年轻代GC还是Full GC(回收年轻代和老年代)</li>
+<li><code>Allocation Failure</code>：造成GC的原因。在这个案例里，GC被启动的原因是年轻代所剩的空间不能满足对象的分配。</li>
+<li><code>ParNew</code>:GC回收器使用的名称。这里代表ParNew垃圾回收器。</li>
+<li><code>5640K-&gt;376K(9216K)</code>: GC回收前年轻代使用的空间大小-&gt;GC回收后年轻代使用的空间大小（年轻代总空间大小）</li>
+<li><code>0.0099638 secs</code>：收集持续的时间，还没有最终的清理</li>
+<li><code>5640K-&gt;4474K(19456K)</code>:GC前堆已被使用的空间大小-&gt;GC后堆中已被使用的空间大小（堆可被使用的总大小）</li>
+<li><code>0.0100193 secs</code>:整个GC持续的时间，标记和复制年轻代活着的对象所花费的时间（包括和老年代通信的开销、对象晋升到老年代开销、垃圾收集周期结束一些最后的清理对象等的花销）</li>
+<li><code>[Times: user=0.00 sys=0.00, real=0.00 secs]</code>：参照前面的文章这里就不具体解释</li>
+</ol>
+<h3 id="老年代"><a href="#老年代" class="headerlink" title="老年代"></a>老年代</h3><p>下面是CMS垃圾回收器的日志，这些是按照CMS的不同阶段打印出来：</p>
+<pre><code>2019-04-18T15:38:27.141+0800: 0.139: [GC (CMS Initial Mark) [1 CMS-initial-mark: 7487K(10240K)] 13833K(19456K), 0.0002405 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark-start]
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.142+0800: 0.140: [GC (CMS Final Remark) [YG occupancy: 6345 K (9216 K)]2019-04-18T15:38:27.142+0800: 0.140: [Rescan (parallel) , 0.0006864 secs]2019-04-18T15:38:27.142+0800: 0.140: [weak refs processing, 0.0001303 secs]2019-04-18T15:38:27.142+0800: 0.140: [class unloading, 0.0003487 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub symbol table, 0.0003745 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub string table, 0.0002689 secs][1 CMS-remark: 7487K(10240K)] 13833K(19456K), 0.0019541 secs] [Times: user=0.01 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><p>下面分别来介绍各个阶段的情况：</p>
+<h4 id="阶段1：Initial-Mark"><a href="#阶段1：Initial-Mark" class="headerlink" title="阶段1：Initial Mark"></a>阶段1：Initial Mark</h4><p>这个是 CMS 两次 stop-the-wolrd 事件的其中一次，这个阶段的目标是：标记那些直接被 GC root 引用或者被年轻代存活对象所引用的所有对象，标记后示例如下所示<br><img src="/images/cms-1.png" alt="cms-1"><br>上述例子对应的日志信息为：</p>
+<pre><code>2019-04-18T15:38:27.141+0800: 0.139: [GC (CMS Initial Mark) [1 CMS-initial-mark: 7487K(10240K)] 13833K(19456K), 0.0002405 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><p>日志的意思如下：</p>
+<ol>
+<li><code>2019-04-18T15:38:27.141+0800:0.139:</code>GC 开始的时间，以及相对于 JVM 启动的相对时间（单位是秒，这里大概是4.33h），与前面 ParNew 类似，下面的分析中就直接跳过这个了；</li>
+<li><code>CMS-initial-mark：</code>初始标记阶段，它会收集所有 GC Roots 以及其直接引用的对象；</li>
+<li><code>7487K</code>：当前老年代使用的容量；</li>
+<li><code>(10240k)</code>：老年代可用的最大容量，这里是 10M；</li>
+<li><code>13833K</code>：整个堆目前使用的容量；</li>
+<li><code>(19456K)</code>：堆可用的容量，这里是19M；</li>
+<li><code>0.0002405 secs</code>：这个阶段的持续时间；</li>
+<li><code>[Times: user=0.04 sys=0.00, real=0.04 secs]</code>：与前面的类似，这里是相应 user、system and real 的时间统计。</li>
+</ol>
+<h4 id="阶段2-concurrent-Mark"><a href="#阶段2-concurrent-Mark" class="headerlink" title="阶段2 concurrent Mark"></a>阶段2 concurrent Mark</h4><p>在这个阶段GC垃圾回收器会遍历老年代，然后标记所有存活的对象，它会根据上个阶段找到的 GC Roots 遍历查找。并发标记阶段，它会与用户的应用程序并发运行。并不是老年代所有的存活对象都会被标记，因为在标记期间用户的程序可能会改变一些引用，如下图所示：<br><img src="/images/g1-07-591x187.png" alt="g1-07-591x187"><br>在上面的图中，与阶段1的图进行对比，就会发现有一个对象的引用已经发生了变化，这个阶段相应的日志信息如下：</p>
+<pre><code>2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark-start]
+2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-mark: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><ol>
+<li><code>CMS-concurrent-mark</code>：并发收集阶段，这个阶段会遍历老年代，并标记所有存活的对象；</li>
+<li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间；</li>
+<li><code>[Times: user=0.00 sys=0.00, real=0.00 secs]</code> ：如前面所示，但是这部分的时间，其实意义不大，因为它是从并发标记的开始时间开始计算，这期间因为是并发进行，不仅仅包含 GC 线程的工作，还包括了应用线程并行的线程。<h4 id="阶段3：concurrent-Preclean"><a href="#阶段3：concurrent-Preclean" class="headerlink" title="阶段3：concurrent Preclean"></a>阶段3：concurrent Preclean</h4>Concurrent Preclean：这也是一个并发阶段，与应用的线程并发运行，并不会stop应用的线程。上面一个阶段和应用并发运行的过程中，一些对象的引用可能会发生变化，但是这种情况发生时，JVM会将包含这个对象的区域（Card）标记为 Dirty，这也就是 Card Marking。<br><img src="/images/cms-3.png" alt="cms-3"><br>在pre-clean阶段，那些能够从 Dirty 对象到达的对象也会被标记，这个标记做完之后，dirty card 标记就会被清除了<br><img src="/images/cms-4.png" alt="cms-4"></li>
+</ol>
+<pre><code class="这个阶段日志信息如下">2019-04-18T15:38:27.141+0800: 0.139: [CMS-concurrent-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre>
+<ol>
+<li><code>CMS-concurrent-preclean：Concurrent Preclean</code> 阶段，对在前面并发标记阶段中引用发生变化的对象进行标记；</li>
+<li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间；</li>
+<li><p><code>[Times: user=0.00 sys=0.00, real=0.00 secs]</code>：同并发标记阶段中的含义。</p>
+<h4 id="阶段4：Concurrent-Abortable-Preclean"><a href="#阶段4：Concurrent-Abortable-Preclean" class="headerlink" title="阶段4：Concurrent Abortable Preclean"></a>阶段4：Concurrent Abortable Preclean</h4><p>这也是一个并发阶段，同样不会影响影响用户的应用线程。这个阶段是为了尽量承担最终标记阶段的工作（这个阶段会STW）。这个阶段持续时间依赖于很多的因素。这个阶段是在重复做很多相同的工作，直到满足一些条件（比如：重复迭代的次数、完成的工作量或者时钟时间等）就会退出。这个阶段的日志信息如下：</p>
+<pre><code>2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean-start]
+2019-04-18T15:38:27.142+0800: 0.139: [CMS-concurrent-abortable-preclean: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre></li>
+<li><code>CMS-concurrent-abortable-preclean</code>：Concurrent Abortable Preclean 阶段；</li>
+<li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间，本质上，这里的 gc 线程会在 STW 之前做更多的工作，通常会持续 5s 左右；</li>
+<li><code>[Times: user=0.00 sys=0.00, real=0.00 secs]</code>：同前面。<h4 id="阶段5：Final-Remark"><a href="#阶段5：Final-Remark" class="headerlink" title="阶段5：Final Remark"></a>阶段5：Final Remark</h4>这是第二个 STW 阶段，也是 CMS 中的最后一个，这个阶段的目标是标记所有老年代所有的存活对象，由于之前的阶段是并发执行的，gc线程可能跟不上应用程序的变化，为了完成标记老年代所有存活对象的目标，STW就非常有必要了。</li>
+</ol>
+<p>通常 CMS的Final Remark 阶段会在年轻代尽可能干净的时候运行，目的是为了减少连续STW发生的可能性（年轻代存活对象过多的话，也会导致老年代涉及的存活对象会很多）。这个阶段会比前面的几个阶段更复杂一些，相关日志如下：</p>
+<pre><code>2019-04-18T15:38:27.142+0800: 0.140: [GC (CMS Final Remark) [YG occupancy: 6345 K (9216 K)]2019-04-18T15:38:27.142+0800: 0.140: [Rescan (parallel) , 0.0006864 secs]2019-04-18T15:38:27.142+0800: 0.140: [weak refs processing, 0.0001303 secs]2019-04-18T15:38:27.142+0800: 0.140: [class unloading, 0.0003487 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub symbol table, 0.0003745 secs]2019-04-18T15:38:27.143+0800: 0.141: [scrub string table, 0.0002689 secs][1 CMS-remark: 7487K(10240K)] 13833K(19456K), 0.0019541 secs] [Times: user=0.01 sys=0.00, real=0.00 secs] 
+</code></pre><ol>
+<li><code>2019-04-18T15:38:27.142+0800: 0.140:</code>阶段开始的时间，阶段开始的时间相对与JVM启动的时间，单位s</li>
+<li><code>[GC (CMS Final Remark)</code>：表示这是CMS的Final Remark阶段</li>
+<li><code>[YG occupancy: 6345 K (9216 K)]</code>：年轻代当前占内存大小，及年轻代总的内存大小</li>
+<li><code>2019-04-18T15:38:27.142+0800: 0.140: [Rescan (parallel) , 0.0006864 secs]</code>：前面的时间表示的是这个阶段开始的时间，和相对JVM启动的时间。Rescan 是当应用暂停的情况下完成对所有存活对象的标记，这个阶段是并行处理的，这里花费了 0.0006864s；</li>
+<li><code>2019-04-18T15:38:27.142+0800: 0.140: [weak refs processing, 0.0001303 secs]</code>：前面的时间表示的是这个阶段开始的时间，和相对JVM启动的时间。第一个子阶段，它的工作是处理弱引用；后面是这个阶段花费的时间</li>
+<li><code>2019-04-18T15:38:27.142+0800: 0.140: [class unloading, 0.0003487 secs]</code>：前面的时间表示的是这个阶段开始的时间，和相对JVM启动的时间。第二个子阶段，它的工作是卸载为被使用的类，后面是这个阶段花费的时间</li>
+<li><code>2019-04-18T15:38:27.143+0800: 0.141: [scrub symbol table, 0.0003745 secs]</code>：前面时间表示的是这个阶段开始的时间和相对JVM启动的开始时间。第三个子阶段，清理符号表，包含了类级元数据。寿面时间表示这个阶段花费的时间。</li>
+<li><code>2019-04-18T15:38:27.143+0800: 0.141: [scrub string table, 0.0002689 secs]</code>：前面时间表示的是这个阶段开始的时间和相对JVM启动的开始时间，这是最后的子阶段，清理字符串表，内部化字符串。后面时间表示这个阶段花费的时间。还包括暂停的时钟时间。</li>
+<li><code>[1 CMS-remark: 7487K(10240K)] 13833K(19456K), 0.0019541 secs]</code>这个阶段之后，老年代堆的使用情况（老年代总的内存大小）堆的使用量与总量（包括年轻代，年轻代在前面发生过 GC）</li>
+<li><code>[Times: user=0.01 sys=0.00, real=0.00 secs]</code> ：在不同态下执行的时间。</li>
+</ol>
+<p>经历过这五个阶段之后，老年代所有存活的对象都被标记过了，现在可以通过清除算法去清理那些老年代不再使用的对象。<br><img src="/images/g1-10-591x187.png" alt="g1-10-591x187"></p>
+<h4 id="阶段6：Concurrent-Sweep"><a href="#阶段6：Concurrent-Sweep" class="headerlink" title="阶段6：Concurrent Sweep"></a>阶段6：Concurrent Sweep</h4><p>这里不需要STW，它是与用户的应用程序并发运行，这个阶段是：清除那些不再使用的对象，回收它们的占用空间为将来使用。如下图所示</p>
+<pre><code>2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-sweep: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><ol>
+<li><code>CMS-concurrent-sweep</code>：这个阶段主要是清除那些没有被标记的对象，回收它们的占用空间；</li>
+<li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间；</li>
+<li><code>[Times: user=0.00 sys=0.00, real=0.00 secs]</code>：同前面；</li>
+</ol>
+<h4 id="阶段7：Concurrent-Reset"><a href="#阶段7：Concurrent-Reset" class="headerlink" title="阶段7：Concurrent Reset."></a>阶段7：Concurrent Reset.</h4><p>这个阶段也是并发执行的，它会重设 CMS 内部的数据结构，为下次的 GC 做准备，对应的日志信息如下：</p>
+<pre><code>2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset-start]
+2019-04-18T15:38:27.144+0800: 0.142: [CMS-concurrent-reset: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+</code></pre><p>日志详情分别如下：</p>
+<ol>
+<li><code>CMS-concurrent-reset</code> ：这个阶段的开始，目的如前面所述；</li>
+<li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间；</li>
+<li><code>Times: user=0.15 sys=0.10, real=0.04 secs]</code>：同前面。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CMS通过将大量工作分散到并发处理阶段来在减少STW时间，在这块做得非常优秀，但是CMS也有一些其他的问题，具体的可以看这篇文章<a href="https://fengxiutianya.top/posts/1d97a19/">JVM垃圾回收器</a>：</p>
+<ol>
+<li>CMS 收集器无法处理浮动垃圾（ Floating Garbage），可能出现 “Concurrnet Mode Failure” 失败而导致另一次 Full GC 的产生，可能引发串行Full GC；</li>
+<li>空间碎片，导致无法分配大对象，CMS 收集器提供了一个 -XX:+UseCMSCompactAtFullCollection 开关参数（默认就是开启的），用于在 CMS 收集器顶不住要进行 Full GC 时开启内存碎片的合并整理过程，内存整理的过程是无法并发的，空间碎片问题没有了，但停顿时间不得不变长；</li>
+<li>对于堆比较大的应用上，GC 的时间难以预估。</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ol>
+<li><a href="http://matt33.com/2018/07/28/jvm-cms/" target="_blank" rel="noopener">http://matt33.com/2018/07/28/jvm-cms/</a></li>
+<li><a href="https://plumbr.io/handbook/garbage-collection-algorithms-implementations" target="_blank" rel="noopener">GC Algorithms Implementations</a></li>
+</ol>
+
+      
+    </div>
+
+    
+      
+
+  <div class="popular-posts-header">相关文章</div>
+  <ul class="popular-posts">
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/f857a2aa/" rel="bookmark">GC日志详解1之serial</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/5319940a/" rel="bookmark">GC日志详解2之Parallel GC</a></div>
+      
+    </li>
+  
+  </ul>
+
+
+    
+
+    
+    
+    
+
+      
+        <div>
+        
+<div class="my_post_copyright">
+  <script src="//cdn.bootcss.com/clipboard.js/1.5.10/clipboard.min.js"></script>
+  
+  <!-- JS库 sweetalert 可修改路径 -->
+  <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <p><span>本文标题:</span><a href="/posts/f38ed32c/">GC日志详解3之CMS</a></p>
+  <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
+  <p><span>发布时间:</span>2019年04月18日 - 15:14</p>
+  <p><span>最后更新:</span>2019年04月18日 - 21:10</p>
+  <p><span>原始链接:</span>
+     <a href="/posts/f38ed32c/" title="GC日志详解3之CMS">GC日志详解3之CMS</a>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/f38ed32c/" aria-label="复制成功！"></i></span>
+  </p>
+  <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
+</div>
+<script> 
+    var clipboard = new Clipboard('.fa-clipboard');
+    $(".fa-clipboard").click(function(){
+      clipboard.on('success', function(){
+        swal({   
+          title: "",   
+          text: '复制成功',
+          icon: "success", 
+          showConfirmButton: true
+          });
+    });
+    });  
+</script>
+
+        </div>
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/JVM/" rel="tag">  <i class="fa fa-tag"></i> JVM</a>
+          
+            <a href="/tags/GC/" rel="tag">  <i class="fa fa-tag"></i> GC</a>
+          
+            <a href="/tags/GC日志/" rel="tag">  <i class="fa fa-tag"></i> GC日志</a>
+          
+            <a href="/tags/CMS/" rel="tag">  <i class="fa fa-tag"></i> CMS</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/posts/5319940a/" rel="next" title="GC日志详解2之Parallel GC">
+                <i class="fa fa-chevron-left"></i> GC日志详解2之Parallel GC
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+      <div id="disqus_thread">
+        <noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
+      </div>
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="枫秀天涯">
+            
+              <p class="site-author-name" itemprop="name">枫秀天涯</p>
+              <p class="site-description motion-element" itemprop="description">java,spring,分布式,数据库</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">149</span>
+                    <span class="site-state-item-name">日志</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  <a href="/categories/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">41</span>
+                    <span class="site-state-item-name">分类</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  <a href="/tags/index.html">
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">69</span>
+                    <span class="site-state-item-name">标签</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+            <div class="links-of-author motion-element">
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="https://github.com/fengxiutianya" title="GitHub &rarr; https://github.com/fengxiutianya" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i></a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  
+                  
+                  
+                    
+                  
+                  <a href="mailto:398757724@qq.com" title="E-Mail &rarr; mailto:398757724@qq.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i></a>
+                </span>
+              
+            </div>
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#正文"><span class="nav-text">正文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#年轻代（Minor-GC）"><span class="nav-text">年轻代（Minor GC）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#老年代"><span class="nav-text">老年代</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段1：Initial-Mark"><span class="nav-text">阶段1：Initial Mark</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段2-concurrent-Mark"><span class="nav-text">阶段2 concurrent Mark</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段3：concurrent-Preclean"><span class="nav-text">阶段3：concurrent Preclean</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段4：Concurrent-Abortable-Preclean"><span class="nav-text">阶段4：Concurrent Abortable Preclean</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段5：Final-Remark"><span class="nav-text">阶段5：Final Remark</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段6：Concurrent-Sweep"><span class="nav-text">阶段6：Concurrent Sweep</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段7：Concurrent-Reset"><span class="nav-text">阶段7：Concurrent Reset.</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 – <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">枫秀天涯</span>
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      网站总字数
+    </span>
+    
+    <span title="站点总字数">1.3m</span>
+  
+
+  
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      
+      总阅读时长
+    </span>
+    
+    <span title="站点阅读时长">19:18</span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+          <span id="scrollpercent"><span>0</span>%</span>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+    
+    
+  
+  <script color="0,0,255" opacity="0.5" zindex="-1" count="99" src="/lib/canvas-nest/canvas-nest.min.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/reading_progress/reading_progress.js"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/affix.js?v=6.7.0"></script>
+
+  <script src="/js/src/schemes/pisces.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+  
+
+  
+    <script>
+      var disqus_config = function () {
+        this.page.url = "http://fengxiutianya.top/posts/f38ed32c/";
+        this.page.identifier = "posts/f38ed32c/";
+        this.page.title = 'GC日志详解3之CMS';
+        };
+      function loadComments () {
+        var d = document, s = d.createElement('script');
+        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', '' + +new Date());
+        (d.head || d.body).appendChild(s);
+      }
+      
+        $(function () {
+          var offsetTop = $('#comments').offset().top - $(window).height();
+          if (offsetTop <= 0) {
+            // load directly when there's no a scrollbar
+            loadComments();
+          } else {
+            $(window).on('scroll.disqus_scroll', function () {
+              // offsetTop may changes because of manually resizing browser window or lazy loading images.
+              var offsetTop = $('#comments').offset().top - $(window).height();
+              var scrollTop = $(window).scrollTop();
+
+              // pre-load comments a bit? (margin or anything else)
+              if (offsetTop - scrollTop < 60) {
+                $(window).off('.disqus_scroll');
+                loadComments();
+              }
+            });
+          }
+        });
+      
+    </script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  
+  
+  <link rel="stylesheet" href="/lib/algolia-instant-search/instantsearch.min.css">
+
+  
+  
+  <script src="/lib/algolia-instant-search/instantsearch.min.js"></script>
+  
+
+  <script src="/js/src/algolia-search.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+  <script>
+    
+    function addCount(Counter) {
+      var $visitors = $(".leancloud_visitors");
+      var url = $visitors.attr('id').trim();
+      var title = $visitors.attr('data-flag-title').trim();
+
+      Counter('get', '/classes/Counter', { where: JSON.stringify({ url }) })
+        .done(function ({ results }) {
+          if (results.length > 0) {
+            var counter = results[0];
+            
+            Counter('put', `/classes/Counter/${counter.objectId}`, JSON.stringify({ time: { "__op":"Increment", "amount":1 } }))
+            
+            .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(counter.time + 1);
+            })
+            
+            .fail(function ({ responseJSON }) {
+                console.log('Failed to save Visitor num, with error message: ' + responseJSON.error);
+            })
+          } else {
+            
+              Counter('post', '/classes/Counter', JSON.stringify({ title: title, url: url, time: 1}))
+                .done(function () {
+                  var $element = $(document.getElementById(url));
+                  $element.find('.leancloud-visitors-count').text(1);
+                })
+                .fail(function () {
+                  console.log('Failed to create');
+                });
+            
+          }
+        })
+      .fail(function ({ responseJSON }) {
+        console.log('LeanCloud Counter Error:' + responseJSON.code + " " + responseJSON.error);
+      });
+    }
+    
+
+    $(function() {
+      $.get('https://app-router.leancloud.cn/2/route?appId=' + "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz")
+        .done(function ({ api_server }) {
+          var Counter = function (method, url, data) {
+            return $.ajax({
+              method: method,
+              url: `https://${api_server}/1.1${url}`,
+              headers: {
+                'X-LC-Id': "8rM8gj5HTRTSqBQdFyePed86-gzGzoHsz",
+                'X-LC-Key': "f92qb0ijeNp2joqk3ld6IlRW",
+                'Content-Type': 'application/json',
+              },
+              data: data,
+            });
+          };
+          
+          addCount(Counter);
+          
+        })
+    });
+  </script>
+
+
+
+  
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+      }
+      else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+  
+
+  
+  
+
+  
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+  <style>
+    .copy-btn {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 20px;
+      color: #333;
+      white-space: nowrap;
+      vertical-align: middle;
+      cursor: pointer;
+      background-color: #eee;
+      background-image: linear-gradient(#fcfcfc, #eee);
+      border: 1px solid #d5d5d5;
+      border-radius: 3px;
+      user-select: none;
+      outline: 0;
+    }
+
+    .highlight-wrap .copy-btn {
+      transition: opacity .3s ease-in-out;
+      opacity: 0;
+      padding: 2px 6px;
+      position: absolute;
+      right: 4px;
+      top: 8px;
+    }
+
+    .highlight-wrap:hover .copy-btn,
+    .highlight-wrap .copy-btn:focus {
+      opacity: 1
+    }
+
+    .highlight-wrap {
+      position: relative;
+    }
+  </style>
+  <script>
+    $('.highlight').each(function (i, e) {
+      var $wrap = $('<div>').addClass('highlight-wrap');
+      $(e).after($wrap);
+      $wrap.append($('<button>').addClass('copy-btn').append('复制').on('click', function (e) {
+        var code = $(this).parent().find('.code').find('.line').map(function (i, e) {
+          return $(e).text();
+        }).toArray().join('\n');
+        var ta = document.createElement('textarea');
+        var range = document.createRange(); //For Chrome
+        var sel = window.getSelection(); //For Chrome
+        var yPosition = window.pageYOffset || document.documentElement.scrollTop;
+        ta.style.top = yPosition + 'px'; //Prevent page scroll
+        ta.style.position = 'absolute';
+        ta.style.opacity = '0';
+        ta.value = code;
+        ta.textContent = code; //For FireFox
+        ta.contentEditable = true;
+        ta.readOnly = false;
+        document.body.appendChild(ta);
+        range.selectNode(ta);
+        sel.removeAllRanges();
+        sel.addRange(range);
+        ta.setSelectionRange(0, code.length);
+        var result = document.execCommand('copy');
+        
+          if (result) $(this).text('复制成功');
+          else $(this).text('复制失败');
+        
+        ta.blur(); //For iOS
+        $(this).blur();
+      })).on('mouseleave', function (e) {
+        var $b = $(this).find('.copy-btn');
+        setTimeout(function () {
+          $b.text('复制');
+        }, 300);
+      }).append(e);
+    })
+  </script>
+
+
+  
+
+  
+  
+  
+
+  <link rel="stylesheet" href="/lib/prettify/themes/atelier-estuary-light.min.css" type="text/css">
+
+<script src="/lib/prettify/prettify.js"></script>
+<script type="text/javascript">
+$(window).load(function(){
+  // 设置prettify
+  $('pre').addClass('prettyprint linenums');
+   prettyPrint();
+ })
+</script>
+<style>
+pre {
+  white-space:pre;
+  white-space:pre-wrap;
+  word-break:break-all;
+  word-wrap:break-word;
+}
+</style>
+
+
+
+
+</body>
+</html>

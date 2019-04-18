@@ -375,6 +375,208 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/f38ed32c/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/posts/f38ed32c/" class="post-title-link" itemprop="url">GC日志详解3之CMS</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-18 15:14:47 / 修改时间：21:10:27" itemprop="dateCreated datePublished" datetime="2019-04-18T15:14:47+08:00">2019-04-18</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/f38ed32c/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/f38ed32c/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/f38ed32c/" class="leancloud_visitors" data-flag-title="GC日志详解3之CMS">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">12k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">11 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是<strong>标记-清除</strong>算法。</p>
+<p>CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用<strong>标记-拷贝</strong>来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行来执行。但是应该注意，它仍然与应用程序线程竞争CPU时间。默认情况下，此GC算法使用的线程数等于计算机物理核心数的1/4。</p>
+<p>如果您的主要目标是延迟，这种组合在多核机器上是一个不错的选择。减少单个GC暂停的持续时间会直接影响终端用户使用应用程序的感受，从而使他们感觉应用程序响应更快。由于大多数时候GC消耗了一些CPU资源而没有执行应用程序的代码，因此CMS垃圾回收器通常比只运行Parallel GC的垃圾回收器的吞吐量要差一些。<br>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/posts/f38ed32c/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </p></div>
+
+    
+
+    
+    
+    
+
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/5319940a/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -420,7 +622,7 @@
                 
               
 
-              <time title="创建时间：2019-04-18 11:45:15 / 修改时间：15:03:23" itemprop="dateCreated datePublished" datetime="2019-04-18T11:45:15+08:00">2019-04-18</time>
+              <time title="创建时间：2019-04-18 11:45:15 / 修改时间：21:10:27" itemprop="dateCreated datePublished" datetime="2019-04-18T11:45:15+08:00">2019-04-18</time>
             
 
             
@@ -677,7 +879,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -917,7 +1119,7 @@ sys     0m0.000s
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1161,7 +1363,7 @@ sys     0m0.000s
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1399,7 +1601,7 @@ sys     0m0.000s
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1640,7 +1842,7 @@ sys     0m0.000s
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -1870,7 +2072,7 @@ sys     0m0.000s
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2123,7 +2325,7 @@ server {
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2369,7 +2571,7 @@ server {
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
+                <time title="修改时间：2019-04-18 21:10:27" itemprop="dateModified" datetime="2019-04-18T21:10:27+08:00">2019-04-18</time>
               
             
           </span>
@@ -2524,246 +2726,6 @@ server {
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/8650cc91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="枫秀天涯">
-      <meta itemprop="description" content="java,spring,分布式,数据库">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫秀天涯">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/posts/8650cc91/" class="post-title-link" itemprop="url">阿里春招实习面经：java开发</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-04-02 11:27:29" itemprop="dateCreated datePublished" datetime="2019-04-02T11:27:29+08:00">2019-04-02</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-04-18 15:03:23" itemprop="dateModified" datetime="2019-04-18T15:03:23+08:00">2019-04-18</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/面试/" itemprop="url" rel="index"><span itemprop="name">面试</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/posts/8650cc91/#comments" itemprop="discussionUrl">
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/8650cc91/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/posts/8650cc91/" class="leancloud_visitors" data-flag-title="阿里春招实习面经：java开发">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数：</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">1.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">2 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <p>先说一下，你们可能看到我的面经也会觉得很惊奇，为什么其他面经里面出现的问题，我这里几乎都没出现，而且面试流程也走的这么快。下面就看一下我的阿里春招面试奇葩之旅。</p>
-<h2 id="阿里一面-2019年03月28日"><a href="#阿里一面-2019年03月28日" class="headerlink" title="阿里一面 2019年03月28日"></a>阿里一面 2019年03月28日</h2><ol>
-<li><strong>你是怎么学习java</strong></li>
-<li><strong>你看过什么比较经典的java方面的书</strong></li>
-<li><strong>你觉得java中有什么类你很喜欢</strong></li>
-<li><strong>java中的锁</strong></li>
-<li><strong>自定义无锁队列，不能使用CAS</strong></li>
-<li><strong>JVM内存划分</strong></li>
-<li><strong>能不能自定义java.lang.String</strong>：考察java类加载机制</li>
-<li><strong>top k问题</strong></li>
-<li><strong>有什么想问他的，紧接着后面问了我一个你面试过了腾讯吗</strong>：我回答：不知道。这个很失水准。后面仔细想想，主要是自己当时因为最后一个topk问题没回答出来，脑子正处于蒙的阶段。
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/posts/8650cc91/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </li></ol></div>
-
-    
-
-    
-    
-    
-
-      
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2813,7 +2775,7 @@ server {
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">148</span>
+                    <span class="site-state-item-count">149</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3059,7 +3021,9 @@ server {
                     
                       
                     
-                    <span class="site-state-item-count">68</span>
+                      
+                    
+                    <span class="site-state-item-count">69</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3143,7 +3107,7 @@ server {
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:07</span>
+    <span title="站点阅读时长">19:18</span>
   
 </div>
 
