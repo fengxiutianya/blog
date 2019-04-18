@@ -12,7 +12,14 @@ $(window).load(function(){
    prettyPrint();
  })
 </script>
-
+<style>
+pre {
+  white-space:pre;
+  white-space:pre-wrap;
+  word-break:break-all;
+  word-wrap:break-word;
+}
+</style>
 {# 加入 highlight代码高亮#}
 {#
 <link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.12.0/styles/atom-one-dark.min.css">
