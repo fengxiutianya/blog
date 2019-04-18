@@ -6,8 +6,11 @@ tags:
   - GC日志
   - CMS
 abbrlink: f38ed32c
-date: 2019-04-18 15:14:47
 categories:
+  - java
+  - jvm
+  - GC
+date: 2019-04-18 15:14:47
 ---
 本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是**标记-清除**算法。
 
