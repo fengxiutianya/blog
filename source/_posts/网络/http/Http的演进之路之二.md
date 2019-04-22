@@ -37,7 +37,7 @@ Http0.9 到Http1.1的请求示意图如下：
 从方差数据来看，Close模式的波动要大于Keep-Alive模式。我们再从另一个角度看这个问题，从下面的数据可以看出：一个网络请求过程中DNS和Connection建连的过程会耗费很大的时间：
 ![upload successful](/images/pasted-215.png)
 从上面的这些数据可以看出长连接对于网络访问速度的重要性，这也是为何我们在多个场合提及Keep-Alive机制。包括后续的许多优化都是针对DNS、Connection建连这两个方面进行的。
-## tcp中的keep-alive
+## TCP中的keep-alive
 上面讲述了很多关于HTTP/1.1中Keep-Alive的特性，这里需要强调的一点是此处的Keep-Alive不同于TCP层的Keep-Alive。Http层的Keep-Alive主要是保持Client端与Server端的连接不会因为一次request请求的结束而被关闭，以此来实现连接复用的目的。而TCP层的Keep-Alive则更像一种保鲜机制，即当连接建立后，相关socket可以定期向对端发送心跳包来检查连接是否还有效，用户可以设置相关的参数，包括多久开始发送、每次发送的间隔、发送次数等。如果一直没有收到对端的响应，则认为连接已经断开并释放相关资源。正常的TCP关闭流程会通知对方连接已经关闭，但是如果是一些意外情况，例如拔掉网线、有一端设备宕机或重启，此时正在执行recv或者send操作的一方就会因为没有任何连接中断的通知而一直等待下去。为了解决这个问题，引入了TCP的Keep-Alive机制。
 
 一般情况下TCP的Keep-Alive机制是关闭的且默认参数不一定满足每个用户的需求，需要用户自行调整：
@@ -73,7 +73,7 @@ echo 2 > /proc/sys/net/ipv4/tcp_keepalive_probes
 ![upload successful](/images/pasted-217.png)
 具体tcp的保活机制可以参考这篇文章[tcp保活机制](/posts/b56667c1/)
 ## pipeline
-pipeline机制是在**一条connection**上多个http request不需要等待response就可以连续发送的技术。之前的request请求需要等待response返回后才能发起下一个request，而pipeline则废除了这项限制，新的request可以不必等待之前request的response返回就可以立即发送：
+pipeline机制是在**一条connection**上发送多个http请求而不需要等待对应的响应返回的技术。之前的request请求需要等待response返回后才能发起下一个request，而pipeline则废除了这项限制，新的request可以不必等待之前request的response返回就可以立即发送：
 ![upload successful](/images/pasted-219.png)
 从上图中可以看出，在使用pipeline机制后，客户端无需等待上一个资源返回后就可以在同一条连接上申请下一个资源。由此可见pipeline技术可以提高每条connection的使用效率，在理想情况下，所有资源的获取仅仅需要一个RTT时长（Round Trip Time），而非pipeline的情况下，所有资源获取需要N个RTT时长（N表示资源个数）。
 在理想情况下，所有资源的获取仅仅需要一个RTT时长，这看上去是非常大的优化和诱惑，但为何主流浏览器上默认下该功能都是关闭状态呢？答案只有一个：[队头阻塞](http://en.wikipedia.org/wiki/Head-of-line_blocking)。我们上面仅看到了client端可以不必等待上一个response返回即可发送下一个request，但在server端必须根据收到的request的顺序来返回response，这个是因为HTTP是一个无状态的协议，每条request无法知道哪条response是返回给他的。可以参见HTTP/1.1的[RFC2616](www.w3.org/Protocols/rfc2616/rfc2616-sec8.html)中这条解释：
@@ -82,7 +82,7 @@ pipeline机制是在**一条connection**上多个http request不需要等待resp
 
 从这个解释可以看出，如果server端来处理pipeline请求的时候出现问题，那么排在后面的request都会被block。以下是一些产品使用pipeline后产生的问题：[Safari使用pipeline后发生了图片互换](bytes.schibsted.com/safari-on-ios-5-randomly-switches-images/)，[AFNetworking在下载文件时遇到的问题](github.com/AFNetworking/AFNetworking/issues/528)。因此，如果既想要在一个Connection连接中传递多种数据，又想要避免队头阻塞的问题，那么后面讲到的HTTP/2会解决这个问题。
 ![upload successful](/images/pasted-220.png)
-从上图可以看到虽然开启了pipeline功能，资源仍然是OneByOne的被接收到的。而HTTP/2的Multiplexing功能则可以真正意义上实现数据的同时发送与同时接收，不用再被队头阻塞限制。不过HTTP/2也只是解决了应用层协议的队头阻塞问题，而传层的队头阻塞问题没有被解决（TCP的队头阻塞），因此就有了QUIC协议，这也是后话了。
+从上图可以看到虽然开启了pipeline功能，资源仍然是OneByOne的被接收到的。而HTTP/2的Multiplexing功能则可以真正意义上实现数据的同时发送与同时接收，不用再被队头阻塞限制。不过HTTP/2也只是解决了应用层协议的队头阻塞问题，而传输层的队头阻塞问题没有被解决（TCP的队头阻塞），因此就有了QUIC协议，这也是后话了。
 此外关于pipeline还需要注意的是：
 - 只有幂等的方法才能使用pipeline，例如GET和HEAD请求。而由于POST是非幂等的，因此不能使用pipeline；关于幂等性可以参见[这里](blog.csdn.net/zjkC050818/article/details/78799386)。谓幂等就是多次执行对资源的影响，和一次执行对资源的影响相同。幂等保证在pipeline中的所有请求可以不必关心发送次序和到达服务器后执行的次序，即使多次请求，返回的结果一直是一样的。反之，若其中包含了不幂等的请求，两个请求，第一个是更新用户张三信息，第二请求是获取更新后的张三最新信息。 他们是按照次序顺序在服务器端执行的：1先执行，2紧接着执行。 但是**后一个请求不会等前一个请求完成才执行**， 即可能 获取张三最新信息的2号请求先**执行完成**，这样返回的信息就不是期望的了。
 - 新建立的连接由于无法得知服务端是否支持HTTP/1.1，因此也不能使用pipeline，即只能重用之前的连接时才能使用pipeline
@@ -120,7 +120,7 @@ Cache机制需要解决的问题包括：
 
 在此列出了Cache相关的头域已经他们所对应的功能：
 ![upload successful](/images/pasted-226.png)
-**Cache-Control**
+### **Cache-Control**
 Cache-Control是Cache最重要的策略机制，通过Cache-Control与不同值的组合可以实现Cache的存储策略、访问策略以及过期策略。当指定使用public时，表明Cache资源可以被所有用户访问。它实现了上面提到的第一个功能。
 ``` http
 Cache-Control: public
@@ -204,9 +204,7 @@ that
 
 0
 ```
-
 如果一个Http Response Header的中包含“Transfer-Encoding: chunked”头域，那么其消息体由数量未定的块组成且以最后一个大小为0的块结束。每一个非空块都以该块包含的字节数开始，跟随一个CRLF（回车即换行），然后是数据本身，最后以CRLF结束本块。最后一个块是单行，由块大小（0）以及CRLF组成。整个消息最后以CRLF结尾。如上图所示，解析如下：
-
 ```http
 前两个块的数据中包含有显示的\r\n字符
 "Data in the first chunk\r\n"   ==> 25 (0x19)
@@ -214,10 +212,8 @@ that
 "after "                        ==> 6 (0x06)
 "that"                          ==> 4 (0x04)
 ```
-
 以下是一个具体的示例：
-
 ![upload successful](/images/pasted-233.png)
-
+这一块具体可以参考[Http值传输编码(Transfer-Encoding)](https://fengxiutianya.top/posts/ce94709/)
 ## 参考
 1. [lonnieZ http的演进之路](https://www.zhihu.com/people/lonniez/activities)
