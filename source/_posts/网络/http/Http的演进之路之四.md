@@ -8,14 +8,8 @@ title: Http的演进之路之四
 abbrlink: d6ee44af
 date: 2019-03-10 10:23:00
 ---
-# Http的演进之路之四
-
-## ## 声明，此系列文章转载自[lonnieZ http的演进之路](https://www.zhihu.com/people/lonniez/activities)
-
 ## **HTTP/1.1**
-
 ## 同源策略与跨域访问
-
 同源策略（Same-Origin Policy）是浏览器访问网页过程中最基础的安全策略。它仍然是由大名鼎鼎的网景公司提出的（网景公司对HTTP、SSL等协议的制定做出了巨大贡献，只是在随后的浏览器大战中输给了以垄断见长的微软IE）。所谓“同源”是指浏览器访问目标url的域名（domain）、协议（protocol）、端口（port）这三个要素是相同的。所谓“同源策略”是指A页面里的脚本通过[XHR](http://link.zhihu.com/?target=https%3A//developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest)和[Fetch](http://link.zhihu.com/?target=https%3A//developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API)等方式加载B页面资源时，如果发现B页面与A页面不是“同源”的，则会禁止访问（准确的说是对跨域请求的返回结果进行屏蔽）。下图显示了一个由script发出的非同源请求，数据最终会在browser端被屏蔽。
 <!-- more -->
 
@@ -44,11 +38,11 @@ xhr.send(null);
 
 ![upload successful](/images/pasted-242.png)
 
-再通过chrome浏览器的开发者工具中的console可以看到如下信息。从红色信息中可以看到，由于跨域请求的资源 [http://api.yunos.com](http://link.zhihu.com/?target=http%3A//api.yunos.com)的response header中没有Access-Control-Allow-Origin头域（后面会讲到），因此本次跨域请求的返回结果被屏蔽。
+再通过chrome浏览器的开发者工具中的console可以看到如下信息。从红色信息中可以看到，由于跨域请求的资源 [http://api.yunos.com](http://api.yunos.com)的response header中没有Access-Control-Allow-Origin头域（后面会讲到），因此本次跨域请求的返回结果被屏蔽。
 
 ![upload successful](/images/pasted-243.png)
 
-为了进一步验证数据是在浏览器侧被屏蔽的，我们通过wireshark进行了抓包处理，从抓包中可以清楚的看到[http://api.yunos.com](http://link.zhihu.com/?target=http%3A//api.yunos.com)的内容已经下载到了客户端：
+为了进一步验证数据是在浏览器侧被屏蔽的，我们通过wireshark进行了抓包处理，从抓包中可以清楚的看到[http://api.yunos.com](http://api.yunos.com)的内容已经下载到了客户端：
 
 ![upload successful](/images/pasted-244.png)
 
@@ -70,7 +64,7 @@ xhr.send(null);
 
 如果一个请求中没有包含任何自定义的请求头，并且他所使用的HTTP方法是GET、HEAD或POST之一，并且方法为POST时，其Content-Type需要是`application/x-www-form-urlencoded`，`multipart/form-data`或`text/plain`之一。
 
-下面是一个Simple Request的示例。此处是在[arunranga](http://link.zhihu.com/?target=http%3A//arunranga.com/examples/access-control/simpleXSInvocation.html)这个域名里面通过一个XHR请求GET申请[aruner](http://link.zhihu.com/?target=http%3A//aruner.net/resources/access-control-with-get/)里面的资源。
+下面是一个Simple Request的示例。此处是在[arunranga](http://arunranga.com/examples/access-control/simpleXSInvocation.html)这个域名里面通过一个XHR请求GET申请[aruner](http://aruner.net/resources/access-control-with-get/)里面的资源。
 
 ```javascript
 <script type="text/javascript">
@@ -84,7 +78,7 @@ xhr.send(null);
 </script>
 ```
 
-通过chrome的开发者工具来看具体的request请求。当在arunranga中发起对[http://aruner.net](http://link.zhihu.com/?target=http%3A//aruner.net)的资源的请求后，[http://aruner.net](http://link.zhihu.com/?target=http%3A//aruner.net)返回的response header中添加了Access-Control-Allow-Origin头域并告知可以允许[http://arunrange.com](http://link.zhihu.com/?target=http%3A//arunrange.com)使用该资源。
+通过chrome的开发者工具来看具体的request请求。当在arunranga中发起对[http://aruner.net](http://aruner.net)的资源的请求后，[http://aruner.net](http://aruner.net)返回的response header中添加了Access-Control-Allow-Origin头域并告知可以允许[http://arunrange.com](http://arunrange.com)使用该资源。
 
 ![upload successful](/images/pasted-246.png)
 
@@ -98,7 +92,7 @@ xhr.send(null);
 
 如果一个请求包含了任何自定义的头域，或者它使用的HTTP方法是GET、HEAD、POST之外的任何一个方法，或者POST请求的Content-Type不是application/x-www-form-urlencoded，multipart/form-data或text/plain之一。
 
-下面是一个Preflight Request的示例。此处是在[arunranga](http://link.zhihu.com/?target=http%3A//arunranga.com/examples/access-control/preflightInvocation.html)这个域名里面通过一个XHR请求POST一段数据至[aruner](http://link.zhihu.com/?target=http%3A//aruner.net/resources/access-control-with-post-preflight/)端。
+下面是一个Preflight Request的示例。此处是在[arunranga](http://arunranga.com/examples/access-control/preflightInvocation.html)这个域名里面通过一个XHR请求POST一段数据至[aruner](http://aruner.net/resources/access-control-with-post-preflight/)端。
 
 ```script
 <script type="text/javascript">
@@ -133,14 +127,14 @@ xhr.send(null);
 
 如果一个跨域请求中包含了当前页面的用户凭证（例如Cookie信息等）。
 
-下面是一个的示例。当将XHR的withCredentials设置为“true”以后，则会想服务端发送当前页面的Cookie信息。此处是在arunranga这个域名里面通过一个XHR请求GET申请[aruner](http://link.zhihu.com/?target=http%3A//aruner.net/resources/access-control-with-credentials/)里面的资源并要求携带本页面的Cookie信息。
+下面是一个的示例。当将XHR的withCredentials设置为“true”以后，则会想服务端发送当前页面的Cookie信息。此处是在arunranga这个域名里面通过一个XHR请求GET申请[aruner](http://aruner.net/resources/access-control-with-credentials/)里面的资源并要求携带本页面的Cookie信息。
 
 ```javascript
 <script type="text/javascript"> 
     var invocation = new XMLHttpRequest(); 
-    var url = 'http://aruner.net/resources/access-control-with-credentials/'; 
+    var url = 'http://aruner.net/resources/access-control-with-credentials/';       
      
-    invocation.open('GET', url, true);     
+    invocation.open('GET', url, true);      
     invocation.withCredentials = "true"; // 向服务器发送Cookie信息     
     invocation.onreadystatechange = handler;     
     invocation.send();
@@ -161,3 +155,6 @@ xhr.send(null);
 **相关头域**
 
 ![upload successful](/images/pasted-253.png)
+
+## 参考
+1. [lonnieZ http的演进之路](https://www.zhihu.com/people/lonniez/activities)
