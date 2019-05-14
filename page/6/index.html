@@ -375,6 +375,244 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/37f5aa4d/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/posts/37f5aa4d/" class="post-title-link" itemprop="url">HTTP Keep-Alive</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-10 22:46:00" itemprop="dateCreated datePublished" datetime="2019-03-10T22:46:00+08:00">2019-03-10</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/" itemprop="url" rel="index"><span itemprop="name">网络</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/http/" itemprop="url" rel="index"><span itemprop="name">http</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/37f5aa4d/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/37f5aa4d/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/37f5aa4d/" class="leancloud_visitors" data-flag-title="HTTP Keep-Alive">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">7.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">7 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="HTTP-Keep-Alive是什么？如何工作？"><a href="#HTTP-Keep-Alive是什么？如何工作？" class="headerlink" title="HTTP Keep-Alive是什么？如何工作？"></a>HTTP Keep-Alive是什么？如何工作？</h1><p>在http早期，每个http请求都要求打开一个tpc socket连接，并且使用一次之后就断开这个tcp连接。使用keep-alive可以改善这种状态，即在一次TCP连接中可以持续发送多份数据而不会断开连接。通过使用keep-alive机制，可以减少tcp连接建立次数，也意味着可以减少TIME_WAIT状态连接，以此提高性能和提高http服务器的吞吐率(更少的tcp连接意味着更少的系统内核调用,socket的accept()和close()调用)。</p>
+<p>但是，<a href="http://www.nowamagic.net/academy/tag/keep-alive" target="_blank" rel="noopener">keep-alive</a>并不是免费的午餐,长时间的tcp连接容易导致系统资源无效占用。配置不当的keep-alive，有时比重复利用连接带来的损失还更大。所以，正确地设置keep-alive timeout时间非常重要。<br>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/posts/37f5aa4d/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </p></div>
+
+    
+
+    
+    
+    
+
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/6fbc205f/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -437,7 +675,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -679,7 +917,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -917,7 +1155,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -1154,7 +1392,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -1391,7 +1629,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -1629,7 +1867,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -1873,7 +2111,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -2111,7 +2349,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -2348,7 +2586,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
+                <time title="修改时间：2019-05-14 16:30:24" itemprop="dateModified" datetime="2019-05-14T16:30:24+08:00">2019-05-14</time>
               
             
           </span>
@@ -2509,248 +2747,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/41df0a9f/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="枫秀天涯">
-      <meta itemprop="description" content="java,spring,分布式,数据库">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫秀天涯">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/posts/41df0a9f/" class="post-title-link" itemprop="url">HTTP协议 简单介绍</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-03-10 07:25:00" itemprop="dateCreated datePublished" datetime="2019-03-10T07:25:00+08:00">2019-03-10</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-14 16:27:04" itemprop="dateModified" datetime="2019-05-14T16:27:04+08:00">2019-05-14</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/" itemprop="url" rel="index"><span itemprop="name">网络</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/网络/http/" itemprop="url" rel="index"><span itemprop="name">http</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/posts/41df0a9f/#comments" itemprop="discussionUrl">
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/41df0a9f/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/posts/41df0a9f/" class="leancloud_visitors" data-flag-title="HTTP协议 简单介绍">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数：</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">9.8k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">9 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="HTTP协议-简单介绍"><a href="#HTTP协议-简单介绍" class="headerlink" title="HTTP协议 简单介绍"></a>HTTP协议 简单介绍</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><ol>
-<li>HTTP协议简介</li>
-<li>HTTP之URL与URI</li>
-<li>HTTP之请求与响应格式</li>
-<li>HTTP请求方法</li>
-<li>HTTP状态吗
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/posts/41df0a9f/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </li></ol></div>
-
-    
-
-    
-    
-    
-
-      
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2800,7 +2796,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">155</span>
+                    <span class="site-state-item-count">156</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3070,7 +3066,9 @@
                     
                       
                     
-                    <span class="site-state-item-count">79</span>
+                      
+                    
+                    <span class="site-state-item-count">80</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3154,7 +3152,7 @@
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:36</span>
+    <span title="站点阅读时长">19:37</span>
   
 </div>
 
