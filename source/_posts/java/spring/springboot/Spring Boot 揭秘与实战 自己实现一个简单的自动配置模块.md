@@ -1,5 +1,5 @@
 ---
-title: Spring Boot 实现一个简单的自动配置模块
+title: Spring Boot 之 实现一个简单的自动配置模块
 tags:
   - springboot
 categories:
