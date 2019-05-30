@@ -1,10 +1,9 @@
 ## 任务
 ### 移除书签
 #### java
-1. [comparator](https://mp.weixin.qq.com/s/KjCOIPqUbaqyHAu2sEKFhw)
-2. [Unsafe](https://mp.weixin.qq.com/s/h3MB8p0sEA7VnrMXFq9NBA)
-3. [分布式锁](https://mp.weixin.qq.com/s/y_Uw3P2Ll7wvk_j5Fdlusw)
-4. [JMM](https://www.infoq.cn/profile/1278512)
+1. [Unsafe](https://mp.weixin.qq.com/s/h3MB8p0sEA7VnrMXFq9NBA)
+2. [分布式锁](https://mp.weixin.qq.com/s/y_Uw3P2Ll7wvk_j5Fdlusw)
+3. [JMM](https://www.infoq.cn/profile/1278512)
 #### JUC
 1. [Java并发工具类之LongAdder原理总结](https://juejin.im/entry/5a5b7e8a51882573443ca7ee)
 4. [JAVA并发编程J.U.C学习总结](https://www.cnblogs.com/chenpi/p/5614290.html)
@@ -18,10 +17,9 @@
 5. [聊一聊Spring中的线程安全性](https://juejin.im/post/5a0045ef5188254de169968e)
 6. [Spring中循环引用的处理-3](https://www.iflym.com/index.php/code/201208280003.html)
 #### http
-1. [cors](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Access_control_CORS)
-2. [TCP IP 底层队列](https://segmentfault.com/a/1190000018448806)
-3. [金融通信框架实践](https://mp.weixin.qq.com/s/JRsbK1Un2av9GKmJ8DK7IQ)
-4. [高性能网络编程](https://blog.csdn.net/russell_tao/column/info/high-perf-network)
+1. [TCP IP 底层队列](https://segmentfault.com/a/1190000018448806)
+2. [金融通信框架实践](https://mp.weixin.qq.com/s/JRsbK1Un2av9GKmJ8DK7IQ)
+3. [高性能网络编程](https://blog.csdn.net/russell_tao/column/info/high-perf-network)
 #### go
 1. [go 常量](https://blog.golang.org/constants)
 2. [go iota](https://segmentfault.com/a/1190000000656284#articleHeader4)
