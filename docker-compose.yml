@@ -2,10 +2,17 @@ version: "3"
 services:
   webapp:
     container_name: hexo
+<<<<<<< HEAD
     image: registry.cn-hangzhou.aliyuncs.com/fengxiu/node
     # build:
     #   context: .
     #   dockerfile: Dockerfile
+=======
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    image: registry.cn-hangzhou.aliyuncs.com/fengxiu/node
+>>>>>>> 53cf80a92263f3f4c45068fa209ce9511cee7988
     working_dir: /root/hexo
     command: "npm run start"
     volumes:

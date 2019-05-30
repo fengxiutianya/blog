@@ -16,6 +16,7 @@
 4. [深度解析Spring5源码](https://www.jianshu.com/c/1a1b1d560427?utm_campaign=haruki&utm_content=note&utm_medium=reader_share&utm_source=weixin)
 5. [聊一聊Spring中的线程安全性](https://juejin.im/post/5a0045ef5188254de169968e)
 6. [Spring中循环引用的处理-3](https://www.iflym.com/index.php/code/201208280003.html)
+7. [SpringBoot2 | SpringBoot启动流程](https://blog.csdn.net/woshilijiuyi/article/details/82350057)
 #### http
 1. [TCP IP 底层队列](https://segmentfault.com/a/1190000018448806)
 2. [金融通信框架实践](https://mp.weixin.qq.com/s/JRsbK1Un2av9GKmJ8DK7IQ)
