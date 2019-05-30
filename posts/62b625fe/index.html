@@ -105,18 +105,18 @@
 
 
 
-  <meta name="description" content="Spring Boot 实现一个简单的自动配置模块我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
+  <meta name="description" content="我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
 <meta name="keywords" content="springboot">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Spring Boot 之 实现一个简单的自动配置模块">
+<meta property="og:title" content="Spring Boot之实现一个简单的自动配置模块">
 <meta property="og:url" content="http://fengxiutianya.top/posts/62b625fe/index.html">
 <meta property="og:site_name" content="枫秀天涯">
-<meta property="og:description" content="Spring Boot 实现一个简单的自动配置模块我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
+<meta property="og:description" content="我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-05-16T11:20:38.066Z">
+<meta property="og:updated_time" content="2019-05-30T07:41:24.838Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Spring Boot 之 实现一个简单的自动配置模块">
-<meta name="twitter:description" content="Spring Boot 实现一个简单的自动配置模块我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
+<meta name="twitter:title" content="Spring Boot之实现一个简单的自动配置模块">
+<meta name="twitter:description" content="我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。">
 
 
 
@@ -133,7 +133,7 @@
   };
 </script>
 
-  <title>Spring Boot 之 实现一个简单的自动配置模块 | 枫秀天涯</title>
+  <title>Spring Boot之实现一个简单的自动配置模块 | 枫秀天涯</title>
   
 
 
@@ -403,7 +403,7 @@
 
         
         
-          <h2 class="post-title" itemprop="name headline">Spring Boot 之 实现一个简单的自动配置模块
+          <h2 class="post-title" itemprop="name headline">Spring Boot之实现一个简单的自动配置模块
 
               
             
@@ -446,7 +446,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-16 19:20:38" itemprop="dateModified" datetime="2019-05-16T19:20:38+08:00">2019-05-16</time>
+                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
               
             
           </span>
@@ -502,7 +502,7 @@
 
           
           
-             <span id="/posts/62b625fe/" class="leancloud_visitors" data-flag-title="Spring Boot 之 实现一个简单的自动配置模块">
+             <span id="/posts/62b625fe/" class="leancloud_visitors" data-flag-title="Spring Boot之实现一个简单的自动配置模块">
                <span class="post-meta-divider">|</span>
                <span class="post-meta-item-icon">
                  <i class="fa fa-eye"></i>
@@ -527,7 +527,7 @@
                 
                   <span class="post-meta-item-text">本文字数：</span>
                 
-                <span title="本文字数">7.8k</span>
+                <span title="本文字数">7.7k</span>
               
 
               
@@ -561,7 +561,7 @@
       
 
       
-        <h1 id="Spring-Boot-实现一个简单的自动配置模块"><a href="#Spring-Boot-实现一个简单的自动配置模块" class="headerlink" title="Spring Boot 实现一个简单的自动配置模块"></a>Spring Boot 实现一个简单的自动配置模块</h1><p>我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。</p>
+        <p>我们知道在使用springboot的时候，都会我们只需要在application.yml或者application.properties中指定配置参数就可以使用，那这是如何实现的，本篇文章就通过一个简单例子来解释springboot是如何实现自动配置。</p>
 <a id="more"></a>
 <p>假设，现在项目需要一个功能，需要自动记录项目发布者的相关信息，我们如何通过 Spring Boot 的自动配置，更好的实现功能呢？</p>
 <h3 id="maven-环境搭建"><a href="#maven-环境搭建" class="headerlink" title="maven 环境搭建"></a>maven 环境搭建</h3><pre><code class="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -791,12 +791,12 @@ custom.author = zhangke
   <!-- JS库 sweetalert 可修改路径 -->
   <script src="https://cdn.bootcss.com/jquery/2.0.0/jquery.min.js"></script>
   <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-  <p><span>本文标题:</span><a href="/posts/62b625fe/">Spring Boot 之 实现一个简单的自动配置模块</a></p>
+  <p><span>本文标题:</span><a href="/posts/62b625fe/">Spring Boot之实现一个简单的自动配置模块</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年03月11日 - 06:46</p>
-  <p><span>最后更新:</span>2019年05月16日 - 19:20</p>
+  <p><span>最后更新:</span>2019年05月30日 - 15:41</p>
   <p><span>原始链接:</span>
-     <a href="/posts/62b625fe/" title="Spring Boot 之 实现一个简单的自动配置模块">Spring Boot 之 实现一个简单的自动配置模块</a>
+     <a href="/posts/62b625fe/" title="Spring Boot之实现一个简单的自动配置模块">Spring Boot之实现一个简单的自动配置模块</a>
     <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/62b625fe/" aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
@@ -935,7 +935,7 @@ custom.author = zhangke
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">156</span>
+                    <span class="site-state-item-count">157</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -1207,7 +1207,9 @@ custom.author = zhangke
                     
                       
                     
-                    <span class="site-state-item-count">80</span>
+                      
+                    
+                    <span class="site-state-item-count">81</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -1265,7 +1267,7 @@ custom.author = zhangke
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Spring-Boot-实现一个简单的自动配置模块"><span class="nav-text">Spring Boot 实现一个简单的自动配置模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#maven-环境搭建"><span class="nav-text">maven 环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参数配置"><span class="nav-text">参数配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单服务类–自动记录项目发布者的相关信息"><span class="nav-text">简单服务类–自动记录项目发布者的相关信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自动配置的核心-自动配置类"><span class="nav-text">自动配置的核心 - 自动配置类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spring-factories-不要遗漏"><span class="nav-text">spring.factories 不要遗漏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#功能打包与配置依赖"><span class="nav-text">功能打包与配置依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试，测试"><span class="nav-text">测试，测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#继续完善代码–配置元数据"><span class="nav-text">继续完善代码–配置元数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#maven-环境搭建"><span class="nav-text">maven 环境搭建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参数配置"><span class="nav-text">参数配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#简单服务类–自动记录项目发布者的相关信息"><span class="nav-text">简单服务类–自动记录项目发布者的相关信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自动配置的核心-自动配置类"><span class="nav-text">自动配置的核心 - 自动配置类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#spring-factories-不要遗漏"><span class="nav-text">spring.factories 不要遗漏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#功能打包与配置依赖"><span class="nav-text">功能打包与配置依赖</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#测试，测试"><span class="nav-text">测试，测试</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#继续完善代码–配置元数据"><span class="nav-text">继续完善代码–配置元数据</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考"><span class="nav-text">参考</span></a></li></ol></div>
             
 
           </div>
@@ -1308,7 +1310,7 @@ custom.author = zhangke
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:37</span>
+    <span title="站点阅读时长">19:42</span>
   
 </div>
 
@@ -1450,7 +1452,7 @@ custom.author = zhangke
       var disqus_config = function () {
         this.page.url = "http://fengxiutianya.top/posts/62b625fe/";
         this.page.identifier = "posts/62b625fe/";
-        this.page.title = 'Spring Boot 之 实现一个简单的自动配置模块';
+        this.page.title = 'Spring Boot之实现一个简单的自动配置模块';
         };
       function loadComments () {
         var d = document, s = d.createElement('script');

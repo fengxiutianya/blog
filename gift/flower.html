@@ -12,21 +12,6 @@
     </div>
 
     <script type="text/javascript">
-        !function () {
-            //页面一打开就执行，放入ready是为了layer所需配件（css、扩展模块）加载完毕
-            layer.ready(function () {
-                layer.open({
-                    type: 2,
-                    title: '欢迎页',
-                    maxmin: true,
-                    area: ['800px', '500px'],
-                    content: 'http://layer.layui.com/test/welcome.html',
-                    end: function () {
-                        layer.tips('Hi', '#about', { tips: 1 })
-                    }
-                });
-            });
-        }
         var canvas = document.getElementsByTagName('canvas')[0];
         var context = canvas.getContext('2d');
 
