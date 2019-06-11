@@ -1,0 +1,8 @@
+{
+    // "workbench.colorTheme": "Default Light+",
+    "editor.fontSize": 14,
+    "markdown-preview-enhanced.imageFolderPath": "/source/images",
+    "markdown.extension.showExplorer": true,
+    "markdown.extension.tableFormatter.enabled": false,
+    "markdown.extension.tableFormatter.normalizeIndentation": false
+}

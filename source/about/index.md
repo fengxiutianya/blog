@@ -47,6 +47,8 @@
 3. [分布式限流技巧](https://jinnianshilongnian.iteye.com/blog/2305117)
 4. [亿级流量系统架构之如何保证百亿流量下的数据一致性（上）【石杉的架构笔记】](https://mp.weixin.qq.com/s/hh-kpRLwKRLLK8fG-5jzTQ)
 5. [分布式事务中间件 Fescar - 全局写排它锁解读](https://mp.weixin.qq.com/s/r3Zg_ORiyMubWkjjy-Srvg)
+6. [分布式ID](https://juejin.im/post/5bb0217ef265da0ac2567b42#heading-6)
+7. [Leaf——美团点评分布式ID生成系统](https://tech.meituan.com/2017/04/21/mt-leaf.html)
 
 
 ### 需要整理的知识点
