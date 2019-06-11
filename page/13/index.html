@@ -384,6 +384,260 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/2b388fc7/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="枫秀天涯">
+      <meta itemprop="description" content="java,spring,分布式,数据库">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="枫秀天涯">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/posts/2b388fc7/" class="post-title-link" itemprop="url">spring源码解析之 09bean 标签：meta、lookup-method、replace-method</a>
+              
+            
+          </h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-14 05:19:00" itemprop="dateCreated datePublished" datetime="2019-01-14T05:19:00+08:00">2019-01-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">更新于</span>
+                
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
+
+                
+                
+                  ，
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/posts/2b388fc7/#comments" itemprop="discussionUrl">
+                
+                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/2b388fc7/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+             <span id="/posts/2b388fc7/" class="leancloud_visitors" data-flag-title="spring源码解析之 09bean 标签：meta、lookup-method、replace-method">
+               <span class="post-meta-divider">|</span>
+               <span class="post-meta-item-icon">
+                 <i class="fa fa-eye"></i>
+               </span>
+               
+                 <span class="post-meta-item-text">阅读次数：</span>
+               
+                 <span class="leancloud-visitors-count"></span>
+             </span>
+          
+
+          
+
+          
+            <div class="post-symbolscount">
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-file-word-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">本文字数：</span>
+                
+                <span title="本文字数">8.3k</span>
+              
+
+              
+                <span class="post-meta-divider">|</span>
+              
+
+              
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-clock-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
+                
+                <span title="阅读时长">8 分钟</span>
+              
+            </div>
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h1 id="spring源码解析之-09bean-标签：meta、lookup-method、replace-method"><a href="#spring源码解析之-09bean-标签：meta、lookup-method、replace-method" class="headerlink" title="spring源码解析之 09bean 标签：meta、lookup-method、replace-method"></a>spring源码解析之 09bean 标签：meta、lookup-method、replace-method</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
+<li>meta 子元素解析</li>
+<li>lookup-method 子元素解析</li>
+<li>replace-method子元素解析
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/posts/2b388fc7/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </li></ol></div>
+
+    
+
+    
+    
+    
+
+      
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/48fb5eaf/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -446,7 +700,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -701,7 +955,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -955,7 +1209,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -1206,7 +1460,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -1461,7 +1715,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -1722,7 +1976,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -1975,7 +2229,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -2234,7 +2488,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -2484,7 +2738,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
+                <time title="修改时间：2019-06-11 15:44:20" itemprop="dateModified" datetime="2019-06-11T15:44:20+08:00">2019-06-11</time>
               
             
           </span>
@@ -2649,263 +2903,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/1284c29c/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="枫秀天涯">
-      <meta itemprop="description" content="java,spring,分布式,数据库">
-      <meta itemprop="image" content="/images/avatar.jpg">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="枫秀天涯">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h2 class="post-title" itemprop="name headline">
-                
-                
-                <a href="/posts/1284c29c/" class="post-title-link" itemprop="url">Spring源码分析之 02IOC原理</a>
-              
-            
-          </h2>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-
-            
-            
-            
-
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-
-              
-                
-              
-
-              <time title="创建时间：2019-01-07 03:35:00" itemprop="dateCreated datePublished" datetime="2019-01-07T03:35:00+08:00">2019-01-07</time>
-            
-
-            
-              
-
-              
-                
-                <span class="post-meta-divider">|</span>
-                
-
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-calendar-check-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">更新于</span>
-                
-                <time title="修改时间：2019-05-30 15:41:24" itemprop="dateModified" datetime="2019-05-30T15:41:24+08:00">2019-05-30</time>
-              
-            
-          </span>
-
-          
-            <span class="post-category">
-            
-              <span class="post-meta-divider">|</span>
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">分类于</span>
-              
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/" itemprop="url" rel="index"><span itemprop="name">java</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/" itemprop="url" rel="index"><span itemprop="name">spring</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/" itemprop="url" rel="index"><span itemprop="name">spring 源码分析</span></a></span>
-
-                
-                
-                  ，
-                
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/java/spring/spring-源码分析/SpringCore/" itemprop="url" rel="index"><span itemprop="name">SpringCore</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-            
-              <span class="post-comments-count">
-                <span class="post-meta-divider">|</span>
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-comment-o"></i>
-                </span>
-                <a href="/posts/1284c29c/#comments" itemprop="discussionUrl">
-                
-                  <span class="post-comments-count disqus-comment-count" data-disqus-identifier="posts/1284c29c/" itemprop="commentCount"></span>
-                </a>
-              </span>
-            
-          
-
-          
-          
-             <span id="/posts/1284c29c/" class="leancloud_visitors" data-flag-title="Spring源码分析之 02IOC原理">
-               <span class="post-meta-divider">|</span>
-               <span class="post-meta-item-icon">
-                 <i class="fa fa-eye"></i>
-               </span>
-               
-                 <span class="post-meta-item-text">阅读次数：</span>
-               
-                 <span class="leancloud-visitors-count"></span>
-             </span>
-          
-
-          
-
-          
-            <div class="post-symbolscount">
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-file-word-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">本文字数：</span>
-                
-                <span title="本文字数">3.3k</span>
-              
-
-              
-                <span class="post-meta-divider">|</span>
-              
-
-              
-                <span class="post-meta-item-icon">
-                  <i class="fa fa-clock-o"></i>
-                </span>
-                
-                  <span class="post-meta-item-text">阅读时长 &asymp;</span>
-                
-                <span title="阅读时长">3 分钟</span>
-              
-            </div>
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          <h1 id="Spring源码解析之-02-IOC原理"><a href="#Spring源码解析之-02-IOC原理" class="headerlink" title="Spring源码解析之 02 IOC原理"></a>Spring源码解析之 02 IOC原理</h1><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><ol>
-<li>Ioc理论背景</li>
-<li>什么是控制反转 (IoC)</li>
-<li>Ioc能做什么</li>
-<li>Ioc和DI的关系</li>
-</ol>
-<p>在研究spring源码之前我们首先需要搞明白一个概念，也就是Ioc，中文意思控制反转，从字面是看不出来这是什么，可以用来干嘛。但是spring的基础就是Ioc，如果理解不了Ioc，也就谈不上对spring的源码分析。所以首先我们要搞明白Ioc。</p>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/posts/1284c29c/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-
-    
-    
-    
-
-      
-
-    
-
-    
-      
-    
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2955,7 +2952,7 @@
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">157</span>
+                    <span class="site-state-item-count">158</span>
                     <span class="site-state-item-name">日志</span>
                   </a>
                 </div>
@@ -3229,7 +3226,13 @@
                     
                       
                     
-                    <span class="site-state-item-count">81</span>
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">83</span>
                     <span class="site-state-item-name">标签</span>
                   </a>
                 </div>
@@ -3313,7 +3316,7 @@
       总阅读时长
     </span>
     
-    <span title="站点阅读时长">19:42</span>
+    <span title="站点阅读时长">19:45</span>
   
 </div>
 
