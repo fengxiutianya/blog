@@ -118,7 +118,7 @@
 <meta property="og:image" content="http://fengxiu.club/images/cms-3.png">
 <meta property="og:image" content="http://fengxiu.club/images/cms-4.png">
 <meta property="og:image" content="http://fengxiu.club/images/g1-10-591x187.png">
-<meta property="og:updated_time" content="2019-06-13T08:17:21.330Z">
+<meta property="og:updated_time" content="2019-06-13T08:47:48.569Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GC日志详解3之CMS">
 <meta name="twitter:description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
@@ -144,14 +144,6 @@
 
 
 
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-136781627-1');
-  </script>
 
 
 
@@ -469,7 +461,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-13 16:17:21" itemprop="dateModified" datetime="2019-06-13T16:17:21+08:00">2019-06-13</time>
+                <time title="修改时间：2019-06-13 16:47:48" itemprop="dateModified" datetime="2019-06-13T16:47:48+08:00">2019-06-13</time>
               
             
           </span>
@@ -794,7 +786,7 @@ public class CMS {
   <p><span>本文标题:</span><a href="/posts/f38ed32c/">GC日志详解3之CMS</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年04月18日 - 15:14</p>
-  <p><span>最后更新:</span>2019年06月13日 - 16:17</p>
+  <p><span>最后更新:</span>2019年06月13日 - 16:47</p>
   <p><span>原始链接:</span>
      <a href="/posts/f38ed32c/" title="GC日志详解3之CMS">GC日志详解3之CMS</a>
     <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiu.club/posts/f38ed32c/" aria-label="复制成功！"></i></span>
@@ -1456,7 +1448,7 @@ public class CMS {
   
 
   
-    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+    <script id="dsq-count-scr" src="https://fengxiu.disqus.com/count.js" async></script>
   
 
   
@@ -1468,7 +1460,7 @@ public class CMS {
         };
       function loadComments () {
         var d = document, s = d.createElement('script');
-        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.src = 'https://fengxiu.disqus.com/embed.js';
         s.setAttribute('data-timestamp', '' + +new Date());
         (d.head || d.body).appendChild(s);
       }
@@ -1598,21 +1590,6 @@ public class CMS {
   
 
   
-  <script>
-    (function(){
-      var bp = document.createElement('script');
-      var curProtocol = window.location.protocol.split(':')[0];
-      if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-      }
-      else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-      }
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(bp, s);
-    })();
-  </script>
-
 
   
 

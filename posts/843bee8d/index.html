@@ -114,7 +114,7 @@
 <meta property="og:description" content="CopyOnWriteArrayList概述Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayLis">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://fengxiu.club/images/pasted-163.png">
-<meta property="og:updated_time" content="2019-06-13T08:17:21.326Z">
+<meta property="og:updated_time" content="2019-06-13T08:47:48.569Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CopyOnWriteArrayList">
 <meta name="twitter:description" content="CopyOnWriteArrayList概述Copy-On-Write简称COW，是一种用于程序设计中的优化策略。其基本思路是，从一开始大家都在共享同一个内容，当某个人想要修改这个内容的时候，才会真正把内容Copy出去形成一个新的内容然后再改，这是一种延时懒惰策略。从JDK1.5开始Java并发包里提供了两个使用CopyOnWrite机制实现的并发容器,它们是CopyOnWriteArrayLis">
@@ -140,14 +140,6 @@
 
 
 
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-136781627-1');
-  </script>
 
 
 
@@ -465,7 +457,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-13 16:17:21" itemprop="dateModified" datetime="2019-06-13T16:17:21+08:00">2019-06-13</time>
+                <time title="修改时间：2019-06-13 16:47:48" itemprop="dateModified" datetime="2019-06-13T16:47:48+08:00">2019-06-13</time>
               
             
           </span>
@@ -868,13 +860,6 @@ public boolean addIfAbsent(E e) {
     <li class="popular-posts-item">
       
       
-      <div class="popular-posts-title"><a href="/posts/9646a357/" rel="bookmark">Java 集合系列02之 Collection</a></div>
-      
-    </li>
-  
-    <li class="popular-posts-item">
-      
-      
       <div class="popular-posts-title"><a href="/posts/4dcbcf5f/" rel="bookmark">Java 集合系列03之ArrayList源码解析和使用示例</a></div>
       
     </li>
@@ -883,6 +868,13 @@ public boolean addIfAbsent(E e) {
       
       
       <div class="popular-posts-title"><a href="/posts/6ad3883/" rel="bookmark">Java 集合系列04之 fail-fast总结</a></div>
+      
+    </li>
+  
+    <li class="popular-posts-item">
+      
+      
+      <div class="popular-posts-title"><a href="/posts/dd7bc7f8/" rel="bookmark">Java 集合系列05之 LinkedList源码解析和使用示例</a></div>
       
     </li>
   
@@ -907,7 +899,7 @@ public boolean addIfAbsent(E e) {
   <p><span>本文标题:</span><a href="/posts/843bee8d/">CopyOnWriteArrayList</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年03月07日 - 03:07</p>
-  <p><span>最后更新:</span>2019年06月13日 - 16:17</p>
+  <p><span>最后更新:</span>2019年06月13日 - 16:47</p>
   <p><span>原始链接:</span>
      <a href="/posts/843bee8d/" title="CopyOnWriteArrayList">CopyOnWriteArrayList</a>
     <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiu.club/posts/843bee8d/" aria-label="复制成功！"></i></span>
@@ -1565,7 +1557,7 @@ public boolean addIfAbsent(E e) {
   
 
   
-    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+    <script id="dsq-count-scr" src="https://fengxiu.disqus.com/count.js" async></script>
   
 
   
@@ -1577,7 +1569,7 @@ public boolean addIfAbsent(E e) {
         };
       function loadComments () {
         var d = document, s = d.createElement('script');
-        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.src = 'https://fengxiu.disqus.com/embed.js';
         s.setAttribute('data-timestamp', '' + +new Date());
         (d.head || d.body).appendChild(s);
       }
@@ -1707,21 +1699,6 @@ public boolean addIfAbsent(E e) {
   
 
   
-  <script>
-    (function(){
-      var bp = document.createElement('script');
-      var curProtocol = window.location.protocol.split(':')[0];
-      if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-      }
-      else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-      }
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(bp, s);
-    })();
-  </script>
-
 
   
 

@@ -113,7 +113,7 @@
 <meta property="og:site_name" content="枫秀天涯">
 <meta property="og:description" content="并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究性能考虑在轻度到中度的争用情况下，非阻塞算法的性能会超越阻塞算法，因为 CAS 的多数时间都在第一次尝试时就成功，而发生争用时的开销也不涉及线程挂起和上下文切换，只多了几个循环迭代。没有争用的 CAS 要比没有争用的锁便宜得多（这句话肯定是真的，因为没有争用的锁涉及 CAS 加上额外的处理），而争用的 CAS 比争用的锁获取">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2019-06-13T08:17:21.326Z">
+<meta property="og:updated_time" content="2019-06-13T08:47:48.569Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究">
 <meta name="twitter:description" content="并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究性能考虑在轻度到中度的争用情况下，非阻塞算法的性能会超越阻塞算法，因为 CAS 的多数时间都在第一次尝试时就成功，而发生争用时的开销也不涉及线程挂起和上下文切换，只多了几个循环迭代。没有争用的 CAS 要比没有争用的锁便宜得多（这句话肯定是真的，因为没有争用的锁涉及 CAS 加上额外的处理），而争用的 CAS 比争用的锁获取">
@@ -138,14 +138,6 @@
 
 
 
-
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-136781627-1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-136781627-1');
-  </script>
 
 
 
@@ -463,7 +455,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-13 16:17:21" itemprop="dateModified" datetime="2019-06-13T16:17:21+08:00">2019-06-13</time>
+                <time title="修改时间：2019-06-13 16:47:48" itemprop="dateModified" datetime="2019-06-13T16:47:48+08:00">2019-06-13</time>
               
             
           </span>
@@ -615,14 +607,14 @@
     <li class="popular-posts-item">
       
       
-      <div class="popular-posts-title"><a href="/posts/ff534434/" rel="bookmark">并发队列-有界阻塞队列LinkedBlockingQueue原理探究</a></div>
+      <div class="popular-posts-title"><a href="/posts/d095b5fe/" rel="bookmark">并发队列总结</a></div>
       
     </li>
   
     <li class="popular-posts-item">
       
       
-      <div class="popular-posts-title"><a href="/posts/d095b5fe/" rel="bookmark">并发队列总结</a></div>
+      <div class="popular-posts-title"><a href="/posts/ff534434/" rel="bookmark">并发队列-有界阻塞队列LinkedBlockingQueue原理探究</a></div>
       
     </li>
   
@@ -654,7 +646,7 @@
   <p><span>本文标题:</span><a href="/posts/a75f3158/">并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年03月06日 - 19:07</p>
-  <p><span>最后更新:</span>2019年06月13日 - 16:17</p>
+  <p><span>最后更新:</span>2019年06月13日 - 16:47</p>
   <p><span>原始链接:</span>
      <a href="/posts/a75f3158/" title="并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究">并发队列-无界非阻塞队列ConcurrentLinkedQueue原理探究</a>
     <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiu.club/posts/a75f3158/" aria-label="复制成功！"></i></span>
@@ -1312,7 +1304,7 @@
   
 
   
-    <script id="dsq-count-scr" src="https://fengxiutianya.disqus.com/count.js" async></script>
+    <script id="dsq-count-scr" src="https://fengxiu.disqus.com/count.js" async></script>
   
 
   
@@ -1324,7 +1316,7 @@
         };
       function loadComments () {
         var d = document, s = d.createElement('script');
-        s.src = 'https://fengxiutianya.disqus.com/embed.js';
+        s.src = 'https://fengxiu.disqus.com/embed.js';
         s.setAttribute('data-timestamp', '' + +new Date());
         (d.head || d.body).appendChild(s);
       }
@@ -1454,21 +1446,6 @@
   
 
   
-  <script>
-    (function(){
-      var bp = document.createElement('script');
-      var curProtocol = window.location.protocol.split(':')[0];
-      if (curProtocol === 'https') {
-        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
-      }
-      else {
-        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-      }
-      var s = document.getElementsByTagName("script")[0];
-      s.parentNode.insertBefore(bp, s);
-    })();
-  </script>
-
 
   
 
