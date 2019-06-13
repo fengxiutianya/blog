@@ -4,9 +4,12 @@
 {% else %}
     <link rel="stylesheet" href="/lib/prettify/themes/prettify.css" type="text/css">
 {% endif %}
+
 <script src="/lib/prettify/prettify.js"></script>
 <script type="text/javascript">
+
 $(window).load(function(){
+
   // 设置prettify
   $('pre').addClass('prettyprint linenums');
    prettyPrint();

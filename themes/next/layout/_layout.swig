@@ -123,5 +123,9 @@
   {# 加入prettify 代码高亮显示#}
   {% include '_third-party/prettify.swig' %}
 
+  {# 加入时间轴 #}
+  {% if page.path === 'timeAxis/index.html' %}
+     {% include '_third-party/timeAxis.swig' %}
+  {% endif %}
 </body>
 </html>

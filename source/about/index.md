@@ -1,9 +1,15 @@
-## 任务
+---
+title: 任务
+date: 2019-03-11 02:40:00
+---
 ### 移除书签
 #### java
 1. [Unsafe](https://mp.weixin.qq.com/s/h3MB8p0sEA7VnrMXFq9NBA)
 2. [分布式锁](https://mp.weixin.qq.com/s/y_Uw3P2Ll7wvk_j5Fdlusw)
 3. [JMM](https://www.infoq.cn/profile/1278512)
+4. [译 | Java Thread Primitive Deprecation](http://songkun.me/2018/11/26/2018-11-26-java-thread-primitive-deprecation/)
+5. [MappedByteBuffer VS FileChannel 孰强孰弱](https://juejin.im/post/5cd82323f265da038932b1e6)
+6. [堆外内存 之 DirectByteBuffer 详解](https://www.jianshu.com/p/007052ee3773)
 #### JUC
 1. [Java并发工具类之LongAdder原理总结](https://juejin.im/entry/5a5b7e8a51882573443ca7ee)
 4. [JAVA并发编程J.U.C学习总结](https://www.cnblogs.com/chenpi/p/5614290.html)
@@ -50,6 +56,8 @@
 6. [分布式ID](https://juejin.im/post/5bb0217ef265da0ac2567b42#heading-6)
 7. [Leaf——美团点评分布式ID生成系统](https://tech.meituan.com/2017/04/21/mt-leaf.html)
 
+### linux
+1. [linux环境内存分配原理 malloc info](https://www.cnblogs.com/dirge/p/10497931.html)
 
 ### 需要整理的知识点
 #### mysql

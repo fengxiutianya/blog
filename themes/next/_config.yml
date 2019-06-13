@@ -139,7 +139,8 @@ menu:
   categories: /categories/ || th
   archives: /archives/ || archive
   about: /about/ || user
-  #schedule: /schedule/ || calendar
+  时间轴: /timeAxis/ || calendar
+  # schedule:
   #sitemap: /sitemap.xml || sitemap
   #commonweal: /404/ || heartbeat
 
