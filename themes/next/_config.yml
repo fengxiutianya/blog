@@ -330,12 +330,12 @@ reward:
 # Dependencies: https://github.com/tea3/hexo-related-popular-posts
 related_posts:
   enable: true
-  title: # custom header, leave empty to use the default one
+  title:  "相关文章" # custom header, leave empty to use the default one
   display_in_home: false
   params:
     maxCount: 5
     #PPMixingRate: 0.0
-    #isDate: false
+    # isDate: true
     #isImage: false
     #isExcerpt: false
 
@@ -510,7 +510,7 @@ pangu: false
 # Disqus
 disqus:
   enable: true
-  shortname: fengxiutianya
+  shortname: fengxiu
   count: true
   lazyload: true
 
@@ -608,7 +608,7 @@ needmoreshare2:
 #google_site_verification:
 
 # Google Analytics
-google_analytics: UA-136781627-1
+# google_analytics: UA-136781627-1
 
 # Bing Webmaster tools verification setting
 # See: https://www.bing.com/webmaster
@@ -706,7 +706,7 @@ busuanzi_count:
 #tencent_mta:
 
 # Enable baidu push so that the blog will push the url to baidu automatically which is very helpful for SEO.
-baidu_push: true
+baidu_push: false
 
 # Google Calendar
 # Share your recent schedule to others via calendar page.
