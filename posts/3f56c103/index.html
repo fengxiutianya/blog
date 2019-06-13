@@ -109,32 +109,32 @@
 <meta name="keywords" content="IO">
 <meta property="og:type" content="article">
 <meta property="og:title" content="深入分析Java IO 的工作机制">
-<meta property="og:url" content="http://fengxiutianya.top/posts/3f56c103/index.html">
+<meta property="og:url" content="http://fengxiu.club/posts/3f56c103/index.html">
 <meta property="og:site_name" content="枫秀天涯">
 <meta property="og:description" content="IO类库的基本架构I/O 问题是任何编程语言都无法回避的问题，可以说 I/O 问题是整个人机交互的核心问题，因为 I/O 是机器获取和交换信息的主要渠道。在当今这个数据大爆炸时代，I/O 问题尤其突出，很容易成为一个性能瓶颈。正因如此，所以 Java 在 I/O 上也一直在做持续的优化，如从 1.4 开始引入了 NIO，提升了 I/O 的性能。关于 NIO 我们将在后面详细介绍。 Java 的 I">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-286.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-287.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-288.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-289.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-292.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-293.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-294.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-295.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-296.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/pasted-297.png">
-<meta property="og:updated_time" content="2019-06-13T08:12:58.610Z">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-286.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-287.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-288.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-289.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-292.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-293.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-294.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-295.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-296.png">
+<meta property="og:image" content="http://fengxiu.club/images/pasted-297.png">
+<meta property="og:updated_time" content="2019-06-13T08:17:21.322Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="深入分析Java IO 的工作机制">
 <meta name="twitter:description" content="IO类库的基本架构I/O 问题是任何编程语言都无法回避的问题，可以说 I/O 问题是整个人机交互的核心问题，因为 I/O 是机器获取和交换信息的主要渠道。在当今这个数据大爆炸时代，I/O 问题尤其突出，很容易成为一个性能瓶颈。正因如此，所以 Java 在 I/O 上也一直在做持续的优化，如从 1.4 开始引入了 NIO，提升了 I/O 的性能。关于 NIO 我们将在后面详细介绍。 Java 的 I">
-<meta name="twitter:image" content="http://fengxiutianya.top/images/pasted-286.png">
+<meta name="twitter:image" content="http://fengxiu.club/images/pasted-286.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://fengxiutianya.top/posts/3f56c103/">
+  <link rel="canonical" href="http://fengxiu.club/posts/3f56c103/">
 
 
 
@@ -414,7 +414,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/3f56c103/">
+    <link itemprop="mainEntityOfPage" href="http://fengxiu.club/posts/3f56c103/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="枫秀天涯">
@@ -474,7 +474,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-13 16:12:58" itemprop="dateModified" datetime="2019-06-13T16:12:58+08:00">2019-06-13</time>
+                <time title="修改时间：2019-06-13 16:17:21" itemprop="dateModified" datetime="2019-06-13T16:17:21+08:00">2019-06-13</time>
               
             
           </span>
@@ -756,10 +756,10 @@
   <p><span>本文标题:</span><a href="/posts/3f56c103/">深入分析Java IO 的工作机制</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年03月23日 - 05:22</p>
-  <p><span>最后更新:</span>2019年06月13日 - 16:12</p>
+  <p><span>最后更新:</span>2019年06月13日 - 16:17</p>
   <p><span>原始链接:</span>
      <a href="/posts/3f56c103/" title="深入分析Java IO 的工作机制">深入分析Java IO 的工作机制</a>
-    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/3f56c103/" aria-label="复制成功！"></i></span>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiu.club/posts/3f56c103/" aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>
@@ -1418,7 +1418,7 @@
   
     <script>
       var disqus_config = function () {
-        this.page.url = "http://fengxiutianya.top/posts/3f56c103/";
+        this.page.url = "http://fengxiu.club/posts/3f56c103/";
         this.page.identifier = "posts/3f56c103/";
         this.page.title = '深入分析Java IO 的工作机制';
         };

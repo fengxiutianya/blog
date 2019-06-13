@@ -109,27 +109,27 @@
 <meta name="keywords" content="JVM,GC,GC日志,CMS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GC日志详解3之CMS">
-<meta property="og:url" content="http://fengxiutianya.top/posts/f38ed32c/index.html">
+<meta property="og:url" content="http://fengxiu.club/posts/f38ed32c/index.html">
 <meta property="og:site_name" content="枫秀天涯">
 <meta property="og:description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:image" content="http://fengxiutianya.top/images/cms-1.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/g1-07-591x187.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/cms-3.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/cms-4.png">
-<meta property="og:image" content="http://fengxiutianya.top/images/g1-10-591x187.png">
-<meta property="og:updated_time" content="2019-06-13T08:12:58.618Z">
+<meta property="og:image" content="http://fengxiu.club/images/cms-1.png">
+<meta property="og:image" content="http://fengxiu.club/images/g1-07-591x187.png">
+<meta property="og:image" content="http://fengxiu.club/images/cms-3.png">
+<meta property="og:image" content="http://fengxiu.club/images/cms-4.png">
+<meta property="og:image" content="http://fengxiu.club/images/g1-10-591x187.png">
+<meta property="og:updated_time" content="2019-06-13T08:17:21.330Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GC日志详解3之CMS">
 <meta name="twitter:description" content="本篇文章将要介绍的是ParNew和CMS搭配使用的垃圾回收器组合。CMS和其他老年代收集器不同的地点是，它使用的是标记-清除算法。 CMS收集器设计的目的是避免在老年代收集时长时间停顿。它通过两种方式实现这一目标。首先，它不是采用标记-拷贝来回收老年代，而是使用可被回收链表来管理回收空间。其次，整个垃圾回收器的执行期间，绝大部分是可以和应用程序并发执行。这意味着垃圾收器不会显式停止应用程序线程执行">
-<meta name="twitter:image" content="http://fengxiutianya.top/images/cms-1.png">
+<meta name="twitter:image" content="http://fengxiu.club/images/cms-1.png">
 
 
 
 
 
 
-  <link rel="canonical" href="http://fengxiutianya.top/posts/f38ed32c/">
+  <link rel="canonical" href="http://fengxiu.club/posts/f38ed32c/">
 
 
 
@@ -409,7 +409,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://fengxiutianya.top/posts/f38ed32c/">
+    <link itemprop="mainEntityOfPage" href="http://fengxiu.club/posts/f38ed32c/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="枫秀天涯">
@@ -469,7 +469,7 @@
                 
                   <span class="post-meta-item-text">更新于</span>
                 
-                <time title="修改时间：2019-06-13 16:12:58" itemprop="dateModified" datetime="2019-06-13T16:12:58+08:00">2019-06-13</time>
+                <time title="修改时间：2019-06-13 16:17:21" itemprop="dateModified" datetime="2019-06-13T16:17:21+08:00">2019-06-13</time>
               
             
           </span>
@@ -732,7 +732,7 @@ public class CMS {
 <li><code>0.000/0.000 secs</code>：这个阶段的持续时间与时钟时间；</li>
 <li><code>Times: user=0.15 sys=0.10, real=0.04 secs]</code>：同前面。</li>
 </ol>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CMS通过将大量工作分散到并发处理阶段来在减少STW时间，在这块做得非常优秀，但是CMS也有一些其他的问题，具体的可以看这篇文章<a href="https://fengxiutianya.top/posts/1d97a19/">JVM垃圾回收器</a>：</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>CMS通过将大量工作分散到并发处理阶段来在减少STW时间，在这块做得非常优秀，但是CMS也有一些其他的问题，具体的可以看这篇文章<a href="https://fengxiutianya.top/posts/1d97a19/" target="_blank" rel="noopener">JVM垃圾回收器</a>：</p>
 <ol>
 <li>CMS 收集器无法处理浮动垃圾（ Floating Garbage），可能出现 “Concurrnet Mode Failure” 失败而导致另一次 Full GC 的产生，可能引发串行Full GC；</li>
 <li>空间碎片，导致无法分配大对象，CMS 收集器提供了一个 -XX:+UseCMSCompactAtFullCollection 开关参数（默认就是开启的），用于在 CMS 收集器顶不住要进行 Full GC 时开启内存碎片的合并整理过程，内存整理的过程是无法并发的，空间碎片问题没有了，但停顿时间不得不变长；</li>
@@ -794,10 +794,10 @@ public class CMS {
   <p><span>本文标题:</span><a href="/posts/f38ed32c/">GC日志详解3之CMS</a></p>
   <p><span>文章作者:</span><a href="/" title="访问 枫秀天涯 的个人博客">枫秀天涯</a></p>
   <p><span>发布时间:</span>2019年04月18日 - 15:14</p>
-  <p><span>最后更新:</span>2019年06月13日 - 16:12</p>
+  <p><span>最后更新:</span>2019年06月13日 - 16:17</p>
   <p><span>原始链接:</span>
      <a href="/posts/f38ed32c/" title="GC日志详解3之CMS">GC日志详解3之CMS</a>
-    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiutianya.top/posts/f38ed32c/" aria-label="复制成功！"></i></span>
+    <span class="copy-path" title="点击复制文章链接"><i class="fa fa-clipboard" data-clipboard-text="http://fengxiu.club/posts/f38ed32c/" aria-label="复制成功！"></i></span>
   </p>
   <p><span>许可协议:</span><i class="fa fa-creative-commons"></i> <a rel="license" href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" title="Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0)">署名-非商业性使用-禁止演绎 4.0 国际</a> 转载请保留原文链接及作者。</p>  
 </div>
@@ -1462,7 +1462,7 @@ public class CMS {
   
     <script>
       var disqus_config = function () {
-        this.page.url = "http://fengxiutianya.top/posts/f38ed32c/";
+        this.page.url = "http://fengxiu.club/posts/f38ed32c/";
         this.page.identifier = "posts/f38ed32c/";
         this.page.title = 'GC日志详解3之CMS';
         };
